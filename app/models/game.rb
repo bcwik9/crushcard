@@ -22,7 +22,8 @@ class Game < ActiveRecord::Base
       # the next card in the deck is trump
       # whatever suit is trump is valued higher than non-trump suits
       # an Ace as trump means there is "no trump"
-      trump = deck.slice! 0
+      trump_card = deck.slice! 0
+      trump = (trump_card.value_name =~ /ace/i) ? nil : trump_card.suit
 
       # players each take turns making bids
       # dealer bids last
@@ -50,21 +51,34 @@ class Game < ActiveRecord::Base
       # the player who bid the highest first is who starts
       player_who_took_last_trick = highest_bidder
       tricks_taken = {}
-      @players.each do |p| tricks_taken[p] = 0 end
+      @players.each do |p| tricks_taken[p] = [] end
       num_cards_per_player.times do |i|
         cards_played = []
         iterate_through_list_with_start_index(@players.find_index(player_who_took_last_trick), @players) { |player|
           # keep asking for a card until the player gives a valid card
           first_suit_played = cards_played.empty? ? nil : cards_played.first.suit
           playable_cards = get_playable_cards first_suit_played, player
-          while(not playable_cards.include?(player_card = player.play_card)) end
+          while(not playable_cards.include?(player_card = player.play_card))
+          end
           # put the card in play
           cards_played.push player_card
         }
 
         # after everyone has played a card, we need to determine who won the trick
-        winning_player = get_highest_card(cards_played) # fix this
-        
+        highest_card = get_highest_card(cards_played, trump)
+        player_who_took_last_trick = @players.find { |player|
+          player.inventory.include? highest_card
+        }
+
+        # remove played cards from players inventory
+        cards_played.each do |card|
+          @players.each do |player|
+            player.inventory.delete card
+          end
+        end
+
+        # record that the winning player got a trick
+        tricks_taken[player_who_took_last_trick].push cards_played
       end
       
       # done with the round
@@ -73,7 +87,10 @@ class Game < ActiveRecord::Base
   end
 
   def get_highest_card cards, trump
-    # implement this
+    trump_cards = cards.select { |c| c.suit == trump }
+    card_set = trump_cards.empty? ? cards : trump_cards
+    highest_value = card_set.sort.last.value
+    return card_set.find { |card| card.value == highest_value }
   end
   
   def get_playable_cards first_suit_played, player
@@ -85,7 +102,6 @@ class Game < ActiveRecord::Base
     # if player doesn't have any of the same suit as the first card played
     # they can play any card
     playable_cards = player.inventory if playable_cards.empty?
-    end
   end
 
   def iterate_through_list_with_start_index start_index, list
@@ -107,12 +123,22 @@ class Card
     @suit = suit
     @value = value
   end
+
+  def value_name
+    card_names = %w[Two Three Four Five Six Seven Eight Nine Ten Jack Queen King Ace]
+    return card_names[value]
+  end
   
   def <=> other
     @value <=> other.value
   end
 
-  # creates a standard deck of 52 cards
+  def == other
+    return (@value == other.value and @suit == other.suit)
+  end
+
+  # creates a standard deck of 52 cards, Ace high
+  # the '0' represents 2, and '12' is Ace
   def self.get_deck
     cards = []
     SUITS.each do |suit|
