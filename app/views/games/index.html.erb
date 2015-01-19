@@ -21,3 +21,17 @@
 <br>
 
 <%= link_to 'New Game', new_game_path %>
+
+<script>
+jQuery(document).ready(function(){
+   var source = new EventSource("/streams");
+   source.addEventListener('update', function(e){
+      // update a div, reload a section of the page
+   });
+   // you can add different event listeners to
+   // process some logic based on the event push
+   // from the server to do something unique based
+   // users leaving, joining the application or other
+   // kinds of events not releated to users.
+});
+</script>
