@@ -3,6 +3,7 @@
 <table>
   <thead>
     <tr>
+      <th>Name</th>
       <th colspan="3"></th>
     </tr>
   </thead>
@@ -10,6 +11,7 @@
   <tbody>
     <% @games.each do |game| %>
       <tr>
+	<td><%= game.name %></td>
         <td><%= link_to 'Show', game %></td>
         <td><%= link_to 'Edit', edit_game_path(game) %></td>
         <td><%= link_to 'Destroy', game, method: :delete, data: { confirm: 'Are you sure?' } %></td>
@@ -21,17 +23,3 @@
 <br>
 
 <%= link_to 'New Game', new_game_path %>
-
-<script>
-jQuery(document).ready(function(){
-   var source = new EventSource("/streams");
-   source.addEventListener('update', function(e){
-      // update a div, reload a section of the page
-   });
-   // you can add different event listeners to
-   // process some logic based on the event push
-   // from the server to do something unique based
-   // users leaving, joining the application or other
-   // kinds of events not releated to users.
-});
-</script>
