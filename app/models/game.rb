@@ -1,16 +1,17 @@
 class Game < ActiveRecord::Base
-  attr_accessor :players
-  
+  require 'yaml'
+
   def play
     raise 'Invalid number of players' if players.size < 3 or players.size > 5
     # set up game
     total_rounds = 10 # typical game of crush is comprised of 10 rounds
     rounds_played = 0
-    deck = Card.get_deck
+    score = {}
     @players.shuffle!
 
     while rounds_played < total_rounds
-      # shuffle deck/players
+      # shuffle deck
+      deck = Card.get_deck
       deck.shuffle!
       
       # deal out number of cards equal to whatever round we are on
@@ -80,10 +81,46 @@ class Game < ActiveRecord::Base
         # record that the winning player got a trick
         tricks_taken[player_who_took_last_trick].push cards_played
       end
+
+      # scoring
+      @players.each do |player|
+        num_tricks_taken = tricks_taken[player].size
+        if num_tricks_taken < bids[player]
+          player_score = num_tricks_taken - bids[player]
+        elsif num_tricks_taken > bids[player]
+          player_score = num_tricks_taken
+        else
+          player_score = num_tricks_taken + 10
+        end
+        score[player] ||= []
+        score[player].push player_score
+      end
+      
       
       # done with the round
       rounds_played += 1
     end
+
+    # end of game, fbigure out who won
+    # ties are possible
+    winner = []
+    highest_score = nil
+    @players.each do |player|
+      player_score = score[player].inject :+ # add up score from each round
+      if highest_score.nil? or player_score >= highest_score
+        highest_score = player_score
+        winner.clear if player_score > highest_score
+        winner.push player
+      end
+    end
+  end
+
+  def load_state
+    
+  end
+  
+  def save_state
+    
   end
 
   def get_highest_card cards, trump
