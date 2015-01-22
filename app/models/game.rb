@@ -11,8 +11,6 @@ class Game < ActiveRecord::Base
     state[:score] = []
     state[:deck] = []
 
-    raise 'Invalid number of players' if state[:players].size < 3 or state[:players].size > 5
-
     state[:players].shuffle!
 
     save_state state
@@ -169,11 +167,11 @@ class Game < ActiveRecord::Base
   end
 
   def load_state
-    
+    return self.state.to_yaml
   end
   
-  def save_state
-    
+  def save_state state
+    self.state = state.to_yaml
   end
 
   def get_highest_card cards, trump, start_index
