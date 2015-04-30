@@ -26,12 +26,13 @@ function init() {
   numbers.sort( function() { return Math.random() - .5 } );
  
   for ( var i=0; i<10; i++ ) {
-    $('<div>' + numbers[i] + '</div>').data( 'number', numbers[i] ).attr( 'id', 'card'+numbers[i] ).appendTo( '#cardPile' ).draggable( {
+    $('<div><canvas id="canv' + numbers[i] + '" width="70" height="105"></div>').data( 'number', numbers[i] ).attr( 'id', 'card'+numbers[i] ).appendTo( '#cardPile' ).draggable( {
       containment: '#board-wrapper',
       stack: '#cardPile div',
       cursor: 'move',
       revert: true
     } );
+    draw_card("heart", numbers[i], "canv"+numbers[i]);
   }
 
   $('#bottom').droppable( {
@@ -124,7 +125,7 @@ function handleCardDrop( event, ui ) {
     <div class="col-md-4" style="text-align:left; padding-top:200px">Player 3</div>
   </div>
   <br>
-  My Cards
+  Your Cards
   <div id="cardPile"> </div>
   <!-- <div id="cardSlots"> </div> -->
 </div>
@@ -140,8 +141,8 @@ function handleCardDrop( event, ui ) {
  
 </div>
 <script>
-function draw_card(suit, value){
-    var canvas = document.getElementById("testCard");
+function draw_card(suit, value,canvas){
+    var canvas = document.getElementById(canvas);
     var context = canvas.getContext("2d");
  
     var suit_width = canvas.width * 0.285;
@@ -170,7 +171,7 @@ function draw_card(suit, value){
 }
 
 window.onload = function(){
-    draw_card("club", 10);
+    draw_card("club", 10, "testCard");
 }
 </script>
 <%= javascript_include_tag "cards.js" %>
