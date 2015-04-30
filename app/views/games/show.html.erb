@@ -128,6 +128,8 @@ function handleCardDrop( event, ui ) {
   <div id="cardPile"> </div>
   <!-- <div id="cardSlots"> </div> -->
 </div>
+
+<canvas id="testCard" width="70" height="105" style="border:1px solid #000000;"></canvas>
  
 <div id="content">
  
@@ -137,5 +139,39 @@ function handleCardDrop( event, ui ) {
   </div>
  
 </div>
+<script>
+function draw_card(suit, value){
+    var canvas = document.getElementById("testCard");
+    var context = canvas.getContext("2d");
  
+    var suit_width = canvas.width * 0.285;
+    var suit_height = canvas.height * 0.257;
+
+
+    context.font = "20pt c";
+    context.fillText(value, canvas.width/2-8, canvas.height/2+5);
+
+    if((/spade/i).test(suit)){
+      drawSpade(context, (suit_width/2+5), 0, suit_width, suit_height);
+      drawSpade(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+    }
+    if((/diamond/i).test(suit)){
+      drawDiamond(context, (suit_width/2+5), 0, suit_width, suit_height);
+      drawDiamond(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+    }
+    if((/club/i).test(suit)){
+      drawClub(context, (suit_width/2+5), 0, suit_width, suit_height);
+      drawClub(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+    }
+    if((/heart/i).test(suit)){
+      drawHeart(context, (suit_width/2+5), 0, suit_width, suit_height);
+      drawHeart(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+    }
+}
+
+window.onload = function(){
+    draw_card("club", 10);
+}
+</script>
+<%= javascript_include_tag "cards.js" %>
 </body>
