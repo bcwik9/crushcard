@@ -17,6 +17,9 @@ class Game < ActiveRecord::Base
   end
   
   def deal_cards state
+    # need to have at least 3 players to start the game
+    raise 'Must have between 3 and 5 players to start' if state[:players].size < 3 or state[:players].size > 5
+
     # shuffle deck
     state[:deck] = Card.get_deck
     state[:deck].shuffle!
@@ -40,17 +43,19 @@ class Game < ActiveRecord::Base
     # the next card in the deck is trump
     # whatever suit is trump is valued higher than non-trump suits
     # an Ace as trump means there is "no trump"
-    state[:trump_card] = deck.slice! 0
+    state[:trump_card] = state[:deck].slice! 0
     trump = (state[:trump_card].value_name =~ /ace/i) ? nil : state[:trump_card].suit
 
     # set a few default values
     state[:cards_in_play] = []
     state[:first_suit_played] = nil
     state[:tricks_taken] = []
+
+    return state
   end
 
   # player either bids or plays a card if it's their turn
-  def player_action
+  def player_action user_input=nil
     state = load_state
     
     # return false if it's not the players turn
@@ -61,7 +66,7 @@ class Game < ActiveRecord::Base
     # check if we are in bidding or playing a card
     if state[:bids].include?(nil)
       # player is making a bid
-      bid = INPUT # TODO: replace this with form value
+      bid = user_input
       
       # dealer cannot bid the same amount as the number of cards dealt
       total_bids = state[:bids].inject(:+)
@@ -91,7 +96,7 @@ class Game < ActiveRecord::Base
 
     elsif not state[:player_hands][current_player_index].empty?
       # player is playing a card
-      card = INPUT
+      card = user_input
       
       # ensure that the card is in their inventory
       return false unless state[:player_hands][current_player_index].include? card
@@ -167,7 +172,7 @@ class Game < ActiveRecord::Base
   end
 
   def load_state
-    return self.state.to_yaml
+    return YAML.load(self.state)
   end
   
   def save_state state

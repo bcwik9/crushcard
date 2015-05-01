@@ -6,7 +6,6 @@ var correctCards = 0;
 $( init );
  
 function init() {
- 
   // Hide the success message
   $('#successMessage').hide();
   $('#successMessage').css( {
@@ -112,7 +111,11 @@ function handleCardDrop( event, ui ) {
 
 <%= link_to 'Edit', edit_game_path(@game) %> |
 <%= link_to 'Back', games_path %>
+<%= button_to 'Join Game', games_add_player_path, method: :post, params: {:id => params[:id]} %>
+<%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]} %>
 <div id="board-wrapper" style="text-align:center;">
+  Trump: <canvas id="trump" width="70" height="105" style="border:1px solid #000000;"></canvas>
+  <br>
   Player 2
   <div class="row">
     <div class="col-md-4" style="text-align:right; padding-top:200px;">Player 1</div>
@@ -126,11 +129,15 @@ function handleCardDrop( event, ui ) {
   </div>
   <br>
   Your Cards
-  <div id="cardPile"> </div>
+  <div id="cardPile"> 
+    <% if @cards %>
+    <% @cards.each_with_index do |card,i| %>
+    <div><canvas id="<%= "canv#{i}" %>" width="70" height="105" data-suit="<%= card.suit %>" data-value="<%= card.value %>"></div>
+    <% end %>
+    <% end %>
+  </div>
   <!-- <div id="cardSlots"> </div> -->
 </div>
-
-<canvas id="testCard" width="70" height="105" style="border:1px solid #000000;"></canvas>
  
 <div id="content">
  
@@ -141,7 +148,7 @@ function handleCardDrop( event, ui ) {
  
 </div>
 <script>
-function draw_card(suit, value,canvas){
+function draw_card(suit, value, canvas){
     var canvas = document.getElementById(canvas);
     var context = canvas.getContext("2d");
  
@@ -171,7 +178,7 @@ function draw_card(suit, value,canvas){
 }
 
 window.onload = function(){
-    draw_card("club", 10, "testCard");
+    draw_card("club", 10, "trump");
 }
 </script>
 <%= javascript_include_tag "cards.js" %>

@@ -1,6 +1,53 @@
 class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
+  def add_player
+    unless @_current_user.nil?
+      set_game
+      state = @game.load_state
+      if state[:players].size < 5
+        unless state[:players].include?(@_current_user)
+          if state[:cards_in_play]
+            redirect_to @game, notice: 'Cant join once game has already started'
+            return
+          end
+          state[:players].push @_current_user
+          @game.save_state state
+          if @game.save
+            redirect_to @game, notice: 'Joined the game!'
+          else
+            redirect_to @game, notice: 'Failed to join the game'
+          end
+        else
+          redirect_to @game, notice: 'Player is already in game'
+        end
+      else
+        redirect_to @game, notice: 'There are too many players in the game already'
+      end
+    end
+  end
+  
+  def deal
+    set_game
+    state = @game.load_state
+    # game must have at least 3 players to start
+    if state[:players].size < 3
+      redirect_to @game, notice: 'Must have at least 3 players to start the game'
+      return
+    end
+    if state[:players].first == @_current_user
+      if state[:cards_in_play].nil?
+        @game.save_state @game.deal_cards(state)
+        @game.save
+        redirect_to @game, notice: 'Game has started!'
+      else
+        redirect_to @game, notice: 'Game has already started'
+      end
+    else
+      redirect_to @game, notice: 'Only the creator of the game can start it'
+    end
+  end
+
   # GET /games
   # GET /games.json
   def index
@@ -10,6 +57,11 @@ class GamesController < ApplicationController
   # GET /games/1
   # GET /games/1.json
   def show
+    state = @game.load_state
+    if state[:players].include?(@_current_user)
+      player_index = state[:players].index(@_current_user)
+      @cards = state[:player_hands][player_index]
+    end
   end
 
   # GET /games/new
