@@ -58,9 +58,24 @@ class GamesController < ApplicationController
   # GET /games/1.json
   def show
     state = @game.load_state
+
     if state[:players].include?(@_current_user)
       player_index = state[:players].index(@_current_user)
       @cards = state[:player_hands][player_index]
+    end
+    
+    @round = state[:total_rounds] - state[:rounds_played]
+
+    if state[:waiting_on]
+      waiting_on_index = state[:players].index(state[:waiting_on])
+      current_player_index = state[:players].index(@_current_user) || 99
+      @waiting_on = (waiting_on_index < current_player_index) ? "Player #{waiting_on_index + 1}" : "Player#{waiting_on_index}"
+      @waiting_on = 'YOU' if @_current_user == state[:waiting_on]
+      unless state[:bids].size == state[:players].size
+        @waiting_on += " (BIDDING)"
+      end
+    else
+      @waiting_on = 'Game to start'
     end
   end
 

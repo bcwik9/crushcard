@@ -115,7 +115,9 @@ function handleCardDrop( event, ui ) {
 <%= button_to 'Join Game', games_add_player_path, method: :post, params: {:id => params[:id]} %>
 <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]} %>
 <div id="board-wrapper" style="text-align:center;">
-  Trump: <canvas id="trump" width="70" height="105" style="border:1px solid #000000;"></canvas>
+  Current round: <%= @round %> |
+  Trump: <canvas id="trump" width="70" height="105" style="border:1px solid #000000;"></canvas> |
+  Waiting on: <%= @waiting_on %>
   <br>
   Player 2
   <div class="row">
