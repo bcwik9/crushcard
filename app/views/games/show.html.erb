@@ -17,7 +17,7 @@ function init() {
  
   // Reset the game
   correctCards = 0;
-  $('#cardPile').html( '' );
+  //$('#cardPile').html( '' );
   $('#cardSlots').html( '' );
  
   // Create the pile of shuffled cards
@@ -25,13 +25,14 @@ function init() {
   numbers.sort( function() { return Math.random() - .5 } );
  
   for ( var i=0; i<10; i++ ) {
-    $('<div><canvas id="canv' + numbers[i] + '" width="70" height="105"></div>').data( 'number', numbers[i] ).attr( 'id', 'card'+numbers[i] ).appendTo( '#cardPile' ).draggable( {
+    $("#card"+i).data( 'number', numbers[i] ).draggable( {
       containment: '#board-wrapper',
       stack: '#cardPile div',
       cursor: 'move',
       revert: true
     } );
-    draw_card("heart", numbers[i], "canv"+numbers[i]);
+    var currentCanvas = document.getElementById("canv"+i);
+    draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
   }
 
   $('#bottom').droppable( {
@@ -130,9 +131,11 @@ function handleCardDrop( event, ui ) {
   <br>
   Your Cards
   <div id="cardPile"> 
-    <% if @cards %>
+    <% if @cards and not @cards.empty? %>
     <% @cards.each_with_index do |card,i| %>
-    <div><canvas id="<%= "canv#{i}" %>" width="70" height="105" data-suit="<%= card.suit %>" data-value="<%= card.value %>"></div>
+    <div id="<%= "card#{i}" %>">
+      <canvas id="<%= "canv#{i}" %>" width="70" height="100" data-suit="<%= card.suit %>" data-value="<%= card.value %>"></canvas>
+    </div>
     <% end %>
     <% end %>
   </div>
@@ -149,6 +152,7 @@ function handleCardDrop( event, ui ) {
 </div>
 <script>
 function draw_card(suit, value, canvas){
+    console.log(canvas);
     var canvas = document.getElementById(canvas);
     var context = canvas.getContext("2d");
  
