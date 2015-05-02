@@ -55,30 +55,30 @@ class Game < ActiveRecord::Base
   end
 
   # player either bids or plays a card if it's their turn
-  def player_action user_input=nil
+  def player_action user_id, user_input=nil
     state = load_state
     
     # return false if it's not the players turn
-    return false if session[:id] != state[:waiting_on]
+    return false if user_id != state[:waiting_on]
 
-    current_player_index = state[:players].find_index session[:id]
+    current_player_index = state[:players].find_index user_id
     
     # check if we are in bidding or playing a card
-    if state[:bids].include?(nil)
+    if !done_bidding? state
       # player is making a bid
-      bid = user_input
+      bid = user_input.to_i
       
       # dealer cannot bid the same amount as the number of cards dealt
-      total_bids = state[:bids].inject(:+)
+      total_bids = state[:bids].select { |bid| !bid.nil? }.inject(:+)
       num_cards_per_player = state[:total_rounds] - state[:rounds_played]
-      if state[:dealer] == session[:id] and total_bids + bid == num_cards_per_player
+      if state[:dealer] == user_id and total_bids + bid == num_cards_per_player
         return false
       end
       
       # record the bid
       state[:bids][current_player_index] = bid
 
-      if state[:dealer] == session[:id]
+      if state[:dealer] == user_id
         # dealer is last to bid
         # so now determine who bid the highest, since they are the
         # first to play a card
@@ -91,7 +91,7 @@ class Game < ActiveRecord::Base
         end
       else
         # set next player to bid
-        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+        state[:waiting_on] = state[:players][get_next_player(state[:waiting_on], state[:players])]
       end
 
     elsif not state[:player_hands][current_player_index].empty?
@@ -163,7 +163,7 @@ class Game < ActiveRecord::Base
         end
       else
         # set next player to play a card
-        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]   
+        state[:waiting_on] = state[:players][get_next_player(state[:waiting_on], state[:players])]
       end
     end
     
@@ -209,8 +209,16 @@ class Game < ActiveRecord::Base
     end
   end
 
+  # returns the index of the next player
   def get_next_player current_player, players
     return (players.find_index(current_player) + 1) % players.size
+  end
+
+  # return true or false if we're done bidding
+  # done bidding if there are the same number of valids bids
+  # as there are players in the game
+  def done_bidding? state
+    return (state[:bids].size == state[:players].size and not state[:bids].include?(nil))
   end
 end
 

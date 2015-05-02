@@ -30,9 +30,8 @@ class GamesController < ApplicationController
   def deal
     set_game
     state = @game.load_state
-    # game must have at least 3 players to start
-    if state[:players].size < 3
-      redirect_to @game, notice: 'Must have at least 3 players to start the game'
+    if state[:players].size < 3 or state[:players].size > 5
+      redirect_to @game, notice: 'Must have between 3 and 5 players'
       return
     end
     if state[:players].first == @_current_user
@@ -45,6 +44,33 @@ class GamesController < ApplicationController
       end
     else
       redirect_to @game, notice: 'Only the creator of the game can start it'
+    end
+  end
+
+  def player_action
+    set_game
+    state = @game.load_state
+
+    # player isnt allowed to do anything
+    if state[:waiting_on] != @_current_user
+      redirect_to @game, notice: 'Its not your turn'
+      return
+    end
+    
+    if params[:bid]
+      if @game.done_bidding? state
+        redirect_to @game, notice: 'Bidding is over'
+        return
+      else
+        if @game.player_action(@_current_user, params[:bid])
+          @game.save
+          redirect_to @game, notice: 'Placed bid!'
+        else
+          redirect_to @game, notice: "Can bid anything BUT #{params[:bid]}"
+        end
+      end
+    else
+      raise 'TODO: implement playing a card'
     end
   end
 
@@ -71,7 +97,7 @@ class GamesController < ApplicationController
       current_player_index = state[:players].index(@_current_user) || 99
       @waiting_on = (waiting_on_index < current_player_index) ? "Player #{waiting_on_index + 1}" : "Player#{waiting_on_index}"
       @waiting_on = 'YOU' if @_current_user == state[:waiting_on]
-      unless state[:bids].size == state[:players].size
+      unless @game.done_bidding? state
         @waiting_on += " (BIDDING)"
       end
     else
