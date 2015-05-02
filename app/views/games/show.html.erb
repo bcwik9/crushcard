@@ -208,7 +208,7 @@ function draw_card(suit, value, canvas){
 }
 
 window.onload = function(){
-    draw_card("club", 10, "trump");
+    draw_card("<%= @trump.suit %>", "<%= @trump.value %>", "trump");
 }
 </script>
 <%= javascript_include_tag "cards.js" %>

@@ -103,6 +103,9 @@ class GamesController < ApplicationController
     else
       @waiting_on = 'Game to start'
     end
+
+    # show ace of spades if game hasnt started
+    @trump = state[:trump_card] || Card.new('Spades', 12)
   end
 
   # GET /games/new
