@@ -153,16 +153,16 @@ function handleCardDrop( event, ui ) {
   Trump: <canvas id="trump" width="70" height="105" style="border:1px solid #000000;"></canvas> |
   Waiting on: <%= @waiting_on %>
   <br>
-  Player 2
+  <%= @names[1] %>
   <div class="row">
-    <div class="col-md-4" style="text-align:right; padding-top:200px;">Player 1</div>
+    <div class="col-md-4" style="text-align:right; padding-top:200px;"><%= @names[0] %></div>
     <div class="col-md-4"><div id="board" style="width:400px; height:400px; border:1px solid; margin:0 auto; background-color:green; position:relative;">
-	<div id="top" style="position:absolute; margin-left:auto; margin-right:auto; left:0; right:0;">top</div>
-	<div id="left" style="position:absolute; top:0; bottom:0; margin:auto;">left</div>
-	<div id="right" style="position:absolute; right:0; top:0; bottom:0; margin:auto;">right</div>
-	<div id="bottom" style="position:absolute; bottom:0; margin-left:auto; margin-right:auto; left:0; right:0;">bottom</div>
+	<div style="position:absolute; margin-left:auto; margin-right:auto; left:0; right:0;"><canvas id="top" width="70" height="100"></canvas></div>
+	<div style="position:absolute; top:0; bottom:0; margin:auto;"><canvas id="left" width="70" height="100"</canvas></div>
+	<div style="position:absolute; right:0; top:0; bottom:0; margin:auto;"><canvas id="right" width="70" height="100"</canvas></div>
+	<div style="position:absolute; bottom:0; margin-left:auto; margin-right:auto; left:0; right:0;"><canvas id="bottom" width="70" height="100"</canvas></div>
     </div></div>
-    <div class="col-md-4" style="text-align:left; padding-top:200px">Player 3</div>
+    <div class="col-md-4" style="text-align:left; padding-top:200px"><%= @names[2] ? "No player present" : @names[2] %></div>
   </div>
   <br>
   Your Cards
@@ -219,6 +219,18 @@ function draw_card(suit, value, canvas){
 
 window.onload = function(){
     draw_card("<%= @trump.suit %>", "<%= @trump.value %>", "trump");
+    <% unless @played_cards[0].nil? %>
+    draw_card("<%= @played_cards[0].suit %>", "<%= @played_cards[0].value %>", "bottom");
+    <% end %>
+    <% unless @played_cards[1].nil? %>
+    draw_card("<%= @played_cards[1].suit %>", "<%= @played_cards[1].value %>", "left");
+    <% end %>
+    <% unless @played_cards[2].nil? %>
+    draw_card("<%= @played_cards[2].suit %>", "<%= @played_cards[2].value %>", "top");
+    <% end %>
+    <% unless @played_cards[3].nil? %>
+    draw_card("<%= @played_cards[3].suit %>", "<%= @played_cards[3].value %>", "right");
+    <% end %>
 }
 </script>
 <%= javascript_include_tag "cards.js" %>

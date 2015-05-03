@@ -10,6 +10,7 @@ class Game < ActiveRecord::Base
     state[:player_hands] = []
     state[:score] = []
     state[:deck] = []
+    state[:names] = []
 
     state[:players].shuffle!
 

@@ -12,6 +12,11 @@ class GamesController < ApplicationController
             return
           end
           state[:players].push @_current_user
+          if state[:names].include? params[:username]
+            redirect_to @game, notice: 'That username is already taken'
+            return
+          end
+          state[:names].push params[:username]
           @game.save_state state
           if @game.save
             redirect_to @game, notice: 'Joined the game!'
@@ -92,12 +97,34 @@ class GamesController < ApplicationController
   # GET /games/1.json
   def show
     state = @game.load_state
+    
+    is_playing = state[:players].include?(@_current_user)
+    player_index = state[:players].index(@_current_user)
+
+    # names around the board
+    @names = state[:names]
+    if is_playing
+      # add names in different order so the user is always on the bottom
+      @names = []
+      @game.iterate_through_list_with_start_index(player_index+1, state[:names]) do |name|
+        # don't add the users name to the list
+        @names.push name unless name == state[:names][player_index]
+      end
+    end
+    
+    # cards that have been played
+    @played_cards = state[:cards_in_play]
+    if is_playing
+      # display cards in different order since the user is on the bottom
+      @played_cards = []
+      @game.iterate_through_list_with_start_index(player_index, state[:players]) do |player,i|
+        @played_cards.push state[:cards_in_play][i]
+      end
+    end
 
     # players hand
     @cards = []
-    if state[:players].include?(@_current_user)
-      player_index = state[:players].index(@_current_user)
-
+    if is_playing
       @cards = state[:player_hands][player_index] || @cards
 
       # can't play any cards unless it's your turn

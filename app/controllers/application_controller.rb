@@ -13,7 +13,7 @@ class ApplicationController < ActionController::Base
   # a Rails application; logging in sets the session value and
   # logging out removes it.
   def current_user
-    session[:id] ||= request.remote_ip.hash + rand(100)
+    session[:id] ||= request.remote_ip.hash + rand(1000)
     @_current_user = session[:id]
   end
 end
