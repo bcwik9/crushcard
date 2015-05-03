@@ -51,26 +51,34 @@ class GamesController < ApplicationController
     set_game
     state = @game.load_state
 
-    # player isnt allowed to do anything
+    # player isnt allowed to do anything if it's not their turn
     if state[:waiting_on] != @_current_user
-      redirect_to @game, notice: 'Its not your turn'
+      redirect_to @game, notice: "Dude... It's not your turn"
       return
     end
     
     if params[:bid]
+      # user is making a bid
       if @game.done_bidding? state
-        redirect_to @game, notice: 'Bidding is over'
+        redirect_to @game, notice: 'Bidding is over BRO'
         return
       else
         if @game.player_action(@_current_user, params[:bid])
           @game.save
-          redirect_to @game, notice: 'Placed bid!'
+          redirect_to @game, notice: 'Placed bid, YEAAA!'
         else
           redirect_to @game, notice: "Can bid anything BUT #{params[:bid]}"
         end
       end
     else
-      raise 'TODO: implement playing a card'
+      # user is playing a card
+      card = Card.new(params[:suit], params[:value])
+      if @game.player_action(@_current_user, card)
+        @game.save
+        redirect_to @game, notice: "Played a card, niceee!"
+      else
+        redirect_to @game, notice: "Nice try, but you have to play a #{state[:first_suit_played].chop.downcase}"
+      end
     end
   end
 
@@ -85,13 +93,17 @@ class GamesController < ApplicationController
   def show
     state = @game.load_state
 
+    # players hand
+    @cards = []
     if state[:players].include?(@_current_user)
       player_index = state[:players].index(@_current_user)
       @cards = state[:player_hands][player_index]
     end
     
+    # round number
     @round = state[:total_rounds] - state[:rounds_played]
 
+    # game status (ie. who we're waiting on)
     if state[:waiting_on]
       waiting_on_index = state[:players].index(state[:waiting_on])
       current_player_index = state[:players].index(@_current_user) || 99

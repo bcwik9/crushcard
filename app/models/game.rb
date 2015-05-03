@@ -44,7 +44,6 @@ class Game < ActiveRecord::Base
     # whatever suit is trump is valued higher than non-trump suits
     # an Ace as trump means there is "no trump"
     state[:trump_card] = state[:deck].slice! 0
-    trump = (state[:trump_card].value_name =~ /ace/i) ? nil : state[:trump_card].suit
 
     # set a few default values
     state[:cards_in_play] = []
@@ -99,20 +98,20 @@ class Game < ActiveRecord::Base
       card = user_input
       
       # ensure that the card is in their inventory
-      return false unless state[:player_hands][current_player_index].include? card
+      return false unless state[:player_hands][current_player_index].any? { |player_card| player_card == card }
 
       # ensure that the card is actually playable
       state[:first_suit_played] ||= card.suit
-      playable_cards = get_playable_cards state[:first_suit_played], state[:player_hands][current_player_index]
-      return false unless state[:player_hands][current_player_index].include? card
+      playable_cards = get_playable_cards(state[:first_suit_played], state[:player_hands][current_player_index])
+      return false unless playable_cards.include? card
       
       # actually play the card
       state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
 
       # check to see if all players have played a card
-      if not state[:cards_in_play].include?(nil)
+      if all_players_played_a_card?(state)
         # determine who won the trick
-        highest_card = get_highest_card(state[:cards_in_play], state[:trump_card].suit, current_player_index+1)
+        highest_card = get_highest_card(state[:cards_in_play], state[:first_suit_played], state[:trump_card], current_player_index+1)
         winner_index = state[:cards_in_play].find_index(highest_card)
         state[:tricks_taken][winner_index] ||= []
         state[:tricks_taken][winner_index].push state[:cards_in_play]
@@ -179,15 +178,23 @@ class Game < ActiveRecord::Base
     self.state = state.to_yaml
   end
 
-  def get_highest_card cards, trump, start_index
+  def get_highest_card cards, first_suit_played, trump, start_index
     return cards.first if cards.size <= 1
 
-    trump_cards = cards.select { |c| c.suit == trump }
-    card_set = trump_cards.empty? ? cards : trump_cards
-    highest_value = card_set.max
-    iterate_through_list_with_start_index(start_index, card_set) do |card|
-      return card if card.value == highest_value
-    end
+    # if trump was played, ignore other cards
+    # an ace indicates no trump, so ignore it if that's the case
+    trump_cards = (trump.suit =~ /ace/i) ? [] : cards.select { |c| c.suit == trump }
+
+    # if trump wasn't played or there is no trump (ace),
+    # only cards that are the same suit as the first card played matter
+    same_suit_cards = cards.select { |c| c.suit == first_suit_played }
+    card_set = trump_cards.empty? ? same_suit_cards : trump_cards
+    
+    # now simply get the highest card left
+    return card_set.max
+    #iterate_through_list_with_start_index(start_index, card_set) do |card|
+    #  return card if card.value == highest_value
+    #end
   end
   
   def get_playable_cards first_suit_played, cards
@@ -214,11 +221,21 @@ class Game < ActiveRecord::Base
     return (players.find_index(current_player) + 1) % players.size
   end
 
+  # returns true if the input array is the same size as the number of
+  # players we have, and doesn't include nil
+  def player_size_and_nil_check arr, state
+    return (arr.size == state[:players].size and not arr.include?(nil))
+  end
+
   # return true or false if we're done bidding
   # done bidding if there are the same number of valids bids
   # as there are players in the game
   def done_bidding? state
-    return (state[:bids].size == state[:players].size and not state[:bids].include?(nil))
+    return player_size_and_nil_check(state[:bids], state)
+  end
+
+  def all_players_played_a_card? state
+    return player_size_and_nil_check(state[:cards_in_play], state)
   end
 end
 
@@ -231,7 +248,7 @@ class Card
   # create a single card
   def initialize suit, value
     raise 'Invalid card suit' unless SUITS.include? suit
-    raise 'Invalid card value' unless value >= 0 and value < 13
+    raise 'Invalid card value' unless value.to_i >= 0 and value.to_i < 13
     @suit = suit
     @value = value
   end
@@ -242,11 +259,17 @@ class Card
   end
   
   def <=> other
-    @value <=> other.value
+    return 1 if other.nil?
+    return 0 if @value.nil? and other.value.nil?
+    return 1 if other.value.nil?
+    return -1 if @value.nil?
+    @value.to_i <=> other.value.to_i
   end
 
   def == other
-    return (@value == other.value and @suit == other.suit)
+    return false if other.nil?
+    return false if (@value.nil? or other.value.nil?) and @value != other.value
+    return (@value.to_i == other.value.to_i and @suit == other.suit)
   end
 
   # creates a standard deck of 52 cards, Ace high

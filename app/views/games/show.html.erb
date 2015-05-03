@@ -24,7 +24,7 @@ function init() {
   var numbers = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
   numbers.sort( function() { return Math.random() - .5 } );
  
-  for ( var i=0; i<10; i++ ) {
+  for ( var i=0; i<<%= @cards.size %>; i++ ) {
     $("#card"+i).data( 'number', numbers[i] ).draggable( {
       containment: '#board-wrapper',
       stack: '#cardPile div',
@@ -60,6 +60,9 @@ function testDrop(event, ui) {
     $(this).droppable( 'disable' );
     ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
     ui.draggable.draggable( 'option', 'revert', false );
+    var cardSuit = ui.draggable.context.children[0].dataset.suit;
+    var cardValue = ui.draggable.context.children[0].dataset.value;
+    $.ajax({url: "<%= games_player_action_path %>", type: "POST", data: {id: <%= params[:id] %>, suit: cardSuit, value: cardValue}});
 }
 
 function handleCardDrop( event, ui ) {
@@ -157,7 +160,7 @@ function handleCardDrop( event, ui ) {
   <br>
   Your Cards
   <div id="cardPile"> 
-    <% if @cards and not @cards.empty? %>
+    <% unless @cards.empty? %>
     <% @cards.each_with_index do |card,i| %>
     <div id="<%= "card#{i}" %>">
       <canvas id="<%= "canv#{i}" %>" width="70" height="100" data-suit="<%= card.suit %>" data-value="<%= card.value %>"></canvas>
