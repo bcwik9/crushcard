@@ -97,7 +97,19 @@ class GamesController < ApplicationController
     @cards = []
     if state[:players].include?(@_current_user)
       player_index = state[:players].index(@_current_user)
-      @cards = state[:player_hands][player_index]
+
+      @cards = state[:player_hands][player_index] || @cards
+
+      # can't play any cards unless it's your turn
+      playable_cards = []
+      if state[:waiting_on] == @_current_user
+        playable_cards = @game.get_playable_cards(state[:first_suit_played], state[:player_hands][player_index])
+      end
+      @cards.each do |card|
+        if playable_cards.include? card
+          card.playable = true
+        end
+      end
     end
     
     # round number

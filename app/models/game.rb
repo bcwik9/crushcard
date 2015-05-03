@@ -243,7 +243,7 @@ class Card
   include Comparable
   
   SUITS = %w{Spades Hearts Diamonds Clubs}
-  attr_accessor :suit, :value
+  attr_accessor :suit, :value, :playable
 
   # create a single card
   def initialize suit, value

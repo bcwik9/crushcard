@@ -55,6 +55,13 @@ function init() {
 }
 
 function testDrop(event, ui) {
+    // only accept playable cards
+    var cardIsPlayable = ui.draggable.context.children[0].dataset.playable;
+    if(!(/true/i).test(cardIsPlayable)) {
+      alert("C'mon man, you can't play this card! Try another!");
+      return;
+    }
+
     ui.draggable.addClass( 'correct' );
     ui.draggable.draggable( 'disable' );
     $(this).droppable( 'disable' );
@@ -163,7 +170,7 @@ function handleCardDrop( event, ui ) {
     <% unless @cards.empty? %>
     <% @cards.each_with_index do |card,i| %>
     <div id="<%= "card#{i}" %>">
-      <canvas id="<%= "canv#{i}" %>" width="70" height="100" data-suit="<%= card.suit %>" data-value="<%= card.value %>"></canvas>
+      <canvas id="<%= "canv#{i}" %>" width="70" height="100" data-suit="<%= card.suit %>" data-value="<%= card.value %>" data-playable="<%= card.playable %>" ></canvas>
     </div>
     <% end %>
     <% end %>
