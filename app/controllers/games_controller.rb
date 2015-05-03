@@ -12,9 +12,9 @@ class GamesController < ApplicationController
             return
           end
           state[:players].push @_current_user
-          if state[:names].include? params[:username]
-            redirect_to @game, notice: 'That username is already taken'
-            return
+          while state[:names].include? params[:username]
+            # make sure username is unique by appending random numbers
+            params[:username] += rand(10).to_s
           end
           state[:names].push params[:username]
           @game.save_state state
@@ -99,6 +99,7 @@ class GamesController < ApplicationController
     state = @game.load_state
     
     is_playing = state[:players].include?(@_current_user)
+    game_started = !state[:bids].nil?
     player_index = state[:players].index(@_current_user)
 
     # names around the board
@@ -114,7 +115,7 @@ class GamesController < ApplicationController
     
     # cards that have been played
     @played_cards = state[:cards_in_play]
-    if is_playing
+    if game_started and is_playing
       # display cards in different order since the user is on the bottom
       @played_cards = []
       @game.iterate_through_list_with_start_index(player_index, state[:players]) do |player,i|

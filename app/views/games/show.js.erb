@@ -1,2 +1,40 @@
-alert("show.js is working!");
+// update basic game status
+$('#game-stat').html("<%= j render 'game_status' %>");
+draw_card("<%= @trump.suit %>", "<%= @trump.value %>", "trump");
+
+// update the game display
+$('#board-info').html("<%= j render 'board_info' %>");
+$('#bottom').droppable( {
+    accept: '#cardPile div',
+    hoverClass: 'hovered',
+    drop: testDrop
+} );
+<% if @played_cards and not @played_cards[0].nil? %>
+draw_card("<%= @played_cards[0].suit %>", "<%= @played_cards[0].value %>", "bottom");
+<% end %>
+<% if @played_cards and not @played_cards[1].nil? %>
+draw_card("<%= @played_cards[1].suit %>", "<%= @played_cards[1].value %>", "left");
+<% end %>
+<% if @played_cards and not @played_cards[2].nil? %>
+draw_card("<%= @played_cards[2].suit %>", "<%= @played_cards[2].value %>", "top");
+<% end %>
+<% if @played_cards and not @played_cards[3].nil? %>
+draw_card("<%= @played_cards[3].suit %>", "<%= @played_cards[3].value %>", "right");
+<% end %>
+
+// update users hand
+$('#cardPile').html("<%= j render 'card_pile' %>");
+  for ( var i=0; i<<%= @cards.size %>; i++ ) {
+    $("#card"+i).draggable( {
+      containment: '#board-wrapper',
+      stack: '#cardPile div',
+      cursor: 'move',
+      revert: true
+    } );
+    var currentCanvas = document.getElementById("canv"+i);
+    draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
+  }
+
+
+// continue polling
 GamePoller.poll();
