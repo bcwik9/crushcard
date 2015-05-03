@@ -157,6 +157,12 @@ class GamesController < ApplicationController
 
     # show ace of spades if game hasnt started
     @trump = state[:trump_card] || Card.new('Spades', 12)
+    
+    # make sure show.js.erb is executed in the views folder
+    respond_to do |format|
+      format.js
+      format.html
+    end
   end
 
   # GET /games/new
