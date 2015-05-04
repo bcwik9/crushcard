@@ -184,7 +184,7 @@ class Game < ActiveRecord::Base
 
     # if trump was played, ignore other cards
     # an ace indicates no trump, so ignore it if that's the case
-    trump_cards = (trump.suit =~ /ace/i) ? [] : cards.select { |c| c.suit == trump }
+    trump_cards = (trump.suit =~ /ace/i) ? [] : cards.select { |c| c.suit == trump.suit }
 
     # if trump wasn't played or there is no trump (ace),
     # only cards that are the same suit as the first card played matter
