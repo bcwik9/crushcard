@@ -8,7 +8,7 @@ class GamesController < ApplicationController
       if state[:players].size < 5
         unless state[:players].include?(@_current_user)
           if state[:cards_in_play]
-            redirect_to @game, notice: 'Cant join once game has already started'
+            redirect_to @game, notice: 'Cant join once the game has already started'
             return
           end
           state[:players].push @_current_user
@@ -24,7 +24,7 @@ class GamesController < ApplicationController
             redirect_to @game, notice: 'Failed to join the game'
           end
         else
-          redirect_to @game, notice: 'Player is already in game'
+          redirect_to @game, notice: 'Youre already in the game'
         end
       else
         redirect_to @game, notice: 'There are too many players in the game already'
@@ -36,7 +36,7 @@ class GamesController < ApplicationController
     set_game
     state = @game.load_state
     if state[:players].size < 3 or state[:players].size > 5
-      redirect_to @game, notice: 'Must have between 3 and 5 players'
+      redirect_to @game, notice: 'Must have between 3 and 5 players to start'
       return
     end
     if state[:players].first == @_current_user

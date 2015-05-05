@@ -36,5 +36,7 @@ $('#cardPile').html("<%= j render 'card_pile' %>");
   }
 
 
-// continue polling
+// continue polling unless we're waiting on the player to play a card
+<% unless @waiting_on == 'YOU' %>
 GamePoller.poll();
+<% end %>
