@@ -136,7 +136,8 @@ class Game < ActiveRecord::Base
             else
               player_score = tricks.size + 10
             end
-            state[:score].push player_score
+            state[:score][i] ||= []
+            state[:score][i].push player_score
           end
         
           # check to see if that was the last round (game over)
@@ -148,6 +149,8 @@ class Game < ActiveRecord::Base
               player_score = score.inject :+ # add up score from each round
               if highest_score.nil? or player_score >= highest_score
                 highest_score = player_score
+                # clear winners list if there's a new high score
+                # winners list is necessary since there can be ties
                 state[:winners].clear if player_score > highest_score
                 state[:winners].push state[:players][i]
               end

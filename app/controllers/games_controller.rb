@@ -100,21 +100,29 @@ class GamesController < ApplicationController
     
     is_playing = state[:players].include?(@_current_user)
     game_started = !state[:bids].nil?
-    player_index = state[:players].index(@_current_user)
+    player_index = state[:players].index(@_current_user) || 0
 
-    # names around the board
-    @names = state[:names]
-    if is_playing
-      # add names in different order so the user is always on the bottom
-      @names = []
-      @game.iterate_through_list_with_start_index(player_index, state[:names]) do |name|
-        @names.push name
+    # round number
+    @round = state[:total_rounds] - state[:rounds_played]
+
+    # names/scores around the board
+    # add in different order so the user is always on the bottom
+    @names = []
+    @round_scores = []
+    @game.iterate_through_list_with_start_index(player_index, state[:names]) do |name, i|
+      tricks_taken = (state[:tricks_taken] and state[:tricks_taken][i]) ? state[:tricks_taken][i].size : 0
+      bid = (state[:bids] and state[:bids][i]) ? state[:bids][i] : 'No bid yet'
+      score = 0
+      if state[:score] and state[:score][i]
+        score = state[:score][i].inject :+
       end
+      @names.push name
+      @round_scores.push (name.nil?) ? nil : "Tricks taken: #{tricks_taken} | Bid: #{bid} | Score: #{score}"
     end
     
     # cards that have been played
     @played_cards = state[:cards_in_play]
-    if game_started and is_playing
+    if game_started
       # display cards in different order since the user is on the bottom
       @played_cards = []
       @game.iterate_through_list_with_start_index(player_index, state[:players]) do |player,i|
@@ -139,14 +147,10 @@ class GamesController < ApplicationController
       end
     end
     
-    # round number
-    @round = state[:total_rounds] - state[:rounds_played]
-
     # game status (ie. who we're waiting on)
     if state[:waiting_on]
       waiting_on_index = state[:players].index(state[:waiting_on])
-      current_player_index = state[:players].index(@_current_user) || 99
-      @waiting_on = (waiting_on_index < current_player_index) ? "Player #{waiting_on_index + 1}" : "Player#{waiting_on_index}"
+      @waiting_on = state[:names][waiting_on_index]
       @waiting_on = 'YOU' if @_current_user == state[:waiting_on]
       unless @game.done_bidding? state
         @waiting_on += " (BIDDING)"
@@ -154,7 +158,7 @@ class GamesController < ApplicationController
     else
       @waiting_on = 'Game to start'
     end
-
+  
     # show ace of spades if game hasnt started
     @trump = state[:trump_card] || Card.new('Spades', 12)
     
