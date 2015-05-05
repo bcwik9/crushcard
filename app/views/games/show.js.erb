@@ -37,6 +37,8 @@ $('#cardPile').html("<%= j render 'card_pile' %>");
 
 
 // continue polling unless we're waiting on the player to play a card
-<% unless @waiting_on == 'YOU' %>
+<% if @waiting_on != 'YOU' %>
 GamePoller.poll();
+<% else %>
+alert('Its your turn, play a card by dragging it!');
 <% end %>

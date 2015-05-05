@@ -113,17 +113,17 @@ function handleCardDrop( event, ui ) {
 <p id="notice"><%= notice %></p>
 
 <p>
-  <strong>Name:</strong>
-  <%= @game.name %>
+<!--  <strong>Name:</strong>
+  <%= @game.name %> -->
 </p>
 <p>
-  <strong>State:</strong>
-  <%= @game.state %>
+  <!-- <strong>State:</strong>
+  <%= @game.state %> -->
 </p>
 
 <!-- join game form -->
-<%= link_to 'Edit', edit_game_path(@game) %> |
-<%= link_to 'Back', games_path %>
+<!-- <%= link_to 'Edit', edit_game_path(@game) %> | -->
+<!-- <%= link_to 'Back', games_path %> -->
 <%= form_tag(games_add_player_path) do %>
 <%= hidden_field_tag(:id, params[:id]) %>
 <div class="input-group" style="width:340px;">
