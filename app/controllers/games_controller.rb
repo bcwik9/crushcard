@@ -107,9 +107,8 @@ class GamesController < ApplicationController
     if is_playing
       # add names in different order so the user is always on the bottom
       @names = []
-      @game.iterate_through_list_with_start_index(player_index+1, state[:names]) do |name|
-        # don't add the users name to the list
-        @names.push name unless name == state[:names][player_index]
+      @game.iterate_through_list_with_start_index(player_index, state[:names]) do |name|
+        @names.push name
       end
     end
     
