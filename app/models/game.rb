@@ -270,6 +270,10 @@ class Card
     return -1 if @value.nil?
     @value.to_i <=> other.value.to_i
   end
+  
+  def suit_order other
+    return SUITS.index( @suit ) <=> SUITS.index( other.suit ) or <=> other
+  end
 
   def == other
     return false if other.nil?
