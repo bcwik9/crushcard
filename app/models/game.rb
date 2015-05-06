@@ -272,7 +272,11 @@ class Card
   end
   
   def suit_order other
-    return SUITS.index( @suit ) <=> SUITS.index( other.suit ) or <=> other
+    if @suit != other.suit
+      SUITS.index( @suit ) <=> SUITS.index( other.suit )
+    else
+      @value <=> other.value
+    end
   end
 
   def == other
