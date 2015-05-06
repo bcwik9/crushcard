@@ -263,6 +263,9 @@ class Card
     return card_names[value]
   end
   
+  def display_name
+    return ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'][value]
+  
   def <=> other
     return 1 if other.nil?
     return 0 if @value.nil? and other.value.nil?
