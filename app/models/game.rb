@@ -275,14 +275,6 @@ class Card
     @value.to_i <=> other.value.to_i
   end
 
-  def suit_order other
-    if @suit != other.suit
-      SUITS.index( @suit ) <=> SUITS.index( other.suit )
-    else
-      @value <=> other.value
-    end
-  end
-
   def == other
     return false if other.nil?
     return false if (@value.nil? or other.value.nil?) and @value != other.value

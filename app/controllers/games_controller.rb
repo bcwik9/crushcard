@@ -146,7 +146,7 @@ class GamesController < ApplicationController
         end
       end
     end
-    @cards.sort! { |a,b| a.suit_order b }
+    @cards.sort!
     
     # game status (ie. who we're waiting on)
     if state[:waiting_on]
