@@ -184,7 +184,7 @@ function draw_card(suit, value, canvas){
 
 
     context.font = "20pt c";
-    context.fillText(value, canvas.width/2-8, canvas.height/2+5);
+    context.fillText(value, canvas.width/2-8*value.length, canvas.height/2+5);
 
     if((/spade/i).test(suit)){
       drawSpade(context, (suit_width/2+5), 0, suit_width, suit_height);

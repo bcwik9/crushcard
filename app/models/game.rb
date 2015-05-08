@@ -263,20 +263,16 @@ class Card
     return card_names[value]
   end
   
+  def display_name
+    return ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'][value]
+  end
+
   def <=> other
     return 1 if other.nil?
     return 0 if @value.nil? and other.value.nil?
     return 1 if other.value.nil?
     return -1 if @value.nil?
     @value.to_i <=> other.value.to_i
-  end
-
-  def suit_order other
-    if @suit != other.suit
-      SUITS.index( @suit ) <=> SUITS.index( other.suit )
-    else
-      @value <=> other.value
-    end
   end
 
   def == other

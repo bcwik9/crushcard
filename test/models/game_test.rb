@@ -16,37 +16,10 @@ class GameTest < ActiveSupport::TestCase
     }
   end
 
-  test "suit_order defines a suit order" do
-    s3 = Card.new "Spades", 3
-    h2 = Card.new "Hearts", 2
-    d1 = Card.new "Diamonds", 1
-    c0 = Card.new "Clubs", 0
-    assert_equal 0, s3.suit_order( s3 )
-    assert_equal -1, s3.suit_order( h2 )
-    assert_equal 1, d1.suit_order( h2 )
-    assert_equal -1, d1.suit_order( c0 )
-  end
-
-  test "suit_order falls back to value" do
-    s0 = Card.new "Spades", 0
-    s1 = Card.new "Spades", 1
-    s2 = Card.new "Spades", 2
-    s3 = Card.new "Spades", 3
-    assert_equal 0, s0.suit_order( s0 )
-    assert_equal -1, s0.suit_order( s1 )
-    assert_equal 1, s2.suit_order( s1 )
-    assert_equal -1, s2.suit_order( s3 )
-  end
-
-  test "can sort using suit_order" do
-    s3 = Card.new "Spades", 3
-    h2 = Card.new "Hearts", 2
-    d1 = Card.new "Diamonds", 1
-    c0 = Card.new "Clubs", 0
-
-    hand = [ c0, d1, h2, s3 ]
-    hand.sort! { |a,b| a.suit_order b }
-
-    assert_equal [ s3, h2, d1, c0 ], hand
+  test "display_name works for face cards" do
+    assert_equal "J", Card.new( "Spades", 9 ).display_name
+    assert_equal "Q", Card.new( "Spades", 10 ).display_name
+    assert_equal "K", Card.new( "Spades", 11 ).display_name
+    assert_equal "A", Card.new( "Spades", 12 ).display_name
   end
 end
