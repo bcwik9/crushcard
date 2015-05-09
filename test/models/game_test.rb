@@ -49,11 +49,4 @@ class GameTest < ActiveSupport::TestCase
 
     assert_equal [ s3, h2, d1, c0 ], hand
   end
-
-  test "display_name works for face cards" do
-    assert_equal "J", Card.new( "Spades", 9 ).display_name
-    assert_equal "Q", Card.new( "Spades", 10 ).display_name
-    assert_equal "K", Card.new( "Spades", 11 ).display_name
-    assert_equal "A", Card.new( "Spades", 12 ).display_name
-  end
 end
