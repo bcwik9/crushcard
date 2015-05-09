@@ -1,7 +1,7 @@
     <% unless @cards.empty? %>
     <% @cards.each_with_index do |card,i| %>
     <div id="<%= "card#{i}" %>">
-      <canvas id="<%= "canv#{i}" %>" width="70" height="100" data-suit="<%= card.suit %>" data-value="<%= card.value %>" data-playable="<%= card.playable %>" ></canvas>
+      <canvas id="<%= "canv#{i}" %>" width="70" height="100" data-suit="<%= card.suit %>" data-value="<%= card.abbreviated_name %>" data-playable="<%= card.playable %>" data-actualvalue="<%= card.value %>" ></canvas>
     </div>
     <% end %>
     <% end %>

@@ -260,7 +260,11 @@ class Card
 
   def value_name
     card_names = %w[Two Three Four Five Six Seven Eight Nine Ten Jack Queen King Ace]
-    return card_names[value]
+    return card_names[@value]
+  end
+
+  def abbreviated_name
+    %w[2 3 4 5 6 7 8 9 10 J Q K A][@value]
   end
   
   def <=> other

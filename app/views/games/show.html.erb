@@ -68,7 +68,7 @@ function testDrop(event, ui) {
     ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
     ui.draggable.draggable( 'option', 'revert', false );
     var cardSuit = ui.draggable.context.children[0].dataset.suit;
-    var cardValue = ui.draggable.context.children[0].dataset.value;
+    var cardValue = ui.draggable.context.children[0].dataset.actualvalue;
     $.ajax({url: "<%= games_player_action_path %>", type: "POST", data: {id: <%= params[:id] %>, suit: cardSuit, value: cardValue}});
 }
 
@@ -205,18 +205,18 @@ function draw_card(suit, value, canvas){
 }
 
 window.onload = function(){
-    draw_card("<%= @trump.suit %>", "<%= @trump.value %>", "trump");
+    draw_card("<%= @trump.suit %>", "<%= @trump.abbreviated_name %>", "trump");
     <% if @played_cards and not @played_cards[0].nil? %>
-    draw_card("<%= @played_cards[0].suit %>", "<%= @played_cards[0].value %>", "bottom");
+    draw_card("<%= @played_cards[0].suit %>", "<%= @played_cards[0].abbreviated_name %>", "bottom");
     <% end %>
     <% if @played_cards and not @played_cards[1].nil? %>
-    draw_card("<%= @played_cards[1].suit %>", "<%= @played_cards[1].value %>", "left");
+    draw_card("<%= @played_cards[1].suit %>", "<%= @played_cards[1].abbreviated_name %>", "left");
     <% end %>
     <% if @played_cards and not @played_cards[2].nil? %>
-    draw_card("<%= @played_cards[2].suit %>", "<%= @played_cards[2].value %>", "top");
+    draw_card("<%= @played_cards[2].suit %>", "<%= @played_cards[2].abbreviated_name %>", "top");
     <% end %>
     <% if @played_cards and not @played_cards[3].nil? %>
-    draw_card("<%= @played_cards[3].suit %>", "<%= @played_cards[3].value %>", "right");
+    draw_card("<%= @played_cards[3].suit %>", "<%= @played_cards[3].abbreviated_name %>", "right");
     <% end %>
 }
 </script>
