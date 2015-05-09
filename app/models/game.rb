@@ -2,20 +2,14 @@ class Game < ActiveRecord::Base
   require 'yaml'
   before_save :state_data
 
+  def has_player?(player_id)
+  end
 
   def waiting_for_players?
     state_data[:current_status] == :waiting_for_players
   end
 
   def set_up
-    data = state_data
-    data[:total_rounds] = 10
-    data[:rounds_played] = 0
-    data[:player_hands] = []
-    data[:score] = []
-    data[:deck] = []
-    data[:names] = []
-    data[:players].shuffle!
     save_state
   end
   
@@ -181,7 +175,17 @@ class Game < ActiveRecord::Base
     current_time = self.updated_at || self.created_at 
     @state_read_at ||= current_time
     if @state_data.nil? || (@state_read_at && current_time > @state_read_at)
-      self.state = { current_status: :waiting_for_players, players: [] }.to_yaml if self.state.nil?
+      if self.state.nil?
+        self.state = { 
+          current_status: :waiting_for_players, 
+          total_rounds: 10,
+          rounds_played: 0,
+          player_hands: [],
+          score: [],
+          deck: [],
+          names: []
+        }.to_yaml 
+      end
       @state_data = load_state
     end
     @state_data

@@ -1,10 +1,7 @@
 class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
-
   def add_player
-    unless current_user.nil?
-      set_game
       state = @game.load_state
       if state[:players].size < 5
         unless state[:players].include?(current_user)
@@ -30,7 +27,6 @@ class GamesController < ApplicationController
       else
         redirect_to @game, notice: 'There are too many players in the game already'
       end
-    end
   end
   
   def deal

@@ -116,23 +116,19 @@ function handleCardDrop( event, ui ) {
 <!--  <strong>Name:</strong>
   <%= @game.name %> -->
 </p>
-<p>
-  <!-- <strong>State:</strong>
-  <%= @game.state %> -->
-</p>
-
 <!-- join game form -->
-<!-- <%= link_to 'Edit', edit_game_path(@game) %> | -->
-<!-- <%= link_to 'Back', games_path %> -->
-<%= form_tag(games_add_player_path) do %>
-<%= hidden_field_tag(:id, params[:id]) %>
-<div class="input-group" style="width:340px;">
-<%= text_field_tag("username", "Username", class: "form-control input-lg") %>
-<span class="input-group-btn">
-  <%= button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary") %>
-</span>
-</div>
+<% unless @game.waiting_for_players? && ! @game.has_player?(current_user) %>
+  <%= form_tag(games_add_player_path) do %>
+    <%= hidden_field_tag(:id, params[:id]) %>
+    <div class="input-group" style="width:340px;">
+      <%= text_field_tag("username", "", placeholder: "Player Name", class: "form-control input-lg") %>
+      <span class="input-group-btn">
+        <%= button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary") %>
+      </span>
+    </div>
+  <% end %>
 <% end %>
+
 <br>
 <!-- deal button -->
 <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
