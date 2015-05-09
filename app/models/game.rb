@@ -4,9 +4,12 @@ class Game < ActiveRecord::Base
   before_save :default_values
 
   def default_values
-    self.state ||= {
-      current_status: :waiting_for_players
-    }.to_yaml
+    state_data.reverse_merge current_status: :waiting_for_players
+    save_state
+  end
+
+  def waiting_for_players?
+    state_data[:current_status] == :waiting_for_players
   end
 
   def set_up
@@ -19,7 +22,7 @@ class Game < ActiveRecord::Base
     data[:deck] = []
     data[:names] = []
     data[:players].shuffle!
-    save_state state
+    save_state
   end
   
   def deal_cards state
@@ -189,7 +192,7 @@ class Game < ActiveRecord::Base
   end
 
   def load_state
-    return YAML.load(self.state)
+    return self.state.nil? ? Hash.new : YAML.load(self.state)
   end
   
   def save_state(state = state_data)

@@ -1,38 +1,38 @@
 <div class="container-fluid">
-<h1>Crush, The Card Game</h1>
+  <h1>Crush, The Card Game</h1>
 
-<div class=>
-  <button type="button" class="btn btn-success">
+  <div class="btn btn-success">
     <%= link_to 'Start a New Game', new_game_path %>
-  </button>
-</p>
+  </div>
 
-<p>
-<% if @_current_user %>
-  Your Current User: <%= @_current_user %>
-<% end %>
-</p>
+  <p>
+  <% if @_current_user %>
+    Your Current User: <%= @_current_user %>
+  <% end %>
+  </p>
 
-<h3>Current Games</h3>
+  <h3>Current Games</h3>
 
-<table class="table">
-  <thead class="" >
-    <tr>
-      <th>Name</th>
-      <th>Round</th>
-      <th colspan="3"></th>
-    </tr>
-  </thead>
+  <table class="table">
+    <thead >
+      <tr>
+        <th>Game Name</th>
+        <th>Round</th>
+        <th>Join</th>
+      </tr>
+    </thead>
 
-  <tbody class="table-striped">
-  <% @games.order(:updated_at).each do |game| %>
-    <tr>
+    <tbody class="table-striped">
+    <% @games.order(:updated_at).each do |game| %>
+      <tr>
       <td><%= game.name %></td>
       <td><%= "#{10 - game.state_data[:rounds_played]}" %></td>
-      <td><%= link_to('Join', game, data: { no_turbolink: true }) %></td>
+      <% label = game.waiting_for_players? ? "Join Game" : "Game Started Already" %>
+      <% label_class = game.waiting_for_players? ? "btn-success" : "btn-info" %>
+      <td><div class="btn <%= label_class %>" ><%= link_to(label, game, data: { no_turbolink: true }) %></div></td>
     </tr>
   <% end %>
-  </tbody>
-</table>
+    </tbody>
+  </table>
 
 </div>
