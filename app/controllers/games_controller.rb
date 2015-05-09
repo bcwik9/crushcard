@@ -1,6 +1,7 @@
 class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
+
   def add_player
     unless current_user.nil?
       set_game
@@ -99,6 +100,7 @@ class GamesController < ApplicationController
     state = @game.load_state
     
     is_playing = state[:players].include?(current_user)
+
     game_started = !state[:bids].nil?
     player_index = state[:players].index(current_user) || 0
 

@@ -1,5 +1,7 @@
 class Game < ActiveRecord::Base
   require 'yaml'
+  before_save :state_data
+
 
   def waiting_for_players?
     state_data[:current_status] == :waiting_for_players
@@ -7,10 +9,8 @@ class Game < ActiveRecord::Base
 
   def set_up
     data = state_data
-    data[:current_status] ||= :waiting_for_players
     data[:total_rounds] = 10
     data[:rounds_played] = 0
-    data[:players] = []
     data[:player_hands] = []
     data[:score] = []
     data[:deck] = []
@@ -178,9 +178,10 @@ class Game < ActiveRecord::Base
   end
   
   def state_data
-    @state_read_at ||= self.updated_at || self.created_at
     current_time = self.updated_at || self.created_at 
-    if @data_data.nil? || current_time > @state_read_at
+    @state_read_at ||= current_time
+    if @state_data.nil? || (@state_read_at && current_time > @state_read_at)
+      self.state = { current_status: :waiting_for_players, players: [] }.to_yaml if self.state.nil?
       @state_data = load_state
     end
     @state_data
