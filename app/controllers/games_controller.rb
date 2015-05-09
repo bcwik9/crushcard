@@ -2,16 +2,16 @@ class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
   def add_player
-    unless @_current_user.nil?
+    unless current_user.nil?
       set_game
       state = @game.load_state
       if state[:players].size < 5
-        unless state[:players].include?(@_current_user)
+        unless state[:players].include?(current_user)
           if state[:cards_in_play]
             redirect_to @game, notice: 'Cant join once the game has already started'
             return
           end
-          state[:players].push @_current_user
+          state[:players].push current_user
           while state[:names].include? params[:username]
             # make sure username is unique by appending random numbers
             params[:username] += rand(10).to_s
@@ -39,7 +39,7 @@ class GamesController < ApplicationController
       redirect_to @game, notice: 'Must have between 3 and 5 players to start'
       return
     end
-    if state[:players].first == @_current_user
+    if state[:players].first == current_user
       if state[:cards_in_play].nil?
         @game.save_state @game.deal_cards(state)
         @game.save
@@ -57,7 +57,7 @@ class GamesController < ApplicationController
     state = @game.load_state
 
     # player isnt allowed to do anything if it's not their turn
-    if state[:waiting_on] != @_current_user
+    if state[:waiting_on] != current_user
       redirect_to @game, notice: "Dude... It's not your turn"
       return
     end
@@ -68,7 +68,7 @@ class GamesController < ApplicationController
         redirect_to @game, notice: 'Bidding is over BRO'
         return
       else
-        if @game.player_action(@_current_user, params[:bid])
+        if @game.player_action(current_user, params[:bid])
           @game.save
           redirect_to @game, notice: 'Placed bid, YEAAA!'
         else
@@ -78,7 +78,7 @@ class GamesController < ApplicationController
     else
       # user is playing a card
       card = Card.new(params[:suit], params[:value])
-      if @game.player_action(@_current_user, card)
+      if @game.player_action(current_user, card)
         @game.save
         redirect_to @game, notice: "Played a card, niceee!"
       else
@@ -98,9 +98,9 @@ class GamesController < ApplicationController
   def show
     state = @game.load_state
     
-    is_playing = state[:players].include?(@_current_user)
+    is_playing = state[:players].include?(current_user)
     game_started = !state[:bids].nil?
-    player_index = state[:players].index(@_current_user) || 0
+    player_index = state[:players].index(current_user) || 0
 
     # round number
     @round = state[:total_rounds] - state[:rounds_played]
@@ -137,7 +137,7 @@ class GamesController < ApplicationController
 
       # can't play any cards unless it's your turn
       playable_cards = []
-      if state[:waiting_on] == @_current_user
+      if state[:waiting_on] == current_user
         playable_cards = @game.get_playable_cards(state[:first_suit_played], state[:player_hands][player_index])
       end
       @cards.each do |card|
@@ -152,7 +152,7 @@ class GamesController < ApplicationController
     if state[:waiting_on]
       waiting_on_index = state[:players].index(state[:waiting_on])
       @waiting_on = state[:names][waiting_on_index]
-      @waiting_on = 'YOU' if @_current_user == state[:waiting_on]
+      @waiting_on = 'YOU' if current_user == state[:waiting_on]
       unless @game.done_bidding? state
         @waiting_on += " (BIDDING)"
       end

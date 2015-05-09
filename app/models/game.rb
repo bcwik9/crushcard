@@ -1,19 +1,13 @@
 class Game < ActiveRecord::Base
   require 'yaml'
 
-  before_save :default_values
-
-  def default_values
-    state_data.reverse_merge current_status: :waiting_for_players
-    save_state
-  end
-
   def waiting_for_players?
     state_data[:current_status] == :waiting_for_players
   end
 
   def set_up
     data = state_data
+    data[:current_status] ||= :waiting_for_players
     data[:total_rounds] = 10
     data[:rounds_played] = 0
     data[:players] = []
@@ -184,8 +178,9 @@ class Game < ActiveRecord::Base
   end
   
   def state_data
-    @state_read_at ||= self.updated_at
-    if @state_data.nil? || self.updated_at > @state_read_at
+    @state_read_at ||= self.updated_at || self.created_at
+    current_time = self.updated_at || self.created_at 
+    if @data_data.nil? || current_time > @state_read_at
       @state_data = load_state
     end
     @state_data

@@ -6,6 +6,8 @@ class ApplicationController < ActionController::Base
   # run these methods on page load
   before_filter :current_user
 
+  helper_method :current_user
+
   private
  
   # Finds the User with the ID stored in the session with the key
@@ -13,7 +15,8 @@ class ApplicationController < ActionController::Base
   # a Rails application; logging in sets the session value and
   # logging out removes it.
   def current_user
-    session[:id] ||= request.remote_ip.hash + rand(1000)
-    @_current_user = session[:id]
+    @_current_user ||= unless @_current_user 
+                         session[:id] ||= request.remote_ip.hash + rand(1000)
+                       end
   end
 end
