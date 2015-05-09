@@ -280,6 +280,14 @@ class Card
     return false if (@value.nil? or other.value.nil?) and @value != other.value
     return (@value.to_i == other.value.to_i and @suit == other.suit)
   end
+  
+  def suit_order other
+    if @suit != other.suit
+      SUITS.index( @suit ) <=> SUITS.index( other.suit )
+    else
+      @value <=> other.value
+    end
+  end
 
   # creates a standard deck of 52 cards, Ace high
   # the '0' represents 2, and '12' is Ace
