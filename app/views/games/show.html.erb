@@ -32,7 +32,7 @@ function init() {
       revert: true
     } );
     var currentCanvas = document.getElementById("canv"+i);
-    draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.display_name, "canv"+i);
+    draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
   }
 
   $('#bottom').droppable( {
@@ -207,16 +207,16 @@ function draw_card(suit, value, canvas){
 window.onload = function(){
     draw_card("<%= @trump.suit %>", "<%= @trump.value %>", "trump");
     <% if @played_cards and not @played_cards[0].nil? %>
-    draw_card("<%= @played_cards[0].suit %>", "<%= @played_cards[0].display_name %>", "bottom");
+    draw_card("<%= @played_cards[0].suit %>", "<%= @played_cards[0].value %>", "bottom");
     <% end %>
     <% if @played_cards and not @played_cards[1].nil? %>
-    draw_card("<%= @played_cards[1].suit %>", "<%= @played_cards[1].display_name %>", "left");
+    draw_card("<%= @played_cards[1].suit %>", "<%= @played_cards[1].value %>", "left");
     <% end %>
     <% if @played_cards and not @played_cards[2].nil? %>
-    draw_card("<%= @played_cards[2].suit %>", "<%= @played_cards[2].display_name %>", "top");
+    draw_card("<%= @played_cards[2].suit %>", "<%= @played_cards[2].value %>", "top");
     <% end %>
     <% if @played_cards and not @played_cards[3].nil? %>
-    draw_card("<%= @played_cards[3].suit %>", "<%= @played_cards[3].display_name %>", "right");
+    draw_card("<%= @played_cards[3].suit %>", "<%= @played_cards[3].value %>", "right");
     <% end %>
 }
 </script>
