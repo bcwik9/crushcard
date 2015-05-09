@@ -29,9 +29,9 @@ class Game < ActiveRecord::Base
     state[:dealer] = state[:players][state[:rounds_played] % state[:players].size]
 
     # reset bids hash and determine who bids first
-    # person to the 'left' of the dealer bids first
+    # person to the 'right' of the dealer bids first
     state[:bids] = []
-    state[:waiting_on] = get_next_player state[:dealer], state[:players]
+    state[:waiting_on] = state[:players][state[:players].find_index(state[:dealer]) + 1]
     
     # deal out number of cards equal to whatever round we are on
     # to each player
@@ -91,7 +91,7 @@ class Game < ActiveRecord::Base
         end
       else
         # set next player to bid
-        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+        state[:waiting_on] = state[:players][get_next_player(state[:waiting_on], state[:players])]
       end
 
     elsif not state[:player_hands][current_player_index].empty?
@@ -129,13 +129,12 @@ class Game < ActiveRecord::Base
 
           # determine scores
           state[:tricks_taken].each_with_index do |tricks, i|
-            num_tricks_taken = tricks.nil? ? 0 : tricks.size
-            if num_tricks_taken < state[:bids][i]
-              player_score = num_tricks_taken - state[:bids][i]
-            elsif num_tricks_taken > state[:bids][i]
-              player_score = num_tricks_taken
+            if tricks.size < state[:bids][i]
+              player_score = tricks.size - state[:bids][i]
+            elsif tricks.size > state[:bids][i]
+              player_score = tricks.size
             else
-              player_score = num_tricks_taken + 10
+              player_score = tricks.size + 10
             end
             state[:score][i] ||= []
             state[:score][i].push player_score
@@ -167,7 +166,7 @@ class Game < ActiveRecord::Base
         end
       else
         # set next player to play a card
-        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+        state[:waiting_on] = state[:players][get_next_player(state[:waiting_on], state[:players])]
       end
     end
     
@@ -223,7 +222,7 @@ class Game < ActiveRecord::Base
 
   # returns the index of the next player
   def get_next_player current_player, players
-    return players[(players.find_index(current_player) + 1) % players.size]
+    return (players.find_index(current_player) + 1) % players.size
   end
 
   # returns true if the input array is the same size as the number of
