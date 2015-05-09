@@ -1,19 +1,24 @@
 class Game < ActiveRecord::Base
   require 'yaml'
 
+  before_save :default_values
+
+  def default_values
+    self.state ||= {
+      current_status: :waiting_for_players
+    }.to_yaml
+  end
+
   def set_up
-    state = {}
-
-    state[:total_rounds] = 10
-    state[:rounds_played] = 0
-    state[:players] = []
-    state[:player_hands] = []
-    state[:score] = []
-    state[:deck] = []
-    state[:names] = []
-
-    state[:players].shuffle!
-
+    data = state_data
+    data[:total_rounds] = 10
+    data[:rounds_played] = 0
+    data[:players] = []
+    data[:player_hands] = []
+    data[:score] = []
+    data[:deck] = []
+    data[:names] = []
+    data[:players].shuffle!
     save_state state
   end
   
@@ -174,12 +179,20 @@ class Game < ActiveRecord::Base
     save_state state
     return true
   end
+  
+  def state_data
+    @state_read_at ||= self.updated_at
+    if @state_data.nil? || self.updated_at > @state_read_at
+      @state_data = load_state
+    end
+    @state_data
+  end
 
   def load_state
     return YAML.load(self.state)
   end
   
-  def save_state state
+  def save_state(state = state_data)
     self.state = state.to_yaml
   end
 
@@ -244,68 +257,3 @@ class Game < ActiveRecord::Base
   end
 end
 
-class Card
-  include Comparable
-  
-  SUITS = %w{Spades Hearts Diamonds Clubs}
-  attr_accessor :suit, :value, :playable
-
-  # create a single card
-  def initialize suit, value
-    raise 'Invalid card suit' unless SUITS.include? suit
-    raise 'Invalid card value' unless value.to_i >= 0 and value.to_i < 13
-    @suit = suit
-    @value = value
-  end
-
-  def value_name
-    card_names = %w[Two Three Four Five Six Seven Eight Nine Ten Jack Queen King Ace]
-    return card_names[value]
-  end
-  
-  def <=> other
-    return 1 if other.nil?
-    return 0 if @value.nil? and other.value.nil?
-    return 1 if other.value.nil?
-    return -1 if @value.nil?
-    @value.to_i <=> other.value.to_i
-  end
-
-  def == other
-    return false if other.nil?
-    return false if (@value.nil? or other.value.nil?) and @value != other.value
-    return (@value.to_i == other.value.to_i and @suit == other.suit)
-  end
-
-  # creates a standard deck of 52 cards, Ace high
-  # the '0' represents 2, and '12' is Ace
-  def self.get_deck
-    cards = []
-    SUITS.each do |suit|
-      1..13.times do |i|
-        cards.push Card.new(suit, i)
-      end
-    end
-    return cards
-  end
-end
-
-class Player
-  attr_accessor :name, :inventory
-
-  def initialize name
-    raise 'Invalid player name' if name.nil? or name.empty?
-    @name = name
-    @inventory = []
-  end
-
-  def place_bid
-    raise 'TODO: implement me!' # TODO: implement this
-    return 0
-  end
-
-  # play a card from the inventory
-  def play_card
-    raise 'TODO: implement me!' # TODO: implement this
-  end
-end
