@@ -93,7 +93,7 @@ class GamesController < ApplicationController
     end
 
     # cards that have been played
-    @played_cards = @game.state_data[:cards_in_play]
+    @played_cards = @game.state_data[:cards_in_play] || Array.new
     if @game_started
       # display cards in different order since the user is on the bottom
       @played_cards = []
