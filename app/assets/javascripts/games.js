@@ -4,15 +4,6 @@
     var correctCards = 0;
 
     var init = function() {
-      // Hide the success message
-      $('#successMessage').hide();
-      $('#successMessage').css( {
-        left: '580px',
-        top: '250px',
-        width: 0,
-        height: 0
-      } );
-
       $('#cardSlots').html( '' );
 
       $('#bottom').droppable( {
@@ -56,7 +47,7 @@
     };
 
     var gameId = function(){
-      $("#game_data").dataset.id;
+      $("#game_data").data('id');
     };
 
     var playerActionPath = function(){
@@ -70,20 +61,20 @@
 
     var playCard = function(event) {
       // only accept playable cards
-      var cardIsPlayable = event.target.getAttribute('data-playable');
+      var cardIsPlayable = event.target.data('playable');
       if(!(/true/i).test(cardIsPlayable)) {
         alert("C'mon man, you can't play this card! Try another!");
         return;
       }
 
-      var cardSuit = event.target.getAttribute('data-suit');
-      var cardValue = event.target.getAttribute('data-actualvalue');
+      var cardSuit = event.target.data('suit');
+      var cardValue = event.target.data('actualvalue');
       sendCard(cardSuit, cardValue);
     };
 
     var testDrop = function(event, ui) {
       // only accept playable cards
-      var cardIsPlayable = ui.draggable.context.children[0].dataset.playable;
+      var cardIsPlayable = ui.draggable.context.children[0].data('playable');
       if(!(/true/i).test(cardIsPlayable)) {
         alert("C'mon man, you can't play this card! Try another!");
         return;
@@ -94,8 +85,8 @@
       $(this).droppable( 'disable' );
       ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
       ui.draggable.draggable( 'option', 'revert', false );
-      var cardSuit = ui.draggable.context.children[0].dataset.suit;
-      var cardValue = ui.draggable.context.children[0].dataset.actualvalue;
+      var cardSuit = ui.draggable.context.children[0].data('suit');
+      var cardValue = ui.draggable.context.children[0].data('actualvalue');
       sendCard(cardSuit, cardValue);
     };
 
@@ -120,16 +111,10 @@
       // If all the cards have been placed correctly then display a message
       // and reset the cards for another go
       if ( correctCards == 10 ) {
-        $('#successMessage').show();
-        $('#successMessage').animate( {
-          left: '380px',
-          top: '200px',
-          width: '400px',
-          height: '100px',
-          opacity: 1
-        } );
+        alert("Game is Over");
       }
     };
+
     var draw_card = function(suit, value, canvas){
       var canvas = document.getElementById(canvas);
       var context = canvas.getContext("2d");
