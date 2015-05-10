@@ -136,7 +136,6 @@ Player: <%= @game.state_data[:player].keys.join(", ") %>
 <br />
 
 <div class="info"  id="notice"><%= notice %> <%= @game.state_data[:current_status] %></div>
-<!-- join game form -->
 <% if @game.waiting_for_players? && !@game.has_player?(current_user) %>
   <%= form_tag(games_add_player_path) do %>
   <%= hidden_field_tag(:id, params[:id]) %>
@@ -148,25 +147,8 @@ Player: <%= @game.state_data[:player].keys.join(", ") %>
 </div>
   <% end %>
 <%= @game.state_data[:names].join(", ") %>
-
-<% elsif @game.can_deal?(current_user) %>
-  <% if @game.enough_players? %>
-  <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
-  <% else %>
-  Waiting on more players before you can deal.
-  <% end %>
-
-<% elsif @game.needs_to_bid?(current_user) %>
-  <%= form_tag(games_player_action_path) do %>
-  <%= hidden_field_tag(:id, params[:id]) %>
-<div class="input-group" style="width:150px;">
-  <%= number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg") %>  
-  <span class="input-group-btn">
-    <%= button_tag("Bid", type: "submit", class: "btn btn-lg btn-primary") %>
-  </span>
-</div>
-  <% end %>
 <% end %>
+
 
 <br>
 
@@ -181,63 +163,44 @@ Player: <%= @game.state_data[:player].keys.join(", ") %>
     </div>
     <br>
     <div id="buttons" class="col-md-2" style="padding-top:175px; text-align:left;">
-      <!-- join game form -->
-      <% unless @is_playing or @game_started %>
-        <div class="row">
-        <%= form_tag(games_add_player_path) do %>
-          <%= hidden_field_tag(:id, params[:id]) %>
-        <div>
-          <div class="input-group">
-            <%= text_field_tag("username", "Username", class: "form-control input-lg") %>
-            <span class="input-group-btn">
-              <%= button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary") %>
-            </span>
-          </div>
-        <% end %>
-        </div>
-        <br>
-      <% end %>
-
-        <!-- deal button -->
-        <% if @is_playing and not @game_started %>
-          <div>
+      <% if @game.can_deal?(current_user) %>
+        <% if @game.enough_players? %>
           <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
-        </div>
-        <br>
-      <% end %>
-        <!-- bid form -->
-        <% if @is_playing and not @done_bidding %>
-          <div>
-          <%= form_tag(games_player_action_path) do %>
-            <%= hidden_field_tag(:id, params[:id]) %>
-          <div class="input-group" style="width:150px;">
-            <%= number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg") %>  
-            <span class="input-group-btn">
-              <%= button_tag("Bid", type: "submit", class: "btn btn-lg btn-primary") %>
-            </span>
-          </div>
+        <% else %>
+          Waiting on more players before you can deal.
         <% end %>
-        </div>
+      <% elsif @game.needs_to_bid?(current_user) %>
+        <%= form_tag(games_player_action_path) do %>
+          <%= hidden_field_tag(:id, params[:id]) %>
+          <div class="input-group" style="width:150px;">
+          <%= number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg") %>  
+          <span class="input-group-btn">
+            <%= button_tag("Bid", type: "submit", class: "btn btn-lg btn-primary") %>
+          </span>
+          </div>
+        <% end  %>
+      <% else %>
+        Waiting for more players or the creator to start the game.
       <% end %>
-      </div>
-    </div>
-    <br>
-  </div>
-  <div style="padding-left:100px;">
-    Your Cards
-    <div id="cardPile">
-      <%= render "card_pile" %>
     </div>
   </div>
-  <!-- <div id="cardSlots"> </div> -->
+  <br>
+</div>
+<div style="padding-left:100px;">
+  Your Cards
+  <div id="cardPile">
+    <%= render "card_pile" %>
+  </div>
+</div>
+<!-- <div id="cardSlots"> </div> -->
 </div>
 
 <div id="content">
 
-  <div id="successMessage">
-    <h2>You did it!</h2>
-    <button onclick="init()">Play Again</button>
-  </div>
+<div id="successMessage">
+  <h2>You did it!</h2>
+  <button onclick="init()">Play Again</button>
+</div>
 
 </div>
 <script>
@@ -286,6 +249,7 @@ window.onload = function(){
       draw_card("<%= @played_cards[3].suit %>", "<%= @played_cards[3].abbreviated_name %>", "right");
 <% end %>
 }
+
 </script>
 <%= javascript_include_tag "cards.js" %>
 </body>
