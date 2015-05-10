@@ -3,7 +3,7 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 @GamePoller =
   poll: ->
-    setTimeout @request, 3000
+    setTimeout @request, 2000
 
   request: ->
     $.get($('#game_path').data('url'))

@@ -46,3 +46,6 @@ gem 'puma'
 gem 'less'
 gem 'less-rails'
 gem 'twitter-bootstrap-rails'
+
+# sidekiq
+gem 'sidekiq'
