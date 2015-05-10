@@ -126,52 +126,12 @@ function handleCardDrop( event, ui ) {
 </head>
 <body>
 <div id="game_path" data-url="<%= game_path(@game) %>"></div>
-<h1 style="text-align:center; padding-left:100px;"><%= @game.name %></h1>
-<p>
-<!--  <strong>Name:</strong>
-  <%= @game.name %> -->
-</p>
-<p>
-  <!-- <strong>State:</strong>
-  <%= @game.state %> -->
-</p>
+<!-- <strong>State:</strong>
+<%= @game.state %> -->
 
-<!-- join game form -->
 <!-- <%= link_to 'Edit', edit_game_path(@game) %> | -->
 <!-- <%= link_to 'Back', games_path %> -->
-<div class="row">
-  <%= form_tag(games_add_player_path) do %>
-  <%= hidden_field_tag(:id, params[:id]) %>
-  <div>
-    <div class="input-group" style="width:340px;">
-      <%= text_field_tag("username", "Username", class: "form-control input-lg") %>
-      <span class="input-group-btn">
-	<%= button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary") %>
-      </span>
-    </div>
-    <% end %>
-  </div>
-  <br>
-  <!-- deal button -->
-  <div>
-    <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
-  </div>
-  <br>
-  <!-- bid form -->
-  <div>
-    <%= form_tag(games_player_action_path) do %>
-    <%= hidden_field_tag(:id, params[:id]) %>
-    <div class="input-group" style="width:150px;">
-      <%= number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg") %>  
-      <span class="input-group-btn">
-	<%= button_tag("Bid", type: "submit", class: "btn btn-lg btn-primary") %>
-      </span>
-    </div>
-    <% end %>
-  </div>
-</div>
-<br>
-<p id="notice"><%= notice %></p>
+<!-- <p id="notice"><%= notice %></p> -->
 <div id="board-wrapper" style="text-align:center;">
   <div class="row">
     <div id="game-stat" class="col-md-2" style="padding-top:175px;">
@@ -182,8 +142,39 @@ function handleCardDrop( event, ui ) {
       <%= render "board_info" %>
     </div>
     <br>
-    <div id="unused" class="col-md-2" style="padding-top:175px;">
-      something here
+    <div id="buttons" class="col-md-2" style="padding-top:175px; text-align:left;">
+      <!-- join game form -->
+      <div class="row">
+	<%= form_tag(games_add_player_path) do %>
+	<%= hidden_field_tag(:id, params[:id]) %>
+	<div>
+	  <div class="input-group">
+	    <%= text_field_tag("username", "Username", class: "form-control input-lg") %>
+	    <span class="input-group-btn">
+	      <%= button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary") %>
+	    </span>
+	  </div>
+	  <% end %>
+	</div>
+	<br>
+	<!-- deal button -->
+	<div>
+	  <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
+        </div>
+        <br>
+	<!-- bid form -->
+	<div>
+	  <%= form_tag(games_player_action_path) do %>
+	  <%= hidden_field_tag(:id, params[:id]) %>
+	  <div class="input-group" style="width:150px;">
+	    <%= number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg") %>  
+	    <span class="input-group-btn">
+	      <%= button_tag("Bid", type: "submit", class: "btn btn-lg btn-primary") %>
+	    </span>
+	  </div>
+	  <% end %>
+	</div>
+      </div>
     </div>
     <br>
   </div>
