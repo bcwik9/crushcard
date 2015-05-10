@@ -1,6 +1,7 @@
 +function($) {
   Game = function(options) {
     var self = this;
+    var cards_api = new Cards(); // Load the Game object
     var correctCards = 0;
 
     var init = function() {
@@ -12,7 +13,6 @@
         drop: testDrop
       } );
 
-      // TODO: Needed? 
       create_suffled_cards_pile();
 
       var words = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
@@ -128,20 +128,20 @@
       context.fillText(value, canvas.width/2-8, canvas.height/2+5);
 
       if((/spade/i).test(suit)){
-        drawSpade(context, (suit_width/2+5), 0, suit_width, suit_height);
-        drawSpade(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+        cards_api.drawSpade(context, (suit_width/2+5), 0, suit_width, suit_height);
+        cards_api.drawSpade(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
       }
       if((/diamond/i).test(suit)){
-        drawDiamond(context, (suit_width/2+5), 0, suit_width, suit_height);
-        drawDiamond(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+        cards_api.drawDiamond(context, (suit_width/2+5), 0, suit_width, suit_height);
+        cards_api.drawDiamond(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
       }
       if((/club/i).test(suit)){
-        drawClub(context, (suit_width/2+5), 0, suit_width, suit_height);
-        drawClub(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+        cards_api.drawClub(context, (suit_width/2+5), 0, suit_width, suit_height);
+        cards_api.drawClub(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
       }
       if((/heart/i).test(suit)){
-        drawHeart(context, (suit_width/2+5), 0, suit_width, suit_height);
-        drawHeart(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+        cards_api.drawHeart(context, (suit_width/2+5), 0, suit_width, suit_height);
+        cards_api.drawHeart(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
       }
     };
 
@@ -149,6 +149,7 @@
       var trump_suit = $('#game_data').data('trumpSuit');
       var trump_name = $('#game_data').data('trumpName');
       draw_card(trump_suit, trump_name, "trump");
+
       var played_cards = $('#game_data').data('playedCards');
       var sides = ["bottom", "left", "top", "right","unknown-fifth-player"]; //TODO: 5 player logic
       for ( var i=0; i<played_cards; i++ ) {

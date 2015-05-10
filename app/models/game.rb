@@ -28,11 +28,16 @@ class Game < ActiveRecord::Base
   end
 
   def add_player(player_id, player_name)
-    state_data[:players] << player_id 
+    raise "Cant add an already added player" if has_player?(player_id)
+
+    state_data[:players] << player_id unless state_data[:players].include? player_id
+
+    # make a unique name if it is already taken
     while state_data[:names].include? player_name
       player_name += rand(10).to_s
     end
     state_data[:names] << player_name
+
     state_data[:player][player_id] = player_name
     save!
     player_name

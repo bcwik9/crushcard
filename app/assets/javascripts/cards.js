@@ -1,4 +1,8 @@
-function drawSpade(context, x, y, width, height) {
++function($) {
+  Cards = function(options) {
+    var self = this;
+
+    var drawSpade = function (context, x, y, width, height) {
         context.save();
         var bottomWidth = width * 0.7;
         var topHeight = height * 0.7;
@@ -48,8 +52,9 @@ function drawSpade(context, x, y, width, height) {
         context.fillStyle = 'black';
         context.fill();
         context.restore();
-      }
-      function drawHeart(context, x, y, width, height) {
+      };
+
+      var drawHeart = function(context, x, y, width, height) {
         context.save();
         context.beginPath();
         var topCurveHeight = height * 0.3;
@@ -71,7 +76,7 @@ function drawSpade(context, x, y, width, height) {
         context.fill();
         context.restore();
       }
-      function drawClub(context, x, y, width, height) {
+      var drawClub = function (context, x, y, width, height) {
         context.save();
         var circleRadius = width * 0.3;
         var bottomWidth = width * 0.5;
@@ -107,7 +112,7 @@ function drawSpade(context, x, y, width, height) {
         context.fill();
         context.restore();
       }
-      function drawDiamond(context, x, y, width, height) {
+      var drawDiamond = function (context, x, y, width, height) {
         context.save();
         context.beginPath();
         context.moveTo(x, y);
@@ -129,4 +134,7 @@ function drawSpade(context, x, y, width, height) {
         context.fill();
         context.restore();
       }
+
+  };
+}(jQuery);
       
