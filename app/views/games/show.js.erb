@@ -25,12 +25,21 @@ draw_card("<%= @played_cards[3].suit %>", "<%= @played_cards[3].abbreviated_name
 // update users hand
 $('#cardPile').html("<%= j render 'card_pile' %>");
   for ( var i=0; i<<%= @cards.size %>; i++ ) {
-    $("#card"+i).draggable( {
-      containment: '#board-wrapper',
-      stack: '#cardPile div',
-      cursor: 'move',
-      revert: true
-    } );
+    //$("#card"+i).draggable( {
+    //  containment: '#board-wrapper',
+    //  stack: '#cardPile div',
+    //  cursor: 'move',
+    //  revert: true
+    //} );
+    $("#card"+i).click(function(event) {
+      if($(this).hasClass("selected")) {
+        playCard(event);
+      }
+      $(this).addClass("selected");
+      $(this).siblings().removeClass("selected");
+      $(this).css({"background":"blue"});
+      $(this).siblings().css({"background":"white"});
+    });
     var currentCanvas = document.getElementById("canv"+i);
     draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
   }
@@ -40,5 +49,5 @@ $('#cardPile').html("<%= j render 'card_pile' %>");
 <% if @waiting_on != 'YOU' %>
 GamePoller.poll();
 <% else %>
-alert('Its your turn, play a card by dragging it!');
+alert('Its your turn, play a card by double clicking it!');
 <% end %>

@@ -25,12 +25,15 @@ function init() {
   numbers.sort( function() { return Math.random() - .5 } );
  
   for ( var i=0; i<<%= @cards.size %>; i++ ) {
-    $("#card"+i).data( 'number', numbers[i] ).draggable( {
-      containment: '#board-wrapper',
-      stack: '#cardPile div',
-      cursor: 'move',
-      revert: true
-    } );
+    $("#card"+i).click(function(event) {
+      if($(this).hasClass("selected")) {
+        playCard(event);
+      }
+      $(this).addClass("selected");
+      $(this).siblings().removeClass("selected");
+      $(this).css({"background":"blue"});
+      $(this).siblings().css({"background":"white"});
+    });
     var currentCanvas = document.getElementById("canv"+i);
     draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
   }
@@ -52,6 +55,19 @@ function init() {
     } );
   }
  
+}
+
+function playCard(event) {
+    // only accept playable cards
+    var cardIsPlayable = event.target.getAttribute('data-playable');
+    if(!(/true/i).test(cardIsPlayable)) {
+      alert("C'mon man, you can't play this card! Try another!");
+      return;
+    }
+
+    var cardSuit = event.target.getAttribute('data-suit');
+    var cardValue = event.target.getAttribute('data-actualvalue');
+    $.ajax({url: "<%= games_player_action_path %>", type: "POST", data: {id: <%= params[:id] %>, suit: cardSuit, value: cardValue}});
 }
 
 function testDrop(event, ui) {
