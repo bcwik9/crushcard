@@ -144,6 +144,7 @@ function handleCardDrop( event, ui ) {
     <br>
     <div id="buttons" class="col-md-2" style="padding-top:175px; text-align:left;">
       <!-- join game form -->
+      <% unless @is_playing or @game_started %>
       <div class="row">
 	<%= form_tag(games_add_player_path) do %>
 	<%= hidden_field_tag(:id, params[:id]) %>
@@ -157,12 +158,16 @@ function handleCardDrop( event, ui ) {
 	  <% end %>
 	</div>
 	<br>
+	<% end %>
 	<!-- deal button -->
+	<% if @is_playing and not @game_started %>
 	<div>
 	  <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
         </div>
         <br>
+	<% end %>
 	<!-- bid form -->
+	<% if @is_playing and not @done_bidding %>
 	<div>
 	  <%= form_tag(games_player_action_path) do %>
 	  <%= hidden_field_tag(:id, params[:id]) %>
@@ -174,6 +179,7 @@ function handleCardDrop( event, ui ) {
 	  </div>
 	  <% end %>
 	</div>
+	<% end %>
       </div>
     </div>
     <br>

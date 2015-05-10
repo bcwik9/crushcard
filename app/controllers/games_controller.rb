@@ -98,8 +98,8 @@ class GamesController < ApplicationController
   def show
     state = @game.load_state
     
-    is_playing = state[:players].include?(@_current_user)
-    game_started = !state[:bids].nil?
+    @is_playing = state[:players].include?(@_current_user)
+    @game_started = !state[:bids].nil?
     player_index = state[:players].index(@_current_user) || 0
 
     # round number
@@ -122,7 +122,7 @@ class GamesController < ApplicationController
     
     # cards that have been played
     @played_cards = state[:cards_in_play]
-    if game_started
+    if @game_started
       # display cards in different order since the user is on the bottom
       @played_cards = []
       @game.iterate_through_list_with_start_index(player_index, state[:players]) do |player,i|
@@ -132,7 +132,7 @@ class GamesController < ApplicationController
 
     # players hand
     @cards = []
-    if is_playing
+    if @is_playing
       @cards = state[:player_hands][player_index] || @cards
 
       # can't play any cards unless it's your turn
@@ -147,13 +147,14 @@ class GamesController < ApplicationController
       end
     end
     @cards.sort! { |a,b| a.suit_order b }
-    
+
     # game status (ie. who we're waiting on)
     if state[:waiting_on]
       waiting_on_index = state[:players].index(state[:waiting_on])
       @waiting_on = waiting_on_index ? state[:names][waiting_on_index] : "Table to clear"
       @waiting_on = 'YOU' if @_current_user == state[:waiting_on]
-      unless @game.done_bidding? state
+      @done_bidding = @game.done_bidding? state
+      unless @done_bidding
         @waiting_on += " (BIDDING)"
       end
     else
