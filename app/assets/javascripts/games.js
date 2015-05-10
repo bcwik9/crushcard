@@ -16,11 +16,30 @@
 
       $('#cardSlots').html( '' );
 
+      $('#bottom').droppable( {
+        accept: '#cardPile div',
+        hoverClass: 'hovered',
+        drop: testDrop
+      } );
+
+      // TODO: Needed? self.create_suffled_cards_pile();
+
+      var words = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
+      for ( var i=1; i<=10; i++ ) {
+        $('<div>' + words[i-1] + '</div>').data( 'number', i ).appendTo( '#cardSlots' ).droppable( {
+          accept: '#cardPile div',
+          hoverClass: 'hovered',
+          drop: handleCardDrop
+        } );
+      }
+    };
+
+    var create_suffled_cards_pile = function(){
       // Create the pile of shuffled cards
       var numbers = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
       numbers.sort( function() { return Math.random() - .5 } );
 
-      for ( var i=0; i<<%= @cards.size %>; i++ ) {
+      for ( var i=0; i< 52; i++ ) {
         $("#card"+i).click(function(event) {
           if($(this).hasClass("selected")) {
             playCard(event);
@@ -33,25 +52,9 @@
         var currentCanvas = document.getElementById("canv"+i);
         draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
       }
-
-      $('#bottom').droppable( {
-        accept: '#cardPile div',
-        hoverClass: 'hovered',
-        drop: testDrop
-      } );
-
-
-      // Create the card slots
-      var words = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
-      for ( var i=1; i<=10; i++ ) {
-        $('<div>' + words[i-1] + '</div>').data( 'number', i ).appendTo( '#cardSlots' ).droppable( {
-          accept: '#cardPile div',
-          hoverClass: 'hovered',
-          drop: handleCardDrop
-        } );
-      }
     };
 
+    // Initialization Logic!
     init();
   };
 }(jQuery);
