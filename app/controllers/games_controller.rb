@@ -151,7 +151,7 @@ class GamesController < ApplicationController
     # game status (ie. who we're waiting on)
     if state[:waiting_on]
       waiting_on_index = state[:players].index(state[:waiting_on])
-      @waiting_on = state[:names][waiting_on_index]
+      @waiting_on = waiting_on_index ? state[:names][waiting_on_index] : "Table to clear"
       @waiting_on = 'YOU' if @_current_user == state[:waiting_on]
       unless @game.done_bidding? state
         @waiting_on += " (BIDDING)"
