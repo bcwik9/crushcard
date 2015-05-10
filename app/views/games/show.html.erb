@@ -162,6 +162,7 @@ Player: <%= @game.state_data[:player].keys.join(", ") %>
       <%= render "board_info" %>
     </div>
     <br>
+    <% if @game.has_player?(current_user) %>
     <div id="buttons" class="col-md-2" style="padding-top:175px; text-align:left;">
       <% if @game.can_deal?(current_user) %>
         <% if @game.enough_players? %>
@@ -183,6 +184,7 @@ Player: <%= @game.state_data[:player].keys.join(", ") %>
         Waiting for more players or the creator to start the game.
       <% end %>
     </div>
+    <% end %>
   </div>
   <br>
 </div>
