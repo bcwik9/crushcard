@@ -1,22 +1,43 @@
 class Game < ActiveRecord::Base
   require 'yaml'
+  after_initialize :state_data
+  before_save :serialize_state
 
-  def set_up
-    state = {}
-
-    state[:total_rounds] = 10
-    state[:rounds_played] = 0
-    state[:players] = []
-    state[:player_hands] = []
-    state[:score] = []
-    state[:deck] = []
-    state[:names] = []
-
-    state[:players].shuffle!
-
-    save_state state
+  def enough_players?
+    state_data[:player].size > 2 && state_data[:player].size <= 5
   end
-  
+
+  def has_player?(player_id)
+    state_data[:player].has_key?(player_id)
+  end
+
+  def serialize_state
+    self.state = state_data.to_yaml
+  end
+
+  def can_deal?(player_id)
+    state_data[:players].first == player_id && state_data[:player].has_key?(player_id)
+  end
+
+  def needs_to_bid?(current_user)
+    raise "Not a player in this game" unless has_player? current_user
+  end
+
+  def waiting_for_players?
+    state_data[:current_status] == :waiting_for_players && state_data[:player].size < 5
+  end
+
+  def add_player(player_id, player_name)
+    state_data[:players] << player_id 
+    while state_data[:names].include? player_name
+      player_name += rand(10).to_s
+    end
+    state_data[:names] << player_name
+    state_data[:player][player_id] = player_name
+    save!
+    player_name
+  end
+
   def deal_cards state
     # need to have at least 3 players to start the game
     raise 'Must have between 3 and 5 players to start' if state[:players].size < 3 or state[:players].size > 5
@@ -32,7 +53,7 @@ class Game < ActiveRecord::Base
     # person to the 'left' of the dealer bids first
     state[:bids] = []
     state[:waiting_on] = get_next_player state[:dealer], state[:players]
-    
+
     # deal out number of cards equal to whatever round we are on
     # to each player
     # deal cards first to player on 'right' of dealer
@@ -40,7 +61,7 @@ class Game < ActiveRecord::Base
     iterate_through_list_with_start_index(state[:players].find_index(state[:waiting_on]), state[:players]) { |player, i|
       state[:player_hands][i] = state[:deck].slice!(0..(num_cards_per_player-1))
     }
-    
+
     # the next card in the deck is trump
     # whatever suit is trump is valued higher than non-trump suits
     # an Ace as trump means there is "no trump"
@@ -56,25 +77,25 @@ class Game < ActiveRecord::Base
 
   # player either bids or plays a card if it's their turn
   def player_action user_id, user_input=nil
-    state = load_state
-    
+    state = game_state
+
     # return false if it's not the players turn
     return false if user_id != state[:waiting_on]
 
     current_player_index = state[:players].find_index user_id
-    
+
     # check if we are in bidding or playing a card
     if !done_bidding? state
       # player is making a bid
       bid = user_input.to_i
-      
+
       # dealer cannot bid the same amount as the number of cards dealt
       total_bids = state[:bids].select { |bid| !bid.nil? }.inject(:+)
       num_cards_per_player = state[:total_rounds] - state[:rounds_played]
       if state[:dealer] == user_id and total_bids + bid == num_cards_per_player
         return false
       end
-      
+
       # record the bid
       state[:bids][current_player_index] = bid
 
@@ -97,7 +118,7 @@ class Game < ActiveRecord::Base
     elsif not state[:player_hands][current_player_index].empty?
       # player is playing a card
       card = user_input
-      
+
       # ensure that the card is in their inventory
       return false unless state[:player_hands][current_player_index].any? { |player_card| player_card == card }
 
@@ -105,7 +126,7 @@ class Game < ActiveRecord::Base
       state[:first_suit_played] ||= card.suit
       playable_cards = get_playable_cards(state[:first_suit_played], state[:player_hands][current_player_index])
       return false unless playable_cards.include? card
-      
+
       # actually play the card
       state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
 
@@ -119,9 +140,33 @@ class Game < ActiveRecord::Base
         state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
       end
     end
-    
+
     save_state state
     return true
+  end
+
+  def state_data
+    current_time = self.updated_at || self.created_at 
+    @state_read_at ||= current_time
+    if @state_data.nil? || (@state_read_at && current_time > @state_read_at)
+      if self.state.nil?
+        self.state = { 
+          current_status: :waiting_for_players, 
+          total_rounds: 10,
+          rounds_played: 0,
+          players: nil,
+          player_hands: nil,
+          score: nil,
+          deck: nil,
+          names: nil
+        }.to_yaml 
+      end
+      @state_data = load_state
+      @state_data[:players] ||= Array.new
+      @state_data[:names] ||= Array.new
+      @state_data[:player] ||= Hash.new
+    end
+    @state_data
   end
 
   # clear the table of cards and calculate who won the trick/game
@@ -189,10 +234,10 @@ class Game < ActiveRecord::Base
   end
 
   def load_state
-    return YAML.load(self.state)
+    return self.state.nil? ? Hash.new : YAML.load(self.state)
   end
-  
-  def save_state state
+
+  def save_state(state = state_data)
     self.state = state.to_yaml
   end
 
@@ -207,14 +252,14 @@ class Game < ActiveRecord::Base
     # only cards that are the same suit as the first card played matter
     same_suit_cards = cards.select { |c| c.suit == first_suit_played }
     card_set = trump_cards.empty? ? same_suit_cards : trump_cards
-    
+
     # now simply get the highest card left
     return card_set.max
     #iterate_through_list_with_start_index(start_index, card_set) do |card|
     #  return card if card.value == highest_value
     #end
   end
-  
+
   def get_playable_cards first_suit_played, cards
     # player can play any card if they are the first to play a card
     # or if they only have a single card left
@@ -248,89 +293,11 @@ class Game < ActiveRecord::Base
   # return true or false if we're done bidding
   # done bidding if there are the same number of valids bids
   # as there are players in the game
-  def done_bidding? state
+  def done_bidding? state = game_state
     return player_size_and_nil_check(state[:bids], state)
   end
 
   def all_players_played_a_card? state
     return player_size_and_nil_check(state[:cards_in_play], state)
-  end
-end
-
-class Card
-  include Comparable
-  
-  SUITS = %w{Spades Hearts Diamonds Clubs}
-  attr_accessor :suit, :value, :playable
-
-  # create a single card
-  def initialize suit, value
-    raise 'Invalid card suit' unless SUITS.include? suit
-    raise 'Invalid card value' unless value.to_i >= 0 and value.to_i < 13
-    @suit = suit
-    @value = value
-  end
-
-  def value_name
-    card_names = %w[Two Three Four Five Six Seven Eight Nine Ten Jack Queen King Ace]
-    return card_names[@value]
-  end
-
-  def abbreviated_name
-    %w[2 3 4 5 6 7 8 9 10 J Q K A][@value]
-  end
-  
-  def <=> other
-    return 1 if other.nil?
-    return 0 if @value.nil? and other.value.nil?
-    return 1 if other.value.nil?
-    return -1 if @value.nil?
-    @value.to_i <=> other.value.to_i
-  end
-
-  def == other
-    return false if other.nil?
-    return false if (@value.nil? or other.value.nil?) and @value != other.value
-    return (@value.to_i == other.value.to_i and @suit == other.suit)
-  end
-  
-  def suit_order other
-    if @suit != other.suit
-      SUITS.index( @suit ) <=> SUITS.index( other.suit )
-    else
-      @value <=> other.value
-    end
-  end
-
-  # creates a standard deck of 52 cards, Ace high
-  # the '0' represents 2, and '12' is Ace
-  def self.get_deck
-    cards = []
-    SUITS.each do |suit|
-      1..13.times do |i|
-        cards.push Card.new(suit, i)
-      end
-    end
-    return cards
-  end
-end
-
-class Player
-  attr_accessor :name, :inventory
-
-  def initialize name
-    raise 'Invalid player name' if name.nil? or name.empty?
-    @name = name
-    @inventory = []
-  end
-
-  def place_bid
-    raise 'TODO: implement me!' # TODO: implement this
-    return 0
-  end
-
-  # play a card from the inventory
-  def play_card
-    raise 'TODO: implement me!' # TODO: implement this
   end
 end
