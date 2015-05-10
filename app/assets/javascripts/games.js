@@ -12,7 +12,8 @@
         drop: testDrop
       } );
 
-      // TODO: Needed? self.create_suffled_cards_pile();
+      // TODO: Needed? 
+      create_suffled_cards_pile();
 
       var words = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
       for ( var i=1; i<=10; i++ ) {
@@ -41,8 +42,10 @@
           $(this).css({"background":"blue"});
           $(this).siblings().css({"background":"white"});
         });
-        var currentCanvas = document.getElementById("canv"+i);
-        draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
+
+        var canvasName = "canv"+i
+        var currentCanvas = $("#" + canvasName);
+        draw_card(currentCanvas.data('suit'), currentCanvas.data('value'), canvasName);
       }
     };
 
