@@ -120,9 +120,9 @@ Players: <%= @game.state_data[:players].join(", ") %>
 Player: <%= @game.state_data[:player].keys.join(", ") %>
 <br />
 Names: <%= @game.state_data[:names].join(", ") %>
+<br />
 
-<div class="btn btn-info"  id="notice"><%= notice %> <%= @game.state_data[:current_status] %></div>
-
+<div class="info"  id="notice"><%= notice %> <%= @game.state_data[:current_status] %></div>
 <!-- join game form -->
 <% if @game.waiting_for_players? && !@game.has_player?(current_user) %>
   <%= form_tag(games_add_player_path) do %>
@@ -135,8 +135,14 @@ Names: <%= @game.state_data[:names].join(", ") %>
     </div>
   <% end %>
   <%= @game.state_data[:names].join(", ") %>
+
 <% elsif @game.can_deal?(current_user) %>
-  <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
+  <% if @game.enough_players? %>
+    <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
+  <% else %>
+      Waiting on more players before you can deal.
+  <% end %>
+
 <% elsif @game.needs_to_bid?(current_user) %>
   <%= form_tag(games_player_action_path) do %>
     <%= hidden_field_tag(:id, params[:id]) %>

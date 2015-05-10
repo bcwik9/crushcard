@@ -3,6 +3,10 @@ class Game < ActiveRecord::Base
   after_initialize :state_data
   before_save :serialize_state
 
+  def enough_players?
+    state_data[:player].size > 2 && state_data[:player].size <= 5
+  end
+
   def has_player?(player_id)
     state_data[:player].has_key?(player_id)
   end
@@ -12,7 +16,11 @@ class Game < ActiveRecord::Base
   end
 
   def can_deal?(player_id)
-    state_data[:players].first == player_id && state_data.has_key?(player_id)
+    state_data[:players].first == player_id && state_data[:player].has_key?(player_id)
+  end
+
+  def needs_to_bid?(current_user)
+    raise "Not a player in this game" unless has_player? current_user
   end
 
   def waiting_for_players?
@@ -69,7 +77,7 @@ class Game < ActiveRecord::Base
 
   # player either bids or plays a card if it's their turn
   def player_action user_id, user_input=nil
-    state = load_state
+    state = game_state
 
     # return false if it's not the players turn
     return false if user_id != state[:waiting_on]
@@ -272,7 +280,7 @@ class Game < ActiveRecord::Base
   # return true or false if we're done bidding
   # done bidding if there are the same number of valids bids
   # as there are players in the game
-  def done_bidding? state
+  def done_bidding? state = game_state
     return player_size_and_nil_check(state[:bids], state)
   end
 

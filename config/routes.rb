@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   resources :games
+  # TODO these should be member vars
   post 'games/add_player'
   post 'games/deal'
   post 'games/player_action'

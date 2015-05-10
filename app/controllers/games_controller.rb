@@ -1,5 +1,5 @@
 class GamesController < ApplicationController
-  before_action :set_game, only: [:add_player, :deal, :player_action, :show, :edit, :update, :destroy]
+  before_action :set_game, only: [:add_player, :deal, :player_action, :show]
 
   def add_player
     if @game.state_data[:players].size > 5
@@ -10,7 +10,7 @@ class GamesController < ApplicationController
       redirect_to @game, notice: 'Cant join once the game has already started'
     else
       session[:player_name] = @game.add_player(current_user, params[:username])
-      redirect_to @game, notice: "Welcome to the game, #{session[:player_name]}"
+      redirect_to @game, notice: "Welcome to the game"
     end
   end
 
@@ -31,18 +31,14 @@ class GamesController < ApplicationController
   end
 
   def player_action
-    set_game
-    state = @game.load_state
-
-    # player isnt allowed to do anything if it's not their turn
-    if state[:waiting_on] != current_user
-      redirect_to @game, notice: "Dude... It's not your turn"
+    if @game.state_data[:waiting_on] != current_user
+      redirect_to @game, notice: "Bro... It's not your turn"
       return
     end
 
     if params[:bid]
       # user is making a bid
-      if @game.done_bidding? state
+      if @game.done_bidding?
         redirect_to @game, notice: 'Bidding is over BRO'
         return
       else
@@ -152,58 +148,23 @@ class GamesController < ApplicationController
     @game = Game.new
   end
 
-  # GET /games/1/edit
-  def edit
-  end
-
-  # POST /games
-  # POST /games.json
   def create
-    @game = Game.new(game_params)
+    @game = Game.create!(game_params)
     @game.state_data[:players] << current_user
+    @game.save!
 
     respond_to do |format|
-      if @game.save
-        format.html { redirect_to @game, notice: 'Game was successfully created.' }
-        format.json { render :show, status: :created, location: @game }
-      else
-        format.html { render :new }
-        format.json { render json: @game.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  # PATCH/PUT /games/1
-  # PATCH/PUT /games/1.json
-  def update
-    respond_to do |format|
-      if @game.update(game_params)
-        format.html { redirect_to @game, notice: 'Game was successfully updated.' }
-        format.json { render :show, status: :ok, location: @game }
-      else
-        format.html { render :edit }
-        format.json { render json: @game.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  # DELETE /games/1
-  # DELETE /games/1.json
-  def destroy
-    @game.destroy
-    respond_to do |format|
-      format.html { redirect_to games_url, notice: 'Game was successfully destroyed.' }
-      format.json { head :no_content }
+      format.html { redirect_to @game, notice: 'Game was successfully created.' }
+      format.json { render :show, status: :created, location: @game }
     end
   end
 
   private
-  # Use callbacks to share common setup or constraints between actions.
+
   def set_game
     @game = Game.find(params[:id])
   end
 
-  # Never trust parameters from the scary internet, only allow the white list through.
   def game_params
     params.require(:game).permit(:name, :state)
   end
