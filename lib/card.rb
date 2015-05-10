@@ -14,7 +14,11 @@ class Card
 
   def value_name
     card_names = %w[Two Three Four Five Six Seven Eight Nine Ten Jack Queen King Ace]
-    return card_names[value]
+    return card_names[@value]
+  end
+
+  def abbreviated_name
+    %w[2 3 4 5 6 7 8 9 10 J Q K A][@value]
   end
   
   def <=> other
@@ -29,6 +33,14 @@ class Card
     return false if other.nil?
     return false if (@value.nil? or other.value.nil?) and @value != other.value
     return (@value.to_i == other.value.to_i and @suit == other.suit)
+  end
+  
+  def suit_order other
+    if @suit != other.suit
+      SUITS.index( @suit ) <=> SUITS.index( other.suit )
+    else
+      @value <=> other.value
+    end
   end
 
   # creates a standard deck of 52 cards, Ace high

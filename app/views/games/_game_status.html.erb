@@ -1,3 +1,7 @@
-Current round: <%= @round %> |
-Trump: <canvas id="trump" width="70" height="105" style="border:1px solid #000000;"></canvas> |
-Waiting on: <%= @waiting_on %>
+<h2>Game: <%= @game.name %></h2>
+<br>
+<strong><h4>Current round</strong>: <%= @round %></h4>
+<div>
+  <h4><strong>Trump</strong>: <canvas id="trump" width="70" height="105" style="border:1px solid #000000;"></canvas></h4>
+</div>
+<h4><strong>Waiting on</strong>: <%= @waiting_on %></h4>

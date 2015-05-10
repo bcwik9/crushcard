@@ -70,10 +70,9 @@ class GamesController < ApplicationController
   # GET /games/1
   # GET /games/1.json
   def show
-    is_playing = @game.state_data[:player].has_key?(current_user)
     player_index = @game.state_data[:players].index(current_user) || 0
-
-    game_started = !@game.state_data[:bids].nil?
+    @is_playing = @game.state_data[:player].has_key?(current_user)
+    @game_started = !@game.state_data[:bids].nil?
 
     # round number
     @round = @game.state_data[:total_rounds] - @game.state_data[:rounds_played]
@@ -95,7 +94,7 @@ class GamesController < ApplicationController
 
     # cards that have been played
     @played_cards = @game.state_data[:cards_in_play]
-    if game_started
+    if @game_started
       # display cards in different order since the user is on the bottom
       @played_cards = []
       @game.iterate_through_list_with_start_index(player_index, @game.state_data[:players]) do |player,i|
@@ -105,7 +104,7 @@ class GamesController < ApplicationController
 
     # players hand
     @cards = []
-    if is_playing && game_started
+    if @is_playing && @game_started
       @cards = @game.state_data[:player_hands][player_index] || @cards
 
       # can't play any cards unless it's your turn
@@ -119,14 +118,16 @@ class GamesController < ApplicationController
         end
       end
     end
-    @cards.sort!
+    @cards.sort! { |a,b| a.suit_order b }
 
     # game status (ie. who we're waiting on)
     if @game.state_data[:waiting_on]
       waiting_on_index = @game.state_data[:players].index(@game.state_data[:waiting_on])
-      @waiting_on = @game.state_data[:names][waiting_on_index]
+      @waiting_on = @game.state_data[:names][waiting_on_index] || "Table to clear"
       @waiting_on = 'YOU' if current_user == @game.state_data[:waiting_on]
-      unless @game.done_bidding? @game.state_data
+
+      @done_bidding = @game.done_bidding?
+      unless @done_bidding
         @waiting_on += " (BIDDING)"
       end
     else

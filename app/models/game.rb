@@ -132,60 +132,9 @@ class Game < ActiveRecord::Base
 
       # check to see if all players have played a card
       if all_players_played_a_card?(state)
-        # determine who won the trick
-        highest_card = get_highest_card(state[:cards_in_play], state[:first_suit_played], state[:trump_card], current_player_index+1)
-        winner_index = state[:cards_in_play].find_index(highest_card)
-        state[:tricks_taken][winner_index] ||= []
-        state[:tricks_taken][winner_index].push state[:cards_in_play]
-
-        # reset variables
-        state[:cards_in_play] = []
-        state[:first_suit_played] = nil
-
-
-        # check to see if we're done with this round
-        if state[:player_hands].first.empty?
-          # increment rounds played
-          state[:rounds_played] += 1
-
-          # determine scores
-          state[:tricks_taken].each_with_index do |tricks, i|
-            num_tricks_taken = tricks.nil? ? 0 : tricks.size
-            if num_tricks_taken < state[:bids][i]
-              player_score = num_tricks_taken - state[:bids][i]
-            elsif num_tricks_taken > state[:bids][i]
-              player_score = num_tricks_taken
-            else
-              player_score = num_tricks_taken + 10
-            end
-            state[:score][i] ||= []
-            state[:score][i].push player_score
-          end
-
-          # check to see if that was the last round (game over)
-          if state[:rounds_played] == state[:total_rounds]
-            # game is over, determine who won
-            state[:winners] = []
-            highest_score = nil
-            state[:score].each_with_index do |score, i|
-              player_score = score.inject :+ # add up score from each round
-              if highest_score.nil? or player_score >= highest_score
-                highest_score = player_score
-                # clear winners list if there's a new high score
-                # winners list is necessary since there can be ties
-                state[:winners].clear if player_score > highest_score
-                state[:winners].push state[:players][i]
-              end
-            end
-            # TODO: implement something to notify game has ended and who won
-          else
-            # deal cards for the next round
-            deal_cards state
-          end
-        else
-          # winner is the first to play a card next
-          state[:waiting_on] = state[:players][winner_index]
-        end
+        # make sure nobody can do anything
+        state[:waiting_on] = "Table to clear"
+        delay.clear_table(current_player_index, state)
       else
         # set next player to play a card
         state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
@@ -218,6 +167,70 @@ class Game < ActiveRecord::Base
       @state_data[:player] ||= Hash.new
     end
     @state_data
+  end
+
+  # clear the table of cards and calculate who won the trick/game
+  def clear_table current_player_index, state
+    # sleep a bit so the table isn't cleared immediately
+    sleep 3
+
+    # determine who won the trick
+    highest_card = get_highest_card(state[:cards_in_play], state[:first_suit_played], state[:trump_card], current_player_index+1)
+    winner_index = state[:cards_in_play].find_index(highest_card)
+    state[:tricks_taken][winner_index] ||= []
+    state[:tricks_taken][winner_index].push state[:cards_in_play]
+
+    # reset variables
+    state[:cards_in_play] = []
+    state[:first_suit_played] = nil
+    
+
+    # check to see if we're done with this round
+    if state[:player_hands].first.empty?
+      # increment rounds played
+      state[:rounds_played] += 1
+
+      # determine scores
+      state[:tricks_taken].each_with_index do |tricks, i|
+        num_tricks_taken = tricks.nil? ? 0 : tricks.size
+        if num_tricks_taken < state[:bids][i]
+          player_score = num_tricks_taken - state[:bids][i]
+        elsif num_tricks_taken > state[:bids][i]
+          player_score = num_tricks_taken
+        else
+          player_score = num_tricks_taken + 10
+        end
+        state[:score][i] ||= []
+        state[:score][i].push player_score
+      end
+      
+      # check to see if that was the last round (game over)
+      if state[:rounds_played] == state[:total_rounds]
+        # game is over, determine who won
+        state[:winners] = []
+        highest_score = nil
+        state[:score].each_with_index do |score, i|
+          player_score = score.inject :+ # add up score from each round
+          if highest_score.nil? or player_score >= highest_score
+            highest_score = player_score
+            # clear winners list if there's a new high score
+            # winners list is necessary since there can be ties
+            state[:winners].clear if player_score > highest_score
+            state[:winners].push state[:players][i]
+          end
+        end
+        # TODO: implement something to notify game has ended and who won
+      else
+        # deal cards for the next round
+        deal_cards state
+      end
+    else
+      # winner is the first to play a card next
+      state[:waiting_on] = state[:players][winner_index]
+    end
+
+    save_state state
+    self.save!
   end
 
   def load_state
@@ -288,4 +301,3 @@ class Game < ActiveRecord::Base
     return player_size_and_nil_check(state[:cards_in_play], state)
   end
 end
-
