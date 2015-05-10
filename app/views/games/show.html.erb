@@ -14,77 +14,74 @@ var game_api = new Game(); // Load the Game object
   data-played-cards="<%= @played_cards.size %>" 
   <% @played_cards.each_with_index do |card,i| %>
     data-played-card-<%= i.to_s %>-suit="<%= card.suit %>"
-    data-played-card-<%= i.to_s %>-name="<%= card.abbreviated_name %>"
-  <% end %>
-  />
-
-  <h1>
-    <%= @game.name %>: <%= @game.has_player?(current_user) ? @game.state_data[:player][current_user] : "not joined yet" %>
-  </h1>
-
-  Players: <%= @game.state_data[:players].join(", ") %>
-<br />
-  Player: <%= @game.state_data[:player].keys.join(", ") %>
-<br />
-
-  <div class="info"  id="notice"><%= notice %> <%= @game.state_data[:current_status] %></div>
-  <% if @game.waiting_for_players? && !@game.has_player?(current_user) %>
-    <%= form_tag(games_add_player_path) do %>
-    <%= hidden_field_tag(:id, params[:id]) %>
-  <div class="input-group" style="width:340px;">
-    <%= text_field_tag("username", "", placeholder: "Player Name", class: "form-control input-lg") %>
-    <span class="input-group-btn">
-      <%= button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary") %>
-    </span>
-  </div>
+  data-played-card-<%= i.to_s %>-name="<%= card.abbreviated_name %>"
 <% end %>
-  <%= @game.state_data[:names].join(", ") %>
-<% end %>
-  <br>
+  >
+</div>
 
-  <div id="board-wrapper" style="text-align:center;">
-    <div class="row">
-      <div id="game-stat" class="col-md-2" style="padding-top:175px;">
-        <%= render "game_status" %>
-      </div>
-      <br>
-      <div id="board-info" class="col-md-8">
-        <%= render "board_info" %>
-      </div>
-      <br>
-      <% if @game.has_player?(current_user) %>
-        <div id="buttons" class="col-md-2" style="padding-top:175px; text-align:left;">
-        <% if @game.can_deal?(current_user) %>
-          <% if @game.enough_players? %>
-          <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
-      <% else %>
-          Waiting on more players before you can deal.
-      <% end %>
-      <% elsif @game.needs_to_bid?(current_user) %>
-          <%= form_tag(games_player_action_path) do %>
-          <%= hidden_field_tag(:id, params[:id]) %>
-        <div class="input-group" style="width:150px;">
-          <%= number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg") %>  
-          <span class="input-group-btn">
-            <%= button_tag("Bid", type: "submit", class: "btn btn-lg btn-primary") %>
-          </span>
-        </div>
-      <% end  %>
-      <% else %>
-          Waiting for more players or the creator to start the game.
-      <% end %>
-      </div>
-    <% end %>
+<h1>
+  Welcome, <%= @game.has_player?(current_user) ? @game.state_data[:player][current_user] : "not joined yet" %>, to game: <%= @game.name %>
+</h1>
+
+<div class="info"  id="notice"><%= notice %> <%= @game.state_data[:current_status] %></div>
+
+<% if @game.waiting_for_players? && !@game.has_player?(current_user) %>
+  <%= form_tag(games_add_player_path) do %>
+  <%= hidden_field_tag(:id, params[:id]) %>
+<div class="input-group" style="width:340px;">
+  <%= text_field_tag("username", "", placeholder: "Player Name", class: "form-control input-lg") %>
+  <span class="input-group-btn">
+    <%= button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary") %>
+  </span>
+</div>
+<% end %>
+<%= @game.state_data[:names].join(", ") %>
+<% end %>
+<br>
+
+<div id="board-wrapper" style="text-align:center;">
+  <div class="row">
+    <div id="game-stat" class="col-md-2" style="padding-top:175px;">
+      <%= render "game_status" %>
     </div>
     <br>
-  </div>
-  <div style="padding-left:100px;">
-    Your Cards
-    <div id="cardPile">
-      <%= render "card_pile" %>
+    <div id="board-info" class="col-md-8">
+      <%= render "board_info" %>
     </div>
+    <br>
+    <% if @game.has_player?(current_user) %>
+      <div id="buttons" class="col-md-2" style="padding-top:175px; text-align:left;">
+      <% if @game.can_deal?(current_user) %>
+        <% if @game.enough_players? %>
+        <%= button_to 'Deal', games_deal_path, method: :post, params: {:id => params[:id]}, class: "btn btn-lg btn-primary" %>
+    <% else %>
+        Waiting on more players before you can deal.
+    <% end %>
+    <% elsif @game.needs_to_bid?(current_user) %>
+        <%= form_tag(games_player_action_path) do %>
+        <%= hidden_field_tag(:id, params[:id]) %>
+      <div class="input-group" style="width:150px;">
+        <%= number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg") %>  
+        <span class="input-group-btn">
+          <%= button_tag("Bid", type: "submit", class: "btn btn-lg btn-primary") %>
+        </span>
+      </div>
+    <% end  %>
+    <% else %>
+        Waiting for more players or the creator to start the game.
+    <% end %>
+    </div>
+  <% end %>
   </div>
-  <!-- <div id="cardSlots"> </div> -->
+  <br>
+</div>
+<div style="padding-left:100px;">
+  Your Cards
+  <div id="cardPile">
+    <%= render "card_pile" %>
+  </div>
+</div>
+<!-- <div id="cardSlots"> </div> -->
 </div>
 
 </body>
