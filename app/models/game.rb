@@ -1,18 +1,35 @@
 class Game < ActiveRecord::Base
   require 'yaml'
-  before_save :state_data
+  after_initialize :state_data
+  before_save :serialize_state
 
   def has_player?(player_id)
+    state_data[:player].has_key?(player_id)
+  end
+
+  def serialize_state
+    self.state = state_data.to_yaml
+  end
+
+  def can_deal?(player_id)
+    state_data[:players].first == player_id && state_data.has_key?(player_id)
   end
 
   def waiting_for_players?
-    state_data[:current_status] == :waiting_for_players
+    state_data[:current_status] == :waiting_for_players && state_data[:player].size < 5
   end
 
-  def set_up
-    save_state
+  def add_player(player_id, player_name)
+    state_data[:players] << player_id 
+    while state_data[:names].include? player_name
+      player_name += rand(10).to_s
+    end
+    state_data[:names] << player_name
+    state_data[:player][player_id] = player_name
+    save!
+    player_name
   end
-  
+
   def deal_cards state
     # need to have at least 3 players to start the game
     raise 'Must have between 3 and 5 players to start' if state[:players].size < 3 or state[:players].size > 5
@@ -28,7 +45,7 @@ class Game < ActiveRecord::Base
     # person to the 'left' of the dealer bids first
     state[:bids] = []
     state[:waiting_on] = get_next_player state[:dealer], state[:players]
-    
+
     # deal out number of cards equal to whatever round we are on
     # to each player
     # deal cards first to player on 'right' of dealer
@@ -36,7 +53,7 @@ class Game < ActiveRecord::Base
     iterate_through_list_with_start_index(state[:players].find_index(state[:waiting_on]), state[:players]) { |player, i|
       state[:player_hands][i] = state[:deck].slice!(0..(num_cards_per_player-1))
     }
-    
+
     # the next card in the deck is trump
     # whatever suit is trump is valued higher than non-trump suits
     # an Ace as trump means there is "no trump"
@@ -53,24 +70,24 @@ class Game < ActiveRecord::Base
   # player either bids or plays a card if it's their turn
   def player_action user_id, user_input=nil
     state = load_state
-    
+
     # return false if it's not the players turn
     return false if user_id != state[:waiting_on]
 
     current_player_index = state[:players].find_index user_id
-    
+
     # check if we are in bidding or playing a card
     if !done_bidding? state
       # player is making a bid
       bid = user_input.to_i
-      
+
       # dealer cannot bid the same amount as the number of cards dealt
       total_bids = state[:bids].select { |bid| !bid.nil? }.inject(:+)
       num_cards_per_player = state[:total_rounds] - state[:rounds_played]
       if state[:dealer] == user_id and total_bids + bid == num_cards_per_player
         return false
       end
-      
+
       # record the bid
       state[:bids][current_player_index] = bid
 
@@ -93,7 +110,7 @@ class Game < ActiveRecord::Base
     elsif not state[:player_hands][current_player_index].empty?
       # player is playing a card
       card = user_input
-      
+
       # ensure that the card is in their inventory
       return false unless state[:player_hands][current_player_index].any? { |player_card| player_card == card }
 
@@ -101,7 +118,7 @@ class Game < ActiveRecord::Base
       state[:first_suit_played] ||= card.suit
       playable_cards = get_playable_cards(state[:first_suit_played], state[:player_hands][current_player_index])
       return false unless playable_cards.include? card
-      
+
       # actually play the card
       state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
 
@@ -116,7 +133,7 @@ class Game < ActiveRecord::Base
         # reset variables
         state[:cards_in_play] = []
         state[:first_suit_played] = nil
-        
+
 
         # check to see if we're done with this round
         if state[:player_hands].first.empty?
@@ -136,7 +153,7 @@ class Game < ActiveRecord::Base
             state[:score][i] ||= []
             state[:score][i].push player_score
           end
-        
+
           # check to see if that was the last round (game over)
           if state[:rounds_played] == state[:total_rounds]
             # game is over, determine who won
@@ -166,11 +183,11 @@ class Game < ActiveRecord::Base
         state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
       end
     end
-    
+
     save_state state
     return true
   end
-  
+
   def state_data
     current_time = self.updated_at || self.created_at 
     @state_read_at ||= current_time
@@ -180,13 +197,17 @@ class Game < ActiveRecord::Base
           current_status: :waiting_for_players, 
           total_rounds: 10,
           rounds_played: 0,
-          player_hands: [],
-          score: [],
-          deck: [],
-          names: []
+          players: nil,
+          player_hands: nil,
+          score: nil,
+          deck: nil,
+          names: nil
         }.to_yaml 
       end
       @state_data = load_state
+      @state_data[:players] ||= Array.new
+      @state_data[:names] ||= Array.new
+      @state_data[:player] ||= Hash.new
     end
     @state_data
   end
@@ -194,7 +215,7 @@ class Game < ActiveRecord::Base
   def load_state
     return self.state.nil? ? Hash.new : YAML.load(self.state)
   end
-  
+
   def save_state(state = state_data)
     self.state = state.to_yaml
   end
@@ -210,14 +231,14 @@ class Game < ActiveRecord::Base
     # only cards that are the same suit as the first card played matter
     same_suit_cards = cards.select { |c| c.suit == first_suit_played }
     card_set = trump_cards.empty? ? same_suit_cards : trump_cards
-    
+
     # now simply get the highest card left
     return card_set.max
     #iterate_through_list_with_start_index(start_index, card_set) do |card|
     #  return card if card.value == highest_value
     #end
   end
-  
+
   def get_playable_cards first_suit_played, cards
     # player can play any card if they are the first to play a card
     # or if they only have a single card left

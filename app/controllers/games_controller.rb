@@ -1,52 +1,33 @@
 class GamesController < ApplicationController
-  before_action :set_game, only: [:show, :edit, :update, :destroy]
+  before_action :set_game, only: [:add_player, :deal, :player_action, :show, :edit, :update, :destroy]
 
   def add_player
-      state = @game.load_state
-      if state[:players].size < 5
-        unless state[:players].include?(current_user)
-          if state[:cards_in_play]
-            redirect_to @game, notice: 'Cant join once the game has already started'
-            return
-          end
-          state[:players].push current_user
-          while state[:names].include? params[:username]
-            # make sure username is unique by appending random numbers
-            params[:username] += rand(10).to_s
-          end
-          state[:names].push params[:username]
-          @game.save_state state
-          if @game.save
-            redirect_to @game, notice: 'Joined the game!'
-          else
-            redirect_to @game, notice: 'Failed to join the game'
-          end
-        else
-          redirect_to @game, notice: 'Youre already in the game'
-        end
-      else
-        redirect_to @game, notice: 'There are too many players in the game already'
-      end
-  end
-  
-  def deal
-    set_game
-    state = @game.load_state
-    if state[:players].size < 3 or state[:players].size > 5
-      redirect_to @game, notice: 'Must have between 3 and 5 players to start'
-      return
-    end
-    if state[:players].first == current_user
-      if state[:cards_in_play].nil?
-        @game.save_state @game.deal_cards(state)
-        @game.save
-        redirect_to @game, notice: 'Game has started!'
-      else
-        redirect_to @game, notice: 'Game has already started'
-      end
+    if @game.state_data[:players].size > 5
+      redirect_to @game, notice: 'There are too many players in the game already'
+    elsif @game.has_player?(current_user)
+      redirect_to @game, notice: 'Youre already in the game'
+    elsif !@game.waiting_for_players?
+      redirect_to @game, notice: 'Cant join once the game has already started'
     else
-      redirect_to @game, notice: 'Only the creator of the game can start it'
+      session[:player_name] = @game.add_player(current_user, params[:username])
+      redirect_to @game, notice: "Welcome to the game, #{session[:player_name]}"
     end
+  end
+
+  def deal
+    message = if @game.state_data[:players].size < 3 or @game.state_data[:players].size > 5
+                'Must have between 3 and 5 players to start'
+              elsif !@game.waiting_for_players?
+                'Game has already started'
+              elsif @game.can_deal?(current_user)
+                'Only the creator of the game can start it'
+              else
+                @game.deal_cards(@game.state_data)
+                @game.state_data[:current_status] = :in_play
+                @game.save!
+                'Game has started!'
+              end
+    redirect_to @game, notice: message
   end
 
   def player_action
@@ -58,7 +39,7 @@ class GamesController < ApplicationController
       redirect_to @game, notice: "Dude... It's not your turn"
       return
     end
-    
+
     if params[:bid]
       # user is making a bid
       if @game.done_bidding? state
@@ -93,50 +74,48 @@ class GamesController < ApplicationController
   # GET /games/1
   # GET /games/1.json
   def show
-    state = @game.load_state
-    
-    is_playing = state[:players].include?(current_user)
+    is_playing = @game.state_data[:player].has_key?(current_user)
+    player_index = @game.state_data[:players].index(current_user) || 0
 
-    game_started = !state[:bids].nil?
-    player_index = state[:players].index(current_user) || 0
+    game_started = !@game.state_data[:bids].nil?
 
     # round number
-    @round = state[:total_rounds] - state[:rounds_played]
+    @round = @game.state_data[:total_rounds] - @game.state_data[:rounds_played]
 
     # names/scores around the board
     # add in different order so the user is always on the bottom
     @names = []
     @round_scores = []
-    @game.iterate_through_list_with_start_index(player_index, state[:names]) do |name, i|
-      tricks_taken = (state[:tricks_taken] and state[:tricks_taken][i]) ? state[:tricks_taken][i].size : 0
-      bid = (state[:bids] and state[:bids][i]) ? state[:bids][i] : 'No bid yet'
+    @game.iterate_through_list_with_start_index(player_index, @game.state_data[:players]) do |player_id, i|
+      tricks_taken = (@game.state_data[:tricks_taken] and @game.state_data[:tricks_taken][i]) ? @game.state_data[:tricks_taken][i].size : 0
+      bid = (@game.state_data[:bids] and @game.state_data[:bids][i]) ? @game.state_data[:bids][i] : 'No bid yet'
       score = 0
-      if state[:score] and state[:score][i]
-        score = state[:score][i].inject :+
+      if @game.state_data[:score] and @game.state_data[:score][i]
+        score = @game.state_data[:score][i].inject :+
       end
-      @names.push name
-      @round_scores.push (name.nil?) ? nil : "Tricks taken: #{tricks_taken} | Bid: #{bid} | Score: #{score}"
+      @names.push @game.state_data[:names][i]
+      @round_scores.push (player_id.nil?) ? nil : "Tricks taken: #{tricks_taken} | Bid: #{bid} | Score: #{score}"
     end
-    
+
     # cards that have been played
-    @played_cards = state[:cards_in_play]
+    @played_cards = @game.state_data[:cards_in_play]
     if game_started
       # display cards in different order since the user is on the bottom
       @played_cards = []
-      @game.iterate_through_list_with_start_index(player_index, state[:players]) do |player,i|
-        @played_cards.push state[:cards_in_play][i]
+      @game.iterate_through_list_with_start_index(player_index, @game.state_data[:players]) do |player,i|
+        @played_cards.push @game.state_data[:cards_in_play][i]
       end
     end
 
     # players hand
     @cards = []
-    if is_playing
-      @cards = state[:player_hands][player_index] || @cards
+    if is_playing && game_started
+      @cards = @game.state_data[:player_hands][player_index] || @cards
 
       # can't play any cards unless it's your turn
       playable_cards = []
-      if state[:waiting_on] == current_user
-        playable_cards = @game.get_playable_cards(state[:first_suit_played], state[:player_hands][player_index])
+      if @game.state_data[:waiting_on] == current_user
+        playable_cards = @game.get_playable_cards(@game.state_data[:first_suit_played], @game.state_data[:player_hands][player_index])
       end
       @cards.each do |card|
         if playable_cards.include? card
@@ -145,22 +124,22 @@ class GamesController < ApplicationController
       end
     end
     @cards.sort!
-    
+
     # game status (ie. who we're waiting on)
-    if state[:waiting_on]
-      waiting_on_index = state[:players].index(state[:waiting_on])
-      @waiting_on = state[:names][waiting_on_index]
-      @waiting_on = 'YOU' if current_user == state[:waiting_on]
-      unless @game.done_bidding? state
+    if @game.state_data[:waiting_on]
+      waiting_on_index = @game.state_data[:players].index(@game.state_data[:waiting_on])
+      @waiting_on = @game.state_data[:names][waiting_on_index]
+      @waiting_on = 'YOU' if current_user == @game.state_data[:waiting_on]
+      unless @game.done_bidding? @game.state_data
         @waiting_on += " (BIDDING)"
       end
     else
       @waiting_on = 'Game to start'
     end
-  
+
     # show ace of spades if game hasnt started
-    @trump = state[:trump_card] || Card.new('Spades', 12)
-    
+    @trump = @game.state_data[:trump_card] || Card.new('Spades', 12)
+
     # make sure show.js.erb is executed in the views folder
     respond_to do |format|
       format.js
@@ -181,7 +160,7 @@ class GamesController < ApplicationController
   # POST /games.json
   def create
     @game = Game.new(game_params)
-    @game.set_up
+    @game.state_data[:players] << current_user
 
     respond_to do |format|
       if @game.save
@@ -219,13 +198,13 @@ class GamesController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_game
-      @game = Game.find(params[:id])
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_game
+    @game = Game.find(params[:id])
+  end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def game_params
-      params.require(:game).permit(:name, :state)
-    end
+  # Never trust parameters from the scary internet, only allow the white list through.
+  def game_params
+    params.require(:game).permit(:name, :state)
+  end
 end

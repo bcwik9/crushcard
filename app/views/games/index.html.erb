@@ -17,6 +17,7 @@
     <thead >
       <tr>
         <th>Game Name</th>
+        <th>Players</th>
         <th>Round</th>
         <th>Join</th>
       </tr>
@@ -26,6 +27,7 @@
     <% @games.order(:updated_at).each do |game| %>
       <tr>
       <td><%= game.name %></td>
+      <td><%= game.state_data[:player].size %></td>
       <td><%= "#{10 - game.state_data[:rounds_played]}" %></td>
       <% label = game.waiting_for_players? ? "Join Game" : "Game Started Already" %>
       <% label_class = game.waiting_for_players? ? "btn-success" : "btn-info" %>
