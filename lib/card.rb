@@ -12,15 +12,6 @@ class Card
     @value = value
   end
 
-  def value_name
-    card_names = %w[Two Three Four Five Six Seven Eight Nine Ten Jack Queen King Ace]
-    return card_names[@value]
-  end
-
-  def abbreviated_name
-    %w[2 3 4 5 6 7 8 9 10 J Q K A][@value]
-  end
-  
   def <=> other
     return 1 if other.nil?
     return 0 if @value.nil? and other.value.nil?
@@ -48,10 +39,10 @@ class Card
   def self.get_deck
     cards = []
     SUITS.each do |suit|
-      1..13.times do |i|
-        cards.push Card.new(suit, i)
+      0..12.times do |i|
+        cards << [suit, i]
       end
     end
-    return cards
+    return cards.shuffle
   end
 end

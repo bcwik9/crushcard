@@ -24,7 +24,7 @@
     </thead>
 
     <tbody class="table-striped">
-    <% @games.order(:updated_at).each do |game| %>
+    <% @games.order("updated_at DESC").each do |game| %>
       <tr>
       <td><%= game.name %></td>
       <td><%= game.state_data[:player].size %></td>

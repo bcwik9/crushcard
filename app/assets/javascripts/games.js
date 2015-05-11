@@ -13,7 +13,7 @@
         drop: testDrop
       } );
 
-      create_suffled_cards_pile();
+      // TODO: needed? create_suffled_cards_pile();
 
       var words = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
       for ( var i=1; i<=10; i++ ) {
@@ -24,7 +24,7 @@
         } );
       }
 
-      initial_card_logic();
+      // initial_card_logic();
     };
 
     var create_suffled_cards_pile = function(){
@@ -45,7 +45,10 @@
 
         var canvasName = "canv"+i
         var currentCanvas = $("#" + canvasName);
-        draw_card(currentCanvas.data('suit'), currentCanvas.data('value'), canvasName);
+        var card = currentCanvas.data('card');
+        var card_suit = card_suit(card);
+        var card_value = card_value(card);
+        draw_card(card_suit, card_value, canvasName);
       }
     };
 
@@ -64,15 +67,16 @@
 
     var playCard = function(event) {
       // only accept playable cards
-      var cardIsPlayable = event.target.data('playable');
-      if(!(/true/i).test(cardIsPlayable)) {
-        alert("C'mon man, you can't play this card! Try another!");
-        return;
-      }
+//      var cardIsPlayable = event.target.data('playable');
+//      if(!(/true/i).test(cardIsPlayable)) {
+//        alert("C'mon man, you can't play this card! Try another!");
+//        return;
+//      }
 
-      var cardSuit = event.target.data('suit');
-      var cardValue = event.target.data('actualvalue');
-      sendCard(cardSuit, cardValue);
+      var card = event.target.data('card');
+      var card_suit = card_suit(card);
+      var card_value = card_value(card);
+      sendCard(card_suit, card_value);
     };
 
     var testDrop = function(event, ui) {
@@ -88,8 +92,9 @@
       $(this).droppable( 'disable' );
       ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
       ui.draggable.draggable( 'option', 'revert', false );
-      var cardSuit = ui.draggable.context.children[0].data('suit');
-      var cardValue = ui.draggable.context.children[0].data('actualvalue');
+      var card = ui.draggable.context.children[0].data('card');
+      var card_suit = card_suit(card);
+      var card_value = card_value(card);
       sendCard(cardSuit, cardValue);
     };
 
@@ -118,8 +123,10 @@
       }
     };
 
-    var draw_card = function(suit, value, canvas){
-      var canvas = document.getElementById(canvas);
+    var draw_card = function(suit, value, canvas_name){
+      var canvas = $("#"+canvas_name).first();
+      console.log(canvas_name);
+      console.log(canvas); 
       var context = canvas.getContext("2d");
       var suit_width = canvas.width * 0.285;
       var suit_height = canvas.height * 0.257;
@@ -146,20 +153,28 @@
     };
 
     var initial_card_logic = function(){
-      var trump_suit = $('#game_data').data('trumpSuit');
-      var trump_name = $('#game_data').data('trumpName');
+      var trump_card = $('#game_data').data('trumpCard');
+      var trump_suit = card_suit(trump_card);
+      var trump_value = card_value(trump_card);
       draw_card(trump_suit, trump_name, "trump");
 
       var played_cards = $('#game_data').data('playedCards');
       var sides = ["bottom", "left", "top", "right","unknown-fifth-player"]; //TODO: 5 player logic
       for ( var i=0; i<played_cards; i++ ) {
-        var card_suit = $('#game_data').data('playedCard'+i+'Suit');
-        var card_name = $('#game_data').data('playedCard'+i+'Name');
+        var card = $('#game_data').data('playedCard'+i);
+        var card_suit = card_suit(card);
+        var card_value = card_value(card);
         draw_card(card_suit, card_name, sides[i]);
       }
     };
 
-    // Initialization Logic!
+    var card_suit = function(card){
+      return cards_api.card_suit(card)
+    };
+    var card_value = function(card){
+      return cards_api.card_value(card)
+    };
+
     init();
   };
 }(jQuery);

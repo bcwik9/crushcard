@@ -1,18 +1,12 @@
 <%= stylesheet_link_tag 'style' %>
-<script>
-var game_api = new Game(); // Load the Game object
-</script>
-
 <div id="game_path" data-url="<%= game_path(@game) %>"></div>
 <div id="game_data" 
   data-id="<%= @game.id %>" 
-  data-trump-suit="<%= @trump.suit %>", 
-  data-trump-name="<%= @trump.abbreviated_name %>" 
+  data-trump-card="<%= @trump %>", 
   data-played-cards="<%= @played_cards.size %>" 
   <% @played_cards.each_with_index do |card,i| %>
-    data-played-card-<%= i.to_s %>-suit="<%= card.suit %>"
-  data-played-card-<%= i.to_s %>-name="<%= card.abbreviated_name %>"
-<% end %>
+    data-played-card-<%= i.to_s %>="<%= card %>"
+  <% end %>
   >
 </div>
 
@@ -32,7 +26,6 @@ var game_api = new Game(); // Load the Game object
   </span>
 </div>
 <% end %>
-<%= @game.state_data[:names].join(", ") %>
 <% end %>
 <br>
 
@@ -80,3 +73,7 @@ var game_api = new Game(); // Load the Game object
 </div>
 <!-- <div id="cardSlots"> </div> -->
 </div>
+<script>
+var game_api = new Game(); // Load the Game object
+</script>
+
