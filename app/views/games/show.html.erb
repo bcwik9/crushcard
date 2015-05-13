@@ -144,7 +144,7 @@ function handleCardDrop( event, ui ) {
     <br>
     <div id="buttons" class="col-md-2" style="padding-top:175px; text-align:left;">
       <!-- join game form -->
-      <% unless @is_playing or @game_started %>
+      <% unless @game_started %>
       <div class="row">
         <%= form_tag(games_add_player_path) do %>
         <%= hidden_field_tag(:id, params[:id]) %>
