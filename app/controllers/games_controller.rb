@@ -2,36 +2,44 @@ class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
   def add_player
-    unless @_current_user.nil?
-      set_game
-      state = @game.load_state
-      if state[:players].size < 5
-        unless state[:players].include?(@_current_user)
-          if state[:cards_in_play]
-            redirect_to @game, notice: 'Cant join once the game has already started'
-            return
-          end
-          state[:players].push @_current_user
-          while state[:names].include? params[:username]
-            # make sure username is unique by appending random numbers
-            params[:username] += rand(10).to_s
-          end
-          state[:names].push params[:username]
-          @game.save_state state
-          if @game.save
-            redirect_to @game, notice: 'Joined the game!'
-          else
-            redirect_to @game, notice: 'Failed to join the game'
-          end
-        else
-          redirect_to @game, notice: 'Youre already in the game'
-        end
+    if @_current_user.nil?
+      redirect_to @game, notice: 'Unable to determine current user'
+      return
+    end
+
+    set_game
+    state = @game.load_state
+
+    if state[:cards_in_play]
+      redirect_to @game, notice: 'Cant join once the game has already started'
+    elsif state[:players].size >= 5
+      redirect_to @game, notice: 'There are too many players in the game already'
+    else
+      if params[:computer_player]
+        logger.info 'adding computer player'
+        state[:players].push SecureRandom.uuid()
+      elsif not state[:players].include?(@_current_user)
+        state[:players].push @_current_user
       else
-        redirect_to @game, notice: 'There are too many players in the game already'
+        redirect_to @game, notice: 'Youre already in the game'
+        return
+      end
+
+      while state[:names].include? params[:username]
+        # make sure username is unique by appending random numbers
+        params[:username] += rand(10).to_s
+      end
+      state[:names].push params[:username]
+
+      @game.save_state state
+      if @game.save
+        redirect_to @game, notice: 'Joined the game!'
+      else
+        redirect_to @game, notice: 'Failed to join the game'
       end
     end
   end
-  
+
   def deal
     set_game
     state = @game.load_state
