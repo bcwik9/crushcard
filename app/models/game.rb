@@ -93,6 +93,7 @@ class Game < ActiveRecord::Base
         state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
         current_player_index = state[:players].find_index state[:waiting_on]
 
+        # get cpu players' bids
         if is_cpu_player? state[:waiting_on]
           bid = get_possible_bids( num_cards_per_player,
                                    state[:bids],
@@ -112,30 +113,37 @@ class Game < ActiveRecord::Base
           break
         end
       end
-    elsif not state[:player_hands][current_player_index].empty?
-      # player is playing a card
-      card = user_input
+    end
       
-      # ensure that the card is in their inventory
-      return false unless state[:player_hands][current_player_index].any? { |player_card| player_card == card }
-
-      # ensure that the card is actually playable
-      state[:first_suit_played] ||= card.suit
+    # Time to play some cards
+    while not all_players_played_a_card? state
       playable_cards = get_playable_cards(state[:first_suit_played], state[:player_hands][current_player_index])
-      return false unless playable_cards.include? card
-      
+
+      if user_id == state[:waiting_on]
+        card = user_input
+        # ensure that the card is actually playable
+        return false unless playable_cards.include? card
+      else
+        card = playable_cards.sample
+      end
+
       # actually play the card
+      state[:first_suit_played] ||= card.suit
       state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
 
-      # check to see if all players have played a card
-      if all_players_played_a_card?(state)
-        # make sure nobody can do anything
-        state[:waiting_on] = "Table to clear"
-        delay.clear_table(current_player_index, state)
-      else
-        # set next player to play a card
-        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+      # set next player to play a card
+      state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+      current_player_index = state[:players].find_index state[:waiting_on]
+
+      if not is_cpu_player? state[:waiting_on]
+        break
       end
+    end
+
+    if all_players_played_a_card? state
+      # make sure nobody can do anything
+      state[:waiting_on] = "Table to clear"
+      delay.clear_table(current_player_index, state)
     end
     
     save_state state
