@@ -46,6 +46,16 @@ class Game < ActiveRecord::Base
     # an Ace as trump means there is "no trump"
     state[:trump_card] = state[:deck].slice! 0
 
+    # Continuously get cpu players' bids until we get to a human player
+    while is_cpu_player? state[:waiting_on] and
+          state[:bids].size < state[:players].size
+      bid = get_possible_bids( num_cards_per_player,
+                               state[:bids],
+                               state[:waiting_on] == state[:dealer] ).sample
+      state[:bids][state[:players].find_index state[:waiting_on]] = bid
+      state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+    end
+
     # set a few default values
     state[:cards_in_play] = []
     state[:first_suit_played] = nil
@@ -68,10 +78,9 @@ class Game < ActiveRecord::Base
       # player is making a bid
       bid = user_input.to_i
       
-      # dealer cannot bid the same amount as the number of cards dealt
-      total_bids = state[:bids].select { |bid| !bid.nil? }.inject(:+)
-      num_cards_per_player = state[:total_rounds] - state[:rounds_played]
-      if state[:dealer] == user_id and total_bids + bid == num_cards_per_player
+      if not get_possible_bids( state[:total_rounds] - state[:rounds_played],
+                                state[:bids],
+                                state[:dealer] == user_id ).include?( bid )
         return false
       end
       
@@ -214,6 +223,16 @@ class Game < ActiveRecord::Base
     #  return card if card.value == highest_value
     #end
   end
+
+  def get_possible_bids total_cards, bids, is_dealer
+    result = (0..total_cards).to_a
+    if is_dealer
+      # dealer cannot bid the same amount as the number of cards dealt
+      total_bids = state[:bids].select { |bid| !bid.nil? }.inject(:+)
+      result.delete( total_cards - total_bids )
+    end
+    return result
+  end
   
   def get_playable_cards first_suit_played, cards
     # player can play any card if they are the first to play a card
@@ -225,6 +244,11 @@ class Game < ActiveRecord::Base
     # they can play any card
     playable_cards = cards if playable_cards.empty?
     return playable_cards
+  end
+
+  # for now, a player is a cpu player if their id resembles a uuid
+  def is_cpu_player? id
+    return /^\w{8}-(\w{4}-){3}\w{12}$/ =~ id.to_s
   end
 
   def iterate_through_list_with_start_index start_index, list
