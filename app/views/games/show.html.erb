@@ -134,7 +134,7 @@ function handleCardDrop( event, ui ) {
 <!-- <p id="notice"><%= notice %></p> -->
 <div id="board-wrapper" style="text-align:center;">
   <div class="row">
-    <div id="game-stat" class="col-md-2" style="padding-top:175px;">
+    <div id="game-stat" class="col-md-2" style="padding-top:110px;">
       <%= render "game_status" %>
     </div>
     <br>
@@ -142,7 +142,7 @@ function handleCardDrop( event, ui ) {
       <%= render "board_info" %>
     </div>
     <br>
-    <div id="buttons" class="col-md-2" style="padding-top:175px; text-align:left;">
+    <div id="buttons" class="col-md-2" style="padding-top:110px; text-align:left;">
       <!-- join game form -->
       <% unless @is_playing or @game_started %>
       <div class="row">
@@ -184,7 +184,7 @@ function handleCardDrop( event, ui ) {
     </div>
     <br>
   </div>
-  <div style="padding-left:100px;">
+  <div style="text-align:center;">
     Your Cards
     <div id="cardPile">
       <%= render "card_pile" %>
