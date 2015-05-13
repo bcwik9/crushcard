@@ -44,6 +44,8 @@ $('#cardPile').html("<%= j render 'card_pile' %>");
     draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
   }
 
+// update control buttons
+$('#buttons').html("<%= j render 'controls' %>");
 
 // continue polling unless we're waiting on the player to play a card
 <% if @waiting_on != 'YOU' %>
