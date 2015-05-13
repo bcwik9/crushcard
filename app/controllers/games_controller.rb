@@ -47,16 +47,12 @@ class GamesController < ApplicationController
       redirect_to @game, notice: 'Must have between 3 and 5 players to start'
       return
     end
-    if state[:players].first == @_current_user
-      if state[:cards_in_play].nil?
-        @game.save_state @game.deal_cards(state)
-        @game.save
-        redirect_to @game, notice: 'Game has started!'
-      else
-        redirect_to @game, notice: 'Game has already started'
-      end
+    if state[:cards_in_play].nil?
+      @game.save_state @game.deal_cards(state)
+      @game.save
+      redirect_to @game, notice: 'Game has started!'
     else
-      redirect_to @game, notice: 'Only the creator of the game can start it'
+      redirect_to @game, notice: 'Game has already started'
     end
   end
 
