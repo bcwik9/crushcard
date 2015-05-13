@@ -78,7 +78,8 @@ class Game < ActiveRecord::Base
       # player is making a bid
       bid = user_input.to_i
       
-      if not get_possible_bids( state[:total_rounds] - state[:rounds_played],
+      num_cards_per_player = state[:total_rounds] - state[:rounds_played]
+      if not get_possible_bids( num_cards_per_player,
                                 state[:bids],
                                 state[:dealer] == user_id ).include?( bid )
         return false
@@ -87,22 +88,30 @@ class Game < ActiveRecord::Base
       # record the bid
       state[:bids][current_player_index] = bid
 
-      if state[:dealer] == user_id
-        # dealer is last to bid
-        # so now determine who bid the highest, since they are the
-        # first to play a card
-        # bidding is done at this point
-        iterate_through_list_with_start_index(current_player_index+1, state[:bids]) do |bid,i|
-          if state[:bids].max == bid
-            state[:waiting_on] = state[:players][i]
-            break
-          end
-        end
-      else
+      while state[:dealer] != state[:waiting_on]
         # set next player to bid
         state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+        current_player_index = state[:players].find_index state[:waiting_on]
+
+        if is_cpu_player? state[:waiting_on]
+          bid = get_possible_bids( num_cards_per_player,
+                                   state[:bids],
+                                   state[:waiting_on] == state[:dealer] ).sample
+          state[:bids][current_player_index] = bid
+        else
+          save_state state
+          return true
+        end
       end
 
+      # dealer is last to bid so now determine who bid the highest, since they
+      # are the first to play a card bidding is done at this point
+      iterate_through_list_with_start_index(current_player_index+1, state[:bids]) do |bid,i|
+        if state[:bids].max == bid
+          state[:waiting_on] = state[:players][i]
+          break
+        end
+      end
     elsif not state[:player_hands][current_player_index].empty?
       # player is playing a card
       card = user_input
@@ -228,7 +237,7 @@ class Game < ActiveRecord::Base
     result = (0..total_cards).to_a
     if is_dealer
       # dealer cannot bid the same amount as the number of cards dealt
-      total_bids = state[:bids].select { |bid| !bid.nil? }.inject(:+)
+      total_bids = bids.select { |bid| !bid.nil? }.inject(:+)
       result.delete( total_cards - total_bids )
     end
     return result
