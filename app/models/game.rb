@@ -110,6 +110,7 @@ class Game < ActiveRecord::Base
       iterate_through_list_with_start_index(current_player_index+1, state[:bids]) do |bid,i|
         if state[:bids].max == bid
           state[:waiting_on] = state[:players][i]
+          current_player_index = state[:players].find_index state[:waiting_on]
           break
         end
       end
@@ -153,7 +154,7 @@ class Game < ActiveRecord::Base
   # clear the table of cards and calculate who won the trick/game
   def clear_table current_player_index, state
     # sleep a bit so the table isn't cleared immediately
-    sleep 3
+    sleep 1
 
     # determine who won the trick
     highest_card = get_highest_card(state[:cards_in_play], state[:first_suit_played], state[:trump_card], current_player_index+1)
@@ -164,7 +165,6 @@ class Game < ActiveRecord::Base
     # reset variables
     state[:cards_in_play] = []
     state[:first_suit_played] = nil
-    
 
     # check to see if we're done with this round
     if state[:player_hands].first.empty?
@@ -184,7 +184,7 @@ class Game < ActiveRecord::Base
         state[:score][i] ||= []
         state[:score][i].push player_score
       end
-      
+
       # check to see if that was the last round (game over)
       if state[:rounds_played] == state[:total_rounds]
         # game is over, determine who won
@@ -208,6 +208,20 @@ class Game < ActiveRecord::Base
     else
       # winner is the first to play a card next
       state[:waiting_on] = state[:players][winner_index]
+      current_player_index = state[:players].find_index state[:waiting_on]
+
+      while is_cpu_player? state[:waiting_on]
+        playable_cards = get_playable_cards(state[:first_suit_played], state[:player_hands][current_player_index])
+        card = playable_cards.sample
+
+        # actually play the card
+        state[:first_suit_played] ||= card.suit
+        state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
+
+        # set next player to play a card
+        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+        current_player_index = state[:players].find_index state[:waiting_on]
+      end
     end
 
     save_state state
