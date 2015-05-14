@@ -103,6 +103,7 @@ class GamesController < ApplicationController
     state = @game.load_state
     
     @is_playing = state[:players].include?(@_current_user)
+    @can_start_game = state[:players].first == @_current_user
     @game_started = !state[:bids].nil?
     player_index = state[:players].index(@_current_user) || 0
 
