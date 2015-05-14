@@ -47,7 +47,7 @@ class Game < ActiveRecord::Base
     state[:trump_card] = state[:deck].slice! 0
 
     # Continuously get cpu players' bids until we get to a human player
-    while is_cpu_player? state[:waiting_on] and not done_bidding?
+    while is_cpu_player? state[:waiting_on] and not done_bidding? state
       bid = get_possible_bids( 
                               num_cards_per_player,
                               state[:bids],
