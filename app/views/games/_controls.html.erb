@@ -5,7 +5,7 @@
       <%= form_tag(games_add_player_path) do %>
       <%= hidden_field_tag(:id, params[:id]) %>
       <div>
-        <div class="input-group">
+        <div id="username-input" class="input-group">
           <%= text_field_tag("username", "Username", class: "form-control input-lg") %>
           <span class="input-group-btn">
             <%= button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary") %>

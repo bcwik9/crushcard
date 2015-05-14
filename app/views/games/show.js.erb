@@ -45,11 +45,13 @@ $('#cardPile').html("<%= j render 'card_pile' %>");
   }
 
 // update control buttons
-$('#buttons').html("<%= j render 'controls' %>");
+<% if @is_playing %>
+  $('#buttons').html("<%= j render 'controls' %>");
+<% end %>
 
 // continue polling unless we're waiting on the player to play a card
-<% if @waiting_on != 'YOU' %>
-GamePoller.poll();
+<% if @waiting_on !~ /^YOU/ %>
+  GamePoller.poll();
 <% else %>
-alert('Its your turn, play a card by double clicking it!');
+  alert('Its your turn, play a card by double clicking it!');
 <% end %>
