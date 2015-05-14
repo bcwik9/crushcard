@@ -154,7 +154,7 @@ class Game < ActiveRecord::Base
   # clear the table of cards and calculate who won the trick/game
   def clear_table current_player_index, state
     # sleep a bit so the table isn't cleared immediately
-    sleep 1
+    sleep 2
 
     # determine who won the trick
     highest_card = get_highest_card(state[:cards_in_play], state[:first_suit_played], state[:trump_card], current_player_index+1)
