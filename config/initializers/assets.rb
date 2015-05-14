@@ -5,4 +5,4 @@ Rails.application.config.assets.version = '1.0'
 
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in app/assets folder are already added.
-Rails.application.config.assets.precompile += %w( style.css cards.js )
+Rails.application.config.assets.precompile += %w( style.css cards.js grayscale.js bootstrap_and_overrides.css )
