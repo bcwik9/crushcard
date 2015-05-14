@@ -1,6 +1,32 @@
 class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
+  def add_cpu_player
+    set_game
+    state = @game.load_state
+
+    if state[:cards_in_play]
+      redirect_to @game, notice: 'Cant join once the game has already started'
+    elsif state[:players].size >= 5
+      redirect_to @game, notice: 'There are too many players in the game already'
+    else
+      state[:players].push SecureRandom.uuid()
+
+      name = 'cpu'
+      while state[:names].include? name
+        name += 'u'
+      end
+      state[:names].push name
+
+      @game.save_state state
+      if @game.save
+        redirect_to @game, notice: 'Joined the game!'
+      else
+        redirect_to @game, notice: 'Failed to join the game'
+      end
+    end
+  end
+
   def add_player
     if @_current_user.nil?
       redirect_to @game, notice: 'Unable to determine current user'
@@ -14,16 +40,10 @@ class GamesController < ApplicationController
       redirect_to @game, notice: 'Cant join once the game has already started'
     elsif state[:players].size >= 5
       redirect_to @game, notice: 'There are too many players in the game already'
+    elsif state[:players].include?(@_current_user)
+      redirect_to @game, notice: 'Youre already in the game'
     else
-      if params[:computer_player]
-        logger.info 'adding computer player'
-        state[:players].push SecureRandom.uuid()
-      elsif not state[:players].include?(@_current_user)
-        state[:players].push @_current_user
-      else
-        redirect_to @game, notice: 'Youre already in the game'
-        return
-      end
+      state[:players].push @_current_user
 
       while state[:names].include? params[:username]
         # make sure username is unique by appending random numbers
