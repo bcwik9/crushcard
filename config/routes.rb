@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   resources :games
+  post 'games/add_cpu_player'
   post 'games/add_player'
   post 'games/deal'
   post 'games/player_action'
