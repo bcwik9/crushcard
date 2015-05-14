@@ -22,7 +22,7 @@
   <br>
   <% end %>
   <!-- bid form -->
-  <% if @waiting_on == 'YOU' and not @done_bidding %>
+  <% if @waiting_on == 'YOU (BIDDING)' and not @done_bidding %>
   <div>
     <%= form_tag(games_player_action_path) do %>
     <%= hidden_field_tag(:id, params[:id]) %>
