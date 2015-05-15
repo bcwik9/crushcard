@@ -163,7 +163,7 @@ class GamesController < ApplicationController
       # can't play any cards unless it's your turn
       playable_cards = []
       if state[:waiting_on] == @_current_user
-        playable_cards = @game.get_playable_cards(state[:first_suit_played], state[:player_hands][player_index])
+        playable_cards = @game.get_playable_cards( state )
       end
       @cards.each do |card|
         if playable_cards.include? card

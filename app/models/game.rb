@@ -46,16 +46,8 @@ class Game < ActiveRecord::Base
     # an Ace as trump means there is "no trump"
     state[:trump_card] = state[:deck].slice! 0
 
-    # Continuously get cpu players' bids until we get to a human player
-    while is_cpu_player? state[:waiting_on] and not done_bidding? state
-      bid = get_possible_bids( 
-                              num_cards_per_player,
-                              state[:bids],
-                              state[:waiting_on] == state[:dealer]
-                              ).sample
-      state[:bids][state[:players].find_index state[:waiting_on]] = bid
-      state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
-    end
+    # make all cpu moves until we need human interaction
+    state = get_all_cpu_bids state
 
     # set a few default values
     state[:cards_in_play] = []
@@ -82,85 +74,62 @@ class Game < ActiveRecord::Base
       num_cards_per_player = state[:total_rounds] - state[:rounds_played]
       
       # make sure bid is valid
-      return false if not get_possible_bids(
-                                            num_cards_per_player,
-                                            state[:bids],
-                                            state[:dealer] == user_id
-                                            ).include? bid
+      return false if not get_possible_bids( state ).include? bid
       
       # record the bid
       state[:bids][current_player_index] = bid
 
-      # make bids for computers until we get to a human player
-      # OR all players have made a bid
-      while state[:dealer] != state[:waiting_on]
-        # set next player to bid
-        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
-        current_player_index = state[:players].find_index state[:waiting_on]
+      state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
 
-        # if it's the computer's turn, let them bid
-        if is_cpu_player? state[:waiting_on]
-          bid = get_possible_bids( num_cards_per_player,
-                                   state[:bids],
-                                   state[:waiting_on] == state[:dealer] ).sample
-          state[:bids][current_player_index] = bid
-        else
-          # we've encountered a human who has to bid
-          # so save the state and let them input a bid
-          save_state state
-          return true
+      # get any cpu players' bids
+      state = get_all_cpu_bids state
+
+      if done_bidding? state
+        # determine who bid the highest, since they are the first to play a
+        # card.
+        iterate_through_list_with_start_index(current_player_index+1, state[:bids]) do |bid,i|
+          if state[:bids].max == bid
+            state[:waiting_on] = state[:players][i]
+            break
+          end
         end
-      end
-
-      # dealer is last to bid so now determine who bid the highest,
-      # since they are the first to play a card.
-      # bidding for the round is done at this point
-      iterate_through_list_with_start_index(current_player_index+1, state[:bids]) do |bid,i|
-        if state[:bids].max == bid
-          state[:waiting_on] = state[:players][i]
-          current_player_index = state[:players].find_index state[:waiting_on]
-          break
-        end
-      end
-
-      # if a human needs to play a card, return now so they can play
-      # otherwise continue and play some cards for the CPU
-      unless is_cpu_player? state[:waiting_on]
+      elsif not cpu_player? state[:waiting_on]
+        # if a human needs to play a card, return now so they can play
+        # otherwise continue and play some cards for the CPU
         save_state state
         return true
+      else
+        # This is an error state. When get_all_cpu_bids returns we should
+        # either be done bidding or waiting on a human bid.
+        raise RuntimeError 'The game is in a bad state'
       end
-
     end
     
-    # keep playing cards until we're waiting on a player
-    while not all_players_played_a_card? state
-      playable_cards = get_playable_cards(state[:first_suit_played], state[:player_hands][current_player_index])
-
-      # check to see if computer needs to play a card
-      if is_cpu_player? state[:waiting_on]
-        card = playable_cards.sample
-      else
+    if not all_players_played_a_card? state
+      if not cpu_player? state[:waiting_on]
+        # a human wants to play a card
         card = user_input
+
         # ensure that the card is actually playable
-        return false unless playable_cards.include? card
+        return false unless get_playable_cards( state ).include? card
+
+        # actually play the card
+        current_player_index = state[:players].find_index state[:waiting_on]
+        state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
+        state[:first_suit_played] ||= card.suit
+
+        # set next player to play a card
+        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
       end
 
-      # actually play the card
-      state[:first_suit_played] ||= card.suit
-      state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
-
-      # set next player to play a card
-      state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
-      current_player_index = state[:players].find_index state[:waiting_on]
-
-      # stop playing cards for CPUs since a player needs to play
-      break if not is_cpu_player? state[:waiting_on]
+      # get any cpu players' cards
+      state = get_all_cpu_cards state
     end
 
     if all_players_played_a_card? state
       # make sure nobody can do anything
       state[:waiting_on] = "Table to clear"
-      delay.clear_table(current_player_index, state)
+      delay.clear_table state
     end
     
     save_state state
@@ -168,12 +137,12 @@ class Game < ActiveRecord::Base
   end
 
   # clear the table of cards and calculate who won the trick/game
-  def clear_table current_player_index, state
+  def clear_table state
     # sleep a bit so the table isn't cleared immediately
     sleep 2
 
     # determine who won the trick
-    highest_card = get_highest_card(state[:cards_in_play], state[:first_suit_played], state[:trump_card], current_player_index+1)
+    highest_card = get_highest_card(state[:cards_in_play], state[:first_suit_played], state[:trump_card])
     winner_index = state[:cards_in_play].find_index(highest_card)
     state[:tricks_taken][winner_index] ||= []
     state[:tricks_taken][winner_index].push state[:cards_in_play]
@@ -224,22 +193,9 @@ class Game < ActiveRecord::Base
     else
       # winner is the first to play a card next
       state[:waiting_on] = state[:players][winner_index]
-      current_player_index = state[:players].find_index state[:waiting_on]
 
-      # if the winner was the CPU, keep playing cards until we
-      # get to a human player
-      while is_cpu_player? state[:waiting_on]
-        playable_cards = get_playable_cards(state[:first_suit_played], state[:player_hands][current_player_index])
-        card = playable_cards.sample
-
-        # actually play the card
-        state[:first_suit_played] ||= card.suit
-        state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
-
-        # set next player to play a card
-        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
-        current_player_index = state[:players].find_index state[:waiting_on]
-      end
+      # get any cpu players' cards
+      state = get_all_cpu_cards state
     end
 
     save_state state
@@ -254,12 +210,12 @@ class Game < ActiveRecord::Base
     self.state = state.to_yaml
   end
 
-  def get_highest_card cards, first_suit_played, trump, start_index
+  def get_highest_card cards, first_suit_played, trump
     return cards.first if cards.size <= 1
 
     # if trump was played, ignore other cards
     # an ace indicates no trump, so ignore it if that's the case
-    trump_cards = (trump.suit =~ /ace/i) ? [] : cards.select { |c| c.suit == trump.suit }
+    trump_cards = (trump.value == 12) ? [] : cards.select { |c| c.suit == trump.suit }
 
     # if trump wasn't played or there is no trump (ace),
     # only cards that are the same suit as the first card played matter
@@ -268,35 +224,73 @@ class Game < ActiveRecord::Base
     
     # now simply get the highest card left
     return card_set.max
-    #iterate_through_list_with_start_index(start_index, card_set) do |card|
-    #  return card if card.value == highest_value
-    #end
   end
 
-  def get_possible_bids total_cards, bids, is_dealer
+  def get_possible_bids state
+    total_cards = state[:total_rounds] - state[:rounds_played]
+
+    # player can bid anything between 0 and the number of cards in your hand
     result = (0..total_cards).to_a
-    if is_dealer
+    if state[:dealer] == state[:waiting_on]
       # dealer cannot bid the same amount as the number of cards dealt
-      total_bids = bids.select { |bid| !bid.nil? }.inject(:+)
+      total_bids = state[:bids].select { |bid| !bid.nil? }.inject(:+)
       result.delete( total_cards - total_bids )
     end
+
     return result
   end
   
-  def get_playable_cards first_suit_played, cards
+  def get_playable_cards state
+    cards = state[:player_hands][ state[:players].find_index state[:waiting_on] ]
+
     # player can play any card if they are the first to play a card
     # or if they only have a single card left
-    return cards if first_suit_played.nil? or cards.size == 1
+    return cards if state[:first_suit_played].nil? or cards.size == 1
+
     # player must play the same suit as the first card played
-    playable_cards = cards.select { |card| card.suit == first_suit_played }
+    playable_cards = cards.select { |card| card.suit == state[:first_suit_played] }
+
     # if player doesn't have any of the same suit as the first card played
     # they can play any card
     playable_cards = cards if playable_cards.empty?
+
     return playable_cards
   end
 
+  # for now, cpu players just play randomly
+  def get_cpu_bid state
+    get_possible_bids( state ).sample
+  end
+  def get_cpu_card state
+    get_playable_cards( state ).sample
+  end
+
+  # Continue to get cpu bids until bidding is over or we need input from a
+  # human player
+  def get_all_cpu_bids state
+    while cpu_player? state[:waiting_on] and not done_bidding? state
+      current_player_index = state[:players].find_index state[:waiting_on]
+      state[:bids][current_player_index] = get_cpu_bid state
+      state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+    end
+    return state
+  end
+
+  # Continue to have cpu players play cards until all players have played or we
+  # need input from a human player
+  def get_all_cpu_cards state
+    while cpu_player? state[:waiting_on] and not all_players_played_a_card? state
+      current_player_index = state[:players].find_index state[:waiting_on]
+      card = get_cpu_card state
+      state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
+      state[:first_suit_played] ||= card.suit
+      state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+    end
+    return state
+  end
+
   # for now, a player is a cpu player if their id resembles a uuid
-  def is_cpu_player? id
+  def cpu_player? id
     return /^\w{8}-(\w{4}-){3}\w{12}$/ =~ id.to_s
   end
 
