@@ -49,4 +49,46 @@ class GameTest < ActiveSupport::TestCase
     
     assert_equal [ s3, h2, d1, c0 ], hand
   end
+
+  test 'highest card wins' do
+    trump = Card.new 'Spades', 0
+
+    c1 = Card.new 'Spades', 1
+    c2 = Card.new 'Spades', 2
+    c3 = Card.new 'Spades', 3
+
+    first_suit_played = 'Spades'
+
+    g = Game.new
+
+    assert_equal c3, g.get_highest_card( [ c1, c2, c3 ], first_suit_played, trump )
+  end
+
+  test 'trump card wins' do
+    trump = Card.new 'Spades', 0
+
+    c1 = Card.new 'Spades', 1
+    c2 = Card.new 'Clubs', 2
+    c3 = Card.new 'Clubs', 3
+
+    first_suit_played = 'Clubs'
+
+    g = Game.new
+
+    assert_equal c1, g.get_highest_card( [ c1, c2, c3 ], first_suit_played, trump )
+  end
+
+  test 'ace means no trump' do
+    trump = Card.new 'Spades', 12
+
+    c1 = Card.new 'Spades', 0
+    c2 = Card.new 'Clubs',  1
+    c3 = Card.new 'Clubs',  2
+
+    first_suit_played = 'Clubs'
+
+    g = Game.new
+
+    assert_equal c3, g.get_highest_card( [ c1, c2, c3 ], first_suit_played, trump )
+  end
 end
