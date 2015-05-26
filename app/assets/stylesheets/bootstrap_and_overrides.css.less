@@ -81,13 +81,19 @@ a {
 }
 
 a:hover,
-a:focus {
+a:focus,
+a:visited {
     text-decoration: none;
-    color: #1d9b6c;
+    color: #42dca3;
 }
 
 .light {
     font-weight: 400;
+}
+
+input {
+    color: #555555;
+
 }
 
 .navbar-custom {
@@ -379,14 +385,14 @@ footer p {
 
 ::-moz-selection {
     text-shadow: none;
-    background: #fcfcfc;
-    background: rgba(255,255,255,.2);
+    background: #000;
+    background: rgba(0,0,0,.2);
 }
 
 ::selection {
     text-shadow: none;
-    background: #fcfcfc;
-    background: rgba(255,255,255,.2);
+    background: #000; //#fcfcfc;
+    background: rgba(0,0,0,.2);
 }
 
 img::selection {
