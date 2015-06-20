@@ -37,18 +37,14 @@
                         <a href="#page-top"></a>
                     </li>
                     <li>
-                        <a class="page-scroll" href="#about">About</a>
+                        <a class="page-scroll" href="#games"><i class="fa fa-gamepad"></i> Games</a>
                     </li>
                     <li>
-                        <a class="page-scroll" href="#download">Download</a>
+                        <a class="page-scroll" href="#about"><i class="fa fa-question-circle"></i> How to Play</a>
                     </li>
                     <li>
-                        <a class="page-scroll" href="#contact">Contact</a>
+                        <a class="page-scroll" href="#contact"><i class="fa fa-envelope"></i> Contact</a>
                     </li>
-                    <li>
-                        <a class="page-scroll" href="#games">Games</a>
-                    </li>
-
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -70,71 +66,13 @@
                         <!-- </a> -->
                         <% end %>
                         <a href="#games" class="btn btn-default btn-lg page-scroll" style="margin-left:10px;">
-                            <i class="fa fa-angle-down"></i> Join existing game
+                            <i class="fa fa-users"></i> Join existing game
                         </a>
                     </div>
                 </div>
             </div>
         </div>
     </header>
-
-    <!-- About Section -->
-    <section id="about" class="container content-section text-center">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2">
-                <h2>About Grayscale</h2>
-                <p>Grayscale is a free Bootstrap 3 theme created by Start Bootstrap. It can be yours right now, simply download the template on <a href="http://startbootstrap.com/template-overviews/grayscale/">the preview page</a>. The theme is open source, and you can use it for any purpose, personal or commercial.</p>
-                <p>This theme features stock photos by <a href="http://gratisography.com/">Gratisography</a> along with a custom Google Maps skin courtesy of <a href="http://snazzymaps.com/">Snazzy Maps</a>.</p>
-                <p>Grayscale includes full HTML, CSS, and custom JavaScript files along with LESS files for easy customization.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Download Section -->
-    <section id="download" class="content-section text-center">
-        <div class="download-section">
-            <div class="container">
-                <div class="col-lg-8 col-lg-offset-2">
-                    <h2>Download Grayscale</h2>
-                    <p>You can download Grayscale for free on the preview page at Start Bootstrap.</p>
-                    <a href="http://startbootstrap.com/template-overviews/grayscale/" class="btn btn-default btn-lg">Visit Download Page</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="container content-section text-center">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2">
-                <h2>Contact Start Bootstrap</h2>
-                <p>Feel free to email us to provide some feedback on our templates, give us suggestions for new templates and themes, or to just say hello!</p>
-                <p><a href="mailto:feedback@startbootstrap.com">feedback@startbootstrap.com</a>
-                </p>
-                <ul class="list-inline banner-social-buttons">
-                    <li>
-                        <a href="https://twitter.com/SBootstrap" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/IronSummitMedia/startbootstrap" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
-                    </li>
-                    <li>
-                        <a href="https://plus.google.com/+Startbootstrap/posts" class="btn btn-default btn-lg"><i class="fa fa-google-plus fa-fw"></i> <span class="network-name">Google+</span></a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container text-center">
-            <p>Copyright &copy; Ben Cwik 2015</p>
-        </div>
-    </footer>
-
-    <!-- Custom Theme JavaScript -->
-    <%= javascript_include_tag "grayscale" %>
 
  <section id="games" class="container content-section text-center">
 <h1>Listing games</h1>
@@ -168,6 +106,53 @@
 <%= @_current_user %>
 </section>
 
+    <!-- How to Play Section -->
+    <section id="about" class="container content-section text-center">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>How to play Crush</h2>
+                <h4>Setup</h4>
+                <p>Crush is a card game for 3-5 players. Remove jokers from the deck. Lay out cards and have each player pick a single card. the player with the highest card deals first.</p>
+                <h4>Play</h4>
+                <p>Each player is dealt 10 cards. Flip the top card of the deck, and the suit of that card is “trump” (unless it's an Ace, in which there is no trump, but we'll get to that later). Cards that are trump are considered higher in value than non-trump cards. For example, a Two of trump will beat a King of non-trump. The person to the left of the dealer is the first to bid. You essentially say how many “tricks” you are going to win (ie. if you have higher cards, you are more likely to win the trick, so you want to bid higher). The person who dealt is restricted on what they can bid; the total number of bids for each player cannot add up to the number of cards dealt to each player. For example, if ten cards are dealt to each player, and there are three people playing, and the first player said they would win six tricks, and the second player said they will win two tricks, the player who dealt the cards cannot say they will win two tricks since that would add up to ten (6+2+2=10). They can say anything BUT two, ie. zero, one, three, four, etc… Once the bids have been recorded, the player who made the highest bid is the first to play a card. If more than one player bid the same amount, then the player who bid first goes first. Players then play a card each, going clockwise. Players MUST play the same suit of card as the first card that was played for that round! The exception is if they do not have a card of the same suit in their hand; in that case they are free to play ANY card in their hand. Once everyone has played a card, the person who played the highest card wins that round, called a “trick”. Whoever won the trick is the person who plays a card first the next round. This goes on and on until nobody has any cards left. Everyone then counts the number of tricks they took, and it is recorded. If players got the same amount of tricks that they originally bid, they get ten points plus the number of tricks they took (so if they bid three, and got three tricks, they would get thirteen points). If players get less than the number of tricks they bid, then the get negative points, which is the difference between the number of tricks they bid and the tricks they actually got (so if they bid three, and only got one trick, they would get negative two points). If a player got more tricks than they bid, then they simply get the number tricks they took as points (so if a player bid three, and got five tricks, they would get five points). Once scores are recorded, cards are shuffled and dealt again, only this time one less card is dealt (so nine cards this time, instead of ten). This repeats for all ten rounds, until the last round, where only one card is dealt to each person (so ten cards are dealt, then nine, then eight, etc. etc). The player with the highest number of points at the end of the game wins.</p>
+                <h4> Ace as Trump (NO TRUMP)</h4>
+                <p>If an Ace is the trump card flipped over, this means there is NO TRUMP. This means that all suits have equal worth. You still must follow the suit of the first card played, however</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="container content-section text-center">
+      <div class="row">
+        <div class="col-lg-8 col-lg-offset-2">
+          <h2>Contact</h2>
+          <p>Feel free to email me for more information or to contact me regarding work.</p>
+          <p><a href="mailto:bcwik.9@gmail.com">bcwik.9@gmail.com</a>
+          </p>
+          <ul class="list-inline banner-social-buttons">
+            <li>
+              <a href="https://github.com/bcwik9" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
+            </li>
+            <li>
+              <a href="http://www.linkedin.com/pub/ben-cwik/67/508/921/en" class="btn btn-default btn-lg"><i class="fa fa-linkedin fa-fw"></i> <span class="network-name">LinkedIn</span></a>
+            </li>
+	    <li>
+              <a href="https://instagram.com/bcwik9/" class="btn btn-default btn-lg"><i class="fa fa-instagram fa-fw"></i> <span class="network-name">Instagram</span></a>
+	    </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <p>Copyright &copy; Ben Cwik 2015</p>
+        </div>
+    </footer>
+
+    <!-- Custom Theme JavaScript -->
+    <%= javascript_include_tag "grayscale" %>
 </body>
 
 </html>
