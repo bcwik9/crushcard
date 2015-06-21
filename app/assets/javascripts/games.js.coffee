@@ -9,5 +9,7 @@
     $.get($('#game_path').data('url'))
 
 jQuery ->
+  $('#game_list').DataTable({});
+
   $(document).on "page:change", ->
     GamePoller.poll()
