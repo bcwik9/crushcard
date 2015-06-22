@@ -11,15 +11,10 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= f.label :name %><br>
-    <%= f.text_field :name %>
-  </div>
-  <div class="field">
-    <%= f.label :state %><br>
-    <%= f.text_area :state %>
+  <div class="form-group">
+    <%= f.text_field :name, class: "input-lg", placeholder: "Game Name" %>
   </div>
   <div class="actions">
-    <%= f.submit %>
+    <%= f.submit class: "btn btn-lg btn-default"%>
   </div>
 <% end %>

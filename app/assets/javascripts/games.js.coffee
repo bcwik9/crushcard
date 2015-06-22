@@ -9,7 +9,10 @@
     $.get($('#game_path').data('url'))
 
 jQuery ->
-  $('#game_list').DataTable({});
+  $('#game_list').DataTable({
+    "order": [[0, "desc"]],
+    "columnDefs":[{ "targets":[0], "visible": false, "searchable": false}]
+  });
 
   $(document).on "page:change", ->
     GamePoller.poll()
