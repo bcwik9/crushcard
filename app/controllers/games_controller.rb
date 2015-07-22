@@ -1,4 +1,8 @@
 class GamesController < ApplicationController
+  require 'action_view'
+  require 'action_view/helpers'
+  include ActionView::Helpers::DateHelper
+
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
   def add_cpu_player

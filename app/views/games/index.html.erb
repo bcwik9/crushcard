@@ -93,7 +93,7 @@
       <tr>
         <td><%= game.id %></td>
 	<td><%= game.name %></td>
-        <td><%= "#{((Time.now - game.created_at) / 60).to_i} minutes ago" %></td>
+        <td><%= "#{distance_of_time_in_words(Time.now, game.created_at)} ago" %></td>
 	<td><%= game.load_state[:players].size %></td>
         <td><%= link_to('View', game, data: { no_turbolink: true }, class: "btn btn-md btn-default") %></td>
       </tr>
