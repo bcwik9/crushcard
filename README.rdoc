@@ -10,34 +10,3 @@ Once scores are recorded, cards are shuffled and dealt again, only this time one
 
 == Ace as trump (NO TRUMP)
 If an Ace is the trump card flipped over, this means there is NO TRUMP. This means that all suits have equal worth. You still must follow the suit of the first card played, however. 
-
-
-
-== README
-
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
