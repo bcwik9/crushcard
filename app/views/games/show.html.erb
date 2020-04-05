@@ -61,7 +61,7 @@ function playCard(event) {
     // only accept playable cards
     var cardIsPlayable = event.target.getAttribute('data-playable');
     if(!(/true/i).test(cardIsPlayable)) {
-      alert("C'mon man, you can't play this card! Try another!");
+      alert("You can't play this card right now!");
       return;
     }
 
@@ -74,7 +74,7 @@ function testDrop(event, ui) {
     // only accept playable cards
     var cardIsPlayable = ui.draggable.context.children[0].dataset.playable;
     if(!(/true/i).test(cardIsPlayable)) {
-      alert("C'mon man, you can't play this card! Try another!");
+      alert("You can't play this card right now!");
       return;
     }
 
