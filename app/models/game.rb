@@ -19,7 +19,7 @@ class Game < ActiveRecord::Base
   
   def deal_cards state
     # need to have at least 3 players to start the game
-    raise 'Must have between 3 and 5 players to start' if state[:players].size < 3 or state[:players].size > 5
+    raise 'Must have between 3 and 5 players to start' if state[:players].size < 3 || state[:players].size > 5
 
     # shuffle deck
     state[:deck] = Card.get_deck
@@ -71,7 +71,7 @@ class Game < ActiveRecord::Base
       # dealer cannot bid the same amount as the number of cards dealt
       total_bids = state[:bids].select { |bid| !bid.nil? }.inject(:+)
       num_cards_per_player = state[:total_rounds] - state[:rounds_played]
-      if state[:dealer] == user_id and total_bids + bid == num_cards_per_player
+      if state[:dealer] == user_id && total_bids + bid == num_cards_per_player
         return false
       end
       
@@ -94,7 +94,7 @@ class Game < ActiveRecord::Base
         state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
       end
 
-    elsif not state[:player_hands][current_player_index].empty?
+    elsif !state[:player_hands][current_player_index].empty?
       # player is playing a card
       card = user_input
       
@@ -166,7 +166,7 @@ class Game < ActiveRecord::Base
         highest_score = nil
         state[:score].each_with_index do |score, i|
           player_score = score.inject :+ # add up score from each round
-          if highest_score.nil? or player_score >= highest_score
+          if highest_score.nil? || player_score >= highest_score
             highest_score = player_score
             # clear winners list if there's a new high score
             # winners list is necessary since there can be ties
@@ -218,7 +218,7 @@ class Game < ActiveRecord::Base
   def get_playable_cards first_suit_played, cards
     # player can play any card if they are the first to play a card
     # or if they only have a single card left
-    return cards if first_suit_played.nil? or cards.size == 1
+    return cards if first_suit_played.nil? || cards.size == 1
     # player must play the same suit as the first card played
     playable_cards = cards.select { |card| card.suit == first_suit_played }
     # if player doesn't have any of the same suit as the first card played
@@ -242,7 +242,7 @@ class Game < ActiveRecord::Base
   # returns true if the input array is the same size as the number of
   # players we have, and doesn't include nil
   def player_size_and_nil_check arr, state
-    return (arr.size == state[:players].size and not arr.include?(nil))
+    return (arr.size == state[:players].size && !arr.include?(nil))
   end
 
   # return true or false if we're done bidding
@@ -266,7 +266,7 @@ class Card
   # create a single card
   def initialize suit, value
     raise 'Invalid card suit' unless SUITS.include? suit
-    raise 'Invalid card value' unless value.to_i >= 0 and value.to_i < 13
+    raise 'Invalid card value' unless value.to_i >= 0 && value.to_i < 13
     @suit = suit
     @value = value
   end
@@ -282,7 +282,7 @@ class Card
   
   def <=> other
     return 1 if other.nil?
-    return 0 if @value.nil? and other.value.nil?
+    return 0 if @value.nil? && other.value.nil?
     return 1 if other.value.nil?
     return -1 if @value.nil?
     @value.to_i <=> other.value.to_i
@@ -290,8 +290,8 @@ class Card
 
   def == other
     return false if other.nil?
-    return false if (@value.nil? or other.value.nil?) and @value != other.value
-    return (@value.to_i == other.value.to_i and @suit == other.suit)
+    return false if (@value.nil? || other.value.nil?) && @value != other.value
+    return (@value.to_i == other.value.to_i && @suit == other.suit)
   end
   
   def suit_order other
@@ -319,7 +319,7 @@ class Player
   attr_accessor :name, :inventory
 
   def initialize name
-    raise 'Invalid player name' if name.nil? or name.empty?
+    raise 'Invalid player name' if name.nil? || name.empty?
     @name = name
     @inventory = []
   end

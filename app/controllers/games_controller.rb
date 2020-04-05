@@ -10,7 +10,7 @@ class GamesController < ApplicationController
     state = @game.load_state
 
     if state[:cards_in_play]
-      redirect_to @game, notice: 'Cant join once the game has already started'
+      redirect_to @game, notice: "Can't join once the game has already started"
     elsif state[:players].size >= 5
       redirect_to @game, notice: 'There are too many players in the game already'
     else
@@ -67,7 +67,7 @@ class GamesController < ApplicationController
   def deal
     set_game
     state = @game.load_state
-    if state[:players].size < 3 or state[:players].size > 5
+    if state[:players].size < 3 || state[:players].size > 5
       redirect_to @game, notice: 'Must have between 3 and 5 players to start'
       return
     end
@@ -86,19 +86,19 @@ class GamesController < ApplicationController
 
     # player isnt allowed to do anything if it's not their turn
     if state[:waiting_on] != @_current_user
-      redirect_to @game, notice: "Dude... It's not your turn"
+      redirect_to @game, notice: "It's not your turn"
       return
     end
     
     if params[:bid]
       # user is making a bid
       if @game.done_bidding? state
-        redirect_to @game, notice: 'Bidding is over BRO'
+        redirect_to @game, notice: 'Bidding is over'
         return
       else
         if @game.player_action(@_current_user, params[:bid])
           @game.save
-          redirect_to @game, notice: 'Placed bid, YEAAA!'
+          redirect_to @game, notice: 'Placed bid!'
         else
           redirect_to @game, notice: "Can bid anything BUT #{params[:bid]}"
         end
@@ -108,7 +108,7 @@ class GamesController < ApplicationController
       card = Card.new(params[:suit], params[:value])
       if @game.player_action(@_current_user, card)
         @game.save
-        redirect_to @game, notice: "Played a card, niceee!"
+        redirect_to @game, notice: "Played a card!"
       else
         redirect_to @game, notice: "Nice try, but you have to play a #{state[:first_suit_played].chop.downcase}"
       end
@@ -139,10 +139,10 @@ class GamesController < ApplicationController
     @names = []
     @round_scores = []
     @game.iterate_through_list_with_start_index(player_index, state[:names]) do |name, i|
-      tricks_taken = (state[:tricks_taken] and state[:tricks_taken][i]) ? state[:tricks_taken][i].size : 0
-      bid = (state[:bids] and state[:bids][i]) ? state[:bids][i] : 'No bid yet'
+      tricks_taken = (state[:tricks_taken] && state[:tricks_taken][i]) ? state[:tricks_taken][i].size : 0
+      bid = (state[:bids] && state[:bids][i]) ? state[:bids][i] : 'No bid yet'
       score = 0
-      if state[:score] and state[:score][i]
+      if state[:score] && state[:score][i]
         score = state[:score][i].inject :+
       end
       @names.push name
