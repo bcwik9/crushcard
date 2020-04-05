@@ -9,7 +9,8 @@ class Game < ActiveRecord::Base
       player_hands: [],
       score: [],
       deck: [],
-      names: []
+      names: [],
+      winners: []
     }
 
     save_state state
@@ -160,19 +161,19 @@ class Game < ActiveRecord::Base
       # check to see if that was the last round (game over)
       if state[:rounds_played] == state[:total_rounds]
         # game is over, determine who won
+        # winners list is necessary since there can be ties
         state[:winners] = []
         highest_score = nil
         state[:score].each_with_index do |score, i|
           player_score = score.inject :+ # add up score from each round
           if highest_score.nil? || player_score >= highest_score
-            highest_score = player_score
             # clear winners list if there's a new high score
-            # winners list is necessary since there can be ties
             state[:winners].clear if player_score > highest_score
+            # set new high score and record as winner
+            highest_score = player_score
             state[:winners].push state[:players][i]
           end
         end
-        # TODO: implement something to notify game has ended and who won
       else
         # deal cards for the next round
         deal_cards state
