@@ -2,17 +2,15 @@ class Game < ActiveRecord::Base
   require 'yaml'
 
   def set_up
-    state = {}
-
-    state[:total_rounds] = 10
-    state[:rounds_played] = 0
-    state[:players] = []
-    state[:player_hands] = []
-    state[:score] = []
-    state[:deck] = []
-    state[:names] = []
-
-    state[:players].shuffle!
+    state = {
+      total_rounds: 10,
+      rounds_played: 0,
+      players: [],
+      player_hands: [],
+      score: [],
+      deck: [],
+      names: []
+    }
 
     save_state state
   end
@@ -49,7 +47,7 @@ class Game < ActiveRecord::Base
     # set a few default values
     state[:cards_in_play] = []
     state[:first_suit_played] = nil
-    state[:tricks_taken] = []
+    state[:tricks_taken] = Array.new(state[:players].size, [])
 
     return state
   end
