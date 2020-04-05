@@ -129,7 +129,7 @@ class GamesController < ApplicationController
     @is_playing = state[:players].include?(@_current_user)
     @can_start_game = state[:players].first == @_current_user
     @game_started = !state[:bids].nil?
-    @winners = state[:winners].map{|player| state[:names][state[:players].index(player)] }
+    @winners = state[:winners].map{|player| state[:names][state[:players].index(player)] } rescue nil
     player_index = state[:players].index(@_current_user) || 0
 
     # round number

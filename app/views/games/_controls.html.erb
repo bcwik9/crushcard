@@ -32,17 +32,25 @@
   <br>
   <% end %>
   <!-- bid form -->
-  <% if @waiting_on == 'YOU (BIDDING)' and not @done_bidding %>
-  <div>
-    <%= form_tag(games_player_action_path) do %>
-    <%= hidden_field_tag(:id, params[:id]) %>
-    <div class="input-group" style="width:150px;">
-      <%= number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg") %>  
-      <span class="input-group-btn">
-        <%= button_tag("Bid", type: "submit", class: "btn btn-lg btn-primary") %>
-      </span>
+  <% if @waiting_on == 'YOU (BIDDING)' && !@done_bidding %>
+    <h3 id="bid-title" style="color:red;">Bid Now</h3>
+    <div>
+      <%= form_tag(games_player_action_path) do %>
+      <%= hidden_field_tag(:id, params[:id]) %>
+      <div class="input-group" style="width:150px;">
+	<%= number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg") %>  
+	<span class="input-group-btn">
+	  <%= button_tag("Bid", type: "submit", class: "btn btn-lg btn-primary", data: {confirm: "Are you sure you want to bid that?"}) %>
+	</span>
+      </div>
+      <% end %>
     </div>
-    <% end %>
-  </div>
+    <script>
+      var bid_title = $("#bid-title");
+      setInterval(function(){
+        bid_title.fadeOut(500);
+        bid_title.fadeIn(500);
+      }, 1000);
+    </script>
   <% end %>
 </div>
