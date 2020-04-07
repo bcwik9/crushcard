@@ -48,7 +48,7 @@ class Game < ActiveRecord::Base
     # set a few default values
     state[:cards_in_play] = []
     state[:first_suit_played] = nil
-    state[:tricks_taken] = Array.new(state[:players].size, [])
+    state[:tricks_taken] = []
 
     return state
   end
@@ -145,14 +145,14 @@ class Game < ActiveRecord::Base
       state[:rounds_played] += 1
 
       # determine scores
-      state[:tricks_taken].each_with_index do |tricks, i|
-        num_tricks_taken = tricks.nil? ? 0 : tricks.size
-        if num_tricks_taken < state[:bids][i]
-          player_score = num_tricks_taken - state[:bids][i]
-        elsif num_tricks_taken > state[:bids][i]
-          player_score = num_tricks_taken
+      state[:bids].each_with_index do |bid, i|
+        tricks = state[:tricks_taken][i] || []
+        if tricks.size < state[:bids][i]
+          player_score = tricks.size - state[:bids][i]
+        elsif tricks.size > state[:bids][i]
+          player_score = tricks.size
         else
-          player_score = num_tricks_taken + 10
+          player_score = tricks.size + 10
         end
         state[:score][i] ||= []
         state[:score][i].push player_score
@@ -168,7 +168,7 @@ class Game < ActiveRecord::Base
           player_score = score.inject :+ # add up score from each round
           if highest_score.nil? || player_score >= highest_score
             # clear winners list if there's a new high score
-            state[:winners].clear if player_score > highest_score
+            state[:winners].clear if highest_score.present? && player_score > highest_score
             # set new high score and record as winner
             highest_score = player_score
             state[:winners].push state[:players][i]
