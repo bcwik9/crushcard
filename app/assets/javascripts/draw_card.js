@@ -1,6 +1,6 @@
 DrawCard = {
     draw_card: function(suit, value, canvas){
-        console.log(canvas);
+        console.log("Canvas ID: #" + canvas);
         var canvas = document.getElementById(canvas);
         var context = canvas.getContext("2d");
      

@@ -5,8 +5,6 @@ CardHandler = function(){
     var game_id = d.data("id");
     var played_cards = d.data("table"); 
     var dealt_cards = d.data("dealt");
-console.log("hands");
-console.log(dealt_cards);
     var player_action_path = d.data("playerPath")
 
     var init = function(){
@@ -19,30 +17,23 @@ console.log(dealt_cards);
      
       // Reset the game
       correctCards = 0;
-      //$('#cardPile').html( '' );
-      $('#cardSlots').html( '' );
      
       // Create the pile of shuffled cards
       var numbers = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
       numbers.sort( function() { return Math.random() - .5 } );
 
+      $(document).on("click", "#cardPile .playing_card", function(e){
+        var card = $(e.target);
+        if(card.hasClass("selected")){
+          playCard(e);
+        } else {
+          card.parents("#cardPile").find(".selected").removeClass("selected");
+          card.addClass("selected");
+        }
+      });
+
       $.each(dealt_cards, function(i, card){
-        console.log("Drawing Hand Card: " + i);
-console.log(card);
-
-        $("#card"+i).click(function(event) {
-          if($(this).hasClass("selected")) {
-            playCard(event);
-          }
-          $(this).addClass("selected");
-          $(this).siblings().removeClass("selected");
-          $(this).css({"background":"blue"});
-          $(this).siblings().css({"background":"white"});
-        });
         var currentCanvas = document.getElementById("canv"+i);
-console.log("Canvas? canv"+i);
-console.log(currentCanvas);
-
         DrawCard.draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
       });
     
@@ -52,7 +43,6 @@ console.log(currentCanvas);
         drop: testDrop
       } );
     
-     
       // Create the card slots
       var words = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
       for ( var i=1; i<=10; i++ ) {
@@ -72,13 +62,18 @@ console.log(currentCanvas);
         // only accept playable cards
         var cardIsPlayable = event.target.getAttribute('data-playable');
         if(!(/true/i).test(cardIsPlayable)) {
-          alert("You can't play this card right now!");
+          alert("You can't play this card right now! You have to follow suit.");
+          // T ODO: add reason - waiting for - or - follow suit
           return;
         }
     
         var cardSuit = event.target.getAttribute('data-suit');
         var cardValue = event.target.getAttribute('data-actualvalue');
-        $.ajax({url: player_action_path, type: "POST", data: {id: game_id, suit: cardSuit, value: cardValue}});
+        $.ajax({
+          url: player_action_path, 
+          type: "POST", 
+          data: {id: game_id, suit: cardSuit, value: cardValue}
+        });
 
     }
     

@@ -1,5 +1,9 @@
 - show = @names[index].present?
-.player_card
+- you ||= false
+- classes = ''
+- classes << " you" if you
+- classes << " waiting_for" if index == @waiting_on_index
+.player_card{class: classes, data: {index: index}}
   %h3{style: "margin-bottom: 10px;"}
     - if show
       = "\"#{@names[index]}\""
@@ -10,5 +14,5 @@
       #{@places[index]}#{ActiveSupport::Inflector.ordinal(@places[index])}
       \-
       #{@total_scores[index]} points
-    %h4.bid_info
+    %h4.bid_info{style: "margin-bottom: 10px;"}
       = @round_scores[index]
