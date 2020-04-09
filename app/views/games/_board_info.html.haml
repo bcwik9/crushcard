@@ -1,0 +1,28 @@
+
+.row
+  .col-xs-12{style: "padding-bottom: 15px;"}
+    = render 'player', index: 2
+.row
+  / Vertically centered
+  .col-xs-3{style: "padding: 100px 0 0 0;"}
+    = render 'player', index: 1
+
+  / Game Board
+  .col-xs-6{style: "padding: 0px;"}
+    #board
+      %canvas#top.playing_card
+      %canvas#left.playing_card
+      %canvas#right.playing_card
+      %canvas#bottom.playing_card
+
+  .col-xs-3{:style => "padding-top: 100px;"}
+    = render 'player', index: 3
+
+.row
+  .col-xs-12{style: "padding-top: 15px;"}
+    = render 'player', index: 0
+.row
+  .col-xs-12
+    Your Hand / Cards
+    #cardPile
+      = render "card_pile"

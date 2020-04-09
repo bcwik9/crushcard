@@ -1,0 +1,74 @@
+%header.intro
+  .intro-body
+    .container
+      .row
+        .col-md-8.col-md-offset-2
+          %h1.brand-heading Crush
+          %p.intro-text A simple card game you can play with friends anytime, anywhere.
+          = link_to new_game_path, class: "btn btn-lg btn-default" do
+            / <a href="#games" class="btn btn-lg btn-default page-scroll">
+            %i.fa.fa-gamepad
+            Create new game
+            / </a>
+          %a.btn.btn-default.btn-lg.page-scroll{:href => "#games", :style => "margin-left:10px;"}
+            %i.fa.fa-users
+            Join existing game
+%section#games.container.content-section.text-center
+  %h1 Games in Progress
+  %table#game_list.table
+    %thead
+      %tr
+        %th id
+        %th Name
+        %th Created
+        %th Number of players
+        %th View
+    %tbody
+      - @games.each do |game|
+        %tr
+          %td= game.id
+          %td= game.name
+          %td= "#{distance_of_time_in_words(Time.now, game.created_at)} ago"
+          %td= game.load_state[:players].size
+          %td= link_to('View', game, data: { no_turbolink: true }, class: "btn btn-md btn-default")
+  %br/
+  = link_to new_game_path, class: "btn btn-lg btn-default" do
+    %i.fa.fa-gamepad
+    Create new game
+  %br/
+/ How to Play Section
+%section#about.container.content-section.text-center
+  .row
+    .col-lg-8.col-lg-offset-2
+      %h2 How to play Crush
+      %h4 Setup
+      %p Crush is a card game for 3-5 players. Remove jokers from the deck. Lay out cards and have each player pick a single card. the player with the highest card deals first.
+      %h4 Play
+      %p Each player is dealt 10 cards. Flip the top card of the deck, and the suit of that card is “trump” (unless it's an Ace, in which there is no trump, but we'll get to that later). Cards that are trump are considered higher in value than non-trump cards. For example, a Two of trump will beat a King of non-trump. The person to the left of the dealer is the first to bid. You essentially say how many “tricks” you are going to win (ie. if you have higher cards, you are more likely to win the trick, so you want to bid higher). The person who dealt is restricted on what they can bid; the total number of bids for each player cannot add up to the number of cards dealt to each player. For example, if ten cards are dealt to each player, and there are three people playing, and the first player said they would win six tricks, and the second player said they will win two tricks, the player who dealt the cards cannot say they will win two tricks since that would add up to ten (6+2+2=10). They can say anything BUT two, ie. zero, one, three, four, etc… Once the bids have been recorded, the player who made the highest bid is the first to play a card. If more than one player bid the same amount, then the player who bid first goes first. Players then play a card each, going clockwise. Players MUST play the same suit of card as the first card that was played for that round! The exception is if they do not have a card of the same suit in their hand; in that case they are free to play ANY card in their hand. Once everyone has played a card, the person who played the highest card wins that round, called a “trick”. Whoever won the trick is the person who plays a card first the next round. This goes on and on until nobody has any cards left. Everyone then counts the number of tricks they took, and it is recorded. If players got the same amount of tricks that they originally bid, they get ten points plus the number of tricks they took (so if they bid three, and got three tricks, they would get thirteen points). If players get less than the number of tricks they bid, then the get negative points, which is the difference between the number of tricks they bid and the tricks they actually got (so if they bid three, and only got one trick, they would get negative two points). If a player got more tricks than they bid, then they simply get the number tricks they took as points (so if a player bid three, and got five tricks, they would get five points). Once scores are recorded, cards are shuffled and dealt again, only this time one less card is dealt (so nine cards this time, instead of ten). This repeats for all ten rounds, until the last round, where only one card is dealt to each person (so ten cards are dealt, then nine, then eight, etc. etc). The player with the highest number of points at the end of the game wins.
+      %h4 Ace as Trump (NO TRUMP)
+      %p If an Ace is the trump card flipped over, this means there is NO TRUMP. This means that all suits have equal worth. You still must follow the suit of the first card played, however
+/ Contact Section
+%section#contact.container.content-section.text-center
+  .row
+    .col-lg-8.col-lg-offset-2
+      %h2 Contact
+      %p Feel free to email me for more information or to contact me regarding work.
+      %p
+        %a{:href => "mailto:bcwik.9@gmail.com"} bcwik.9@gmail.com
+      %ul.list-inline.banner-social-buttons
+        %li
+          %a.btn.btn-default.btn-lg{:href => "https://github.com/bcwik9"}
+            %i.fa.fa-github.fa-fw
+            %span.network-name Github
+        %li
+          %a.btn.btn-default.btn-lg{:href => "http://www.linkedin.com/pub/ben-cwik/67/508/921/en"}
+            %i.fa.fa-linkedin.fa-fw
+            %span.network-name LinkedIn
+        %li
+          %a.btn.btn-default.btn-lg{:href => "https://instagram.com/bcwik9/"}
+            %i.fa.fa-instagram.fa-fw
+            %span.network-name Instagram
+/ Footer
+%footer
+  .container.text-center
+    %p Copyright © Ben Cwik 2016

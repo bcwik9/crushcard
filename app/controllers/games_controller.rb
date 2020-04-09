@@ -138,20 +138,29 @@ class GamesController < ApplicationController
     # names/scores around the board
     # add in different order so the user is always on the bottom
     @names = []
+    @total_scores = []
     @round_scores = []
     @game.iterate_through_list_with_start_index(player_index, state[:names]) do |name, i|
+      bid_avail = state[:bids] && state[:bids][i]
       tricks_taken = (state[:tricks_taken] && state[:tricks_taken][i]) ? state[:tricks_taken][i].size : 0
-      bid = (state[:bids] && state[:bids][i]) ? state[:bids][i] : 'No bid yet'
+      bid = bid_avail ? state[:bids][i] : 'N/A'
       score = 0
       if state[:score] && state[:score][i]
         score = state[:score][i].inject :+
       end
+      bid_info = name.nil? ? nil : "Taken/Bid: #{tricks_taken} of #{bid}" 
       @names.push name
-      @round_scores.push (name.nil?) ? nil : "Tricks taken: #{tricks_taken} | Bid: #{bid} | Score: #{score}"
+      @total_scores.push score
+      @round_scores.push bid_info
+    end
+
+    @places = []
+    @total_scores.each_with_index do |score, i|
+      @places[i] = @total_scores.select{|t| t > i}.count + 1
     end
     
     # cards that have been played
-    @played_cards = state[:cards_in_play]
+    @played_cards = state[:cards_in_play] || []
     if @game_started
       # display cards in different order since the user is on the bottom
       @played_cards = []

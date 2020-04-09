@@ -1,0 +1,14 @@
+- show = @names[index].present?
+.player_card
+  %h3{style: "margin-bottom: 10px;"}
+    - if show
+      = "\"#{@names[index]}\""
+    - else
+      Player not present
+  - if show
+    %h4.score{style: "margin-bottom: 10px;"}
+      #{@places[index]}#{ActiveSupport::Inflector.ordinal(@places[index])}
+      \-
+      #{@total_scores[index]} points
+    %h4.bid_info
+      = @round_scores[index]
