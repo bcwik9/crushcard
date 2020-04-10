@@ -2,13 +2,22 @@
   padding: 10px
   border-radius: 5px
   //background-color: #a5a5a5
-  width: 270px
+  max-width: 270px
   text-align: center
   margin: auto
   &.you
-    background-color: #6f6f6f
+    //background-color: #6f6f6f
+    border: 1px dashed white
+  .waiting_notice
+    display: none 
   &.waiting_for
     border: 3px solid white 
+    .waiting_notice
+      display: block
+
+#board-wrapper
+  text-align: center
+  margin: auto
 
 #board
   width: 300px
@@ -19,6 +28,7 @@
   padding: 10px
   background-color: green
   position: relative 
+
 .playing_card
   height: 110px
   width: 70px 
@@ -56,10 +66,10 @@
     top: 100px
 
 #cardPile
-  margin: 0px
+  margin: auto
   background: #969696
   width: 760px
-  height: 135px
+  height: 120px
   padding: 5px
   -moz-border-radius: 10px
   -webkit-border-radius: 10px
@@ -72,6 +82,7 @@
   .playing_card
     &:hover
       border-width: 3px
+      cursor: pointer
     &.selected
       border-width: 3px
       background-color: lightblue

@@ -148,7 +148,7 @@ class GamesController < ApplicationController
       if state[:score] && state[:score][i]
         score = state[:score][i].inject :+
       end
-      bid_info = name.nil? ? nil : "Taken/Bid: #{tricks_taken}/#{bid}" 
+      bid_info = name.nil? ? nil : "Bid: #{tricks_taken} of #{bid}" 
       @names.push name
       @total_scores.push score
       @round_scores.push bid_info
@@ -190,12 +190,12 @@ class GamesController < ApplicationController
     # game status (ie. who we're waiting on)
     if state[:waiting_on]
       @waiting_on_index = state[:players].index(state[:waiting_on])
-      @waiting_on = @waiting_on_index ? state[:names][@waiting_on_index] : "Table to clear"
-      @waiting_on = 'YOU' if @_current_user == state[:waiting_on]
       @done_bidding = @game.done_bidding? state
-      unless @done_bidding
-        @waiting_on += " (BIDDING)"
-      end
+      @waiting_on = if @waiting_on_index 
+                      @done_bidding ? "Play" : "Bid"
+                    else
+                      "Table to clear"
+                    end
     else
       @waiting_on = 'Game to start'
     end

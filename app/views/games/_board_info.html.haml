@@ -1,13 +1,21 @@
+- if @winners.present?
+  %h2
+    Winners:
+    \#{@winners.join(', ')}
 
 .row
-  .col-xs-12{style: "padding-bottom: 15px;"}
+  .col-xs-3{style: "position: relative"}
+    .trump_suit{style: "position: absolute; right: 10px;"}
+      %h4{style: "margin-bottom: 10px;"} Trump Suit
+      %canvas#trump.playing_card
+
+  .col-xs-6{style: "padding: 0px;"}
     = render 'player', index: 2
+
 .row
-  / Vertically centered
-  .col-xs-3{style: "padding: 100px 0 0 0;"}
+  .col-xs-3{style: "padding: 80px 0 0 0;"}
     = render 'player', index: 1
 
-  / Game Board
   .col-xs-6{style: "padding: 0px;"}
     #board
       %canvas#top.playing_card
@@ -15,11 +23,14 @@
       %canvas#right.playing_card
       %canvas#bottom.playing_card
 
-  .col-xs-3{:style => "padding-top: 100px;"}
+  .col-xs-3{style: "padding: 100px 0 0 0;"}
     = render 'player', index: 3
 
 .row
-  .col-xs-12{style: "padding-top: 15px;"}
+  .col-xs-3
+    #buttons
+      = render "controls"
+  .col-xs-6{style: "padding-top: 15px;"}
     = render 'player', index: 0, you: true
 .row
   .col-xs-12

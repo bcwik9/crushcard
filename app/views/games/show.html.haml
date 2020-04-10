@@ -1,15 +1,12 @@
-.show_body{style: "background-color: black; border-radius: 10px; padding: 15px;"}
+.show_body{style: "background-color: black"}
   - dealt = @cards.collect {|c| [ c.suit, c.abbreviated_name ]}
   #game_path{data: {url: game_path(@game), table: cards_shown_on_table, dealt: dealt, player_path: games_player_action_path, id: @game.id } }
 
   %p#notice{:style => "text-align:center;"}= notice 
 
-  #board-wrapper{style: "text-align:center;"}
-    .row
-      #game-stat.col-sm-3
-        = render "game_status"
-      #board-info.col-sm-9
-        = render "board_info"
+  #board-wrapper.row{style: "margin: auto; text-align: center;"}
+    .col-xs-12
+      = render "board_info"
 
   #content
     #successMessage.hidden
@@ -17,7 +14,6 @@
       %button{:onclick => "init()"} Play Again
 
   :javascript
-    
     window.onload = function(){
       new CardHandler()
     };
