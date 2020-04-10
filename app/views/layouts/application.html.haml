@@ -27,7 +27,9 @@
         .navbar-header
           %button.navbar-toggle{"data-target" => ".navbar-main-collapse", "data-toggle" => "collapse", :type => "button"}
             %i.fa.fa-bars
-          %a.navbar-brand.page-scroll{:href => "#page-top"}
+
+          - target = @game.present? ? root_path : "#page-top"
+          %a.navbar-brand.page-scroll{href: target}
             %i.fa.fa-play-circle
             CRUSH
             - if @game.present? && @game.name.present?
