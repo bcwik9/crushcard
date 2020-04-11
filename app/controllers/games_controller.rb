@@ -7,7 +7,7 @@ class GamesController < ApplicationController
 
   def invalid_user?
     inv = @game.config[:waiting_on] != @_current_user
-    puts "\nINVALID USER: #{inv} :::: #{@game.config[:waiting_on]} != #{@_current_user}\n".red
+    #puts "\nINVALID USER: #{inv} :::: #{@game.config[:waiting_on]} != #{@_current_user}\n".red
     inv
   end
 
@@ -137,107 +137,122 @@ class GamesController < ApplicationController
   # GET /games/1
   # GET /games/1.json
   def show
-    @is_playing = @game.config[:players].include?(@_current_user)
-    @enough_players = @game.config[:players].compact.size >= 3
+    @board_updated = if params[:updated].nil? # hard page hit - from browser
+                       true
+                     else
+                       last_update = DateTime.parse(params[:updated])
+                       #updated = @game.updated_at > last_update
+                       updated = (@game.updated_at - last_update) > 0.3 # ignore partial second rounding errors
+                       updated
+                     end
 
-    # TODO: game @game.config machine - waiting-for-palyers, waiting-to-deal, bidding
-
-    @dealt = @game.config[:player_hands].present?
-    @game_started = !@game.config[:bids].nil?
-    @can_start_game = (!@game_started) && @game.config[:players].first == @_current_user && @enough_players # can deal
-
-    @winners = @game.config[:winners].map{|player| @game.config[:names][@game.config[:players].index(player)] } rescue nil
-    player_index = @game.config[:players].index(@_current_user) || 0
-
-    # round number
-    @round = @game.config[:total_rounds] - @game.config[:rounds_played]
-
-    # names/scores around the board
-    # add in different order so the user is always on the bottom
-    @names = []
-    @indexes = []
-    @game.iterate_through_list_with_start_index(player_index, @game.config[:players]) do |user_id, i|
-      @indexes.push @game.config[:players].index(user_id)
-    end
-    
-    @total_scores = []
-    @round_scores = []
-    @game.iterate_through_list_with_start_index(player_index, @game.config[:names]) do |name, i|
-      bid_avail = @game.config[:bids] && @game.config[:bids][i]
-      tricks_taken = (@game.config[:tricks_taken] && @game.config[:tricks_taken][i]) ? @game.config[:tricks_taken][i].size : 0
-      tricks_taken = "??" unless bid_avail
-      bid = bid_avail ? @game.config[:bids][i] : '??'
-      score = 0
-      if @game.config[:score] && @game.config[:score][i]
-        score = @game.config[:score][i].sum
+    if @board_updated
+      @is_playing = @game.config[:players].include?(@_current_user)
+      @enough_players = @game.config[:players].compact.size >= 3
+  
+      # TODO: game @game.config machine - waiting-for-palyers, waiting-to-deal, bidding
+  
+      @dealt = @game.config[:player_hands].present?
+      @game_started = !@game.config[:bids].nil?
+      @can_start_game = (!@game_started) && @game.config[:players].first == @_current_user && @enough_players # can deal
+  
+      @winners = @game.config[:winners].map{|player| @game.config[:names][@game.config[:players].index(player)] } rescue nil
+      player_index = @game.config[:players].index(@_current_user) || 0
+  
+      # round number
+      @round = @game.config[:total_rounds] - @game.config[:rounds_played]
+  
+      # names/scores around the board
+      # add in different order so the user is always on the bottom
+      @names = []
+      @indexes = []
+      @game.iterate_through_list_with_start_index(player_index, @game.config[:players]) do |user_id, i|
+        @indexes.push @game.config[:players].index(user_id)
       end
-      bid_info = "Taken #{tricks_taken} / #{bid} Bid" 
-      bid_color = if (!bid_avail) || tricks_taken == bid
-                    :white
-                  else
-                    bid > tricks_taken ? :red : :yellow
-                  end
-      @names.push name
-      @total_scores.push score
-      @round_scores.push [bid_info, bid_color]
-    end
-
-    @places = []
-    @total_scores.each_with_index do |score, i|
-      @places[i] = @total_scores.select{|t| t > i}.count + 1
-    end
-    
-    # cards that have been played
-    @played_cards = @game.config[:cards_in_play] || []
-    if @game_started
-      # display cards in different order since the user is on the bottom
-      @played_cards = []
-      @game.iterate_through_list_with_start_index(player_index, @game.config[:players]) do |player,i|
-        @played_cards.push @game.config[:cards_in_play][i]
+      
+      @total_scores = []
+      @round_scores = []
+      @game.iterate_through_list_with_start_index(player_index, @game.config[:names]) do |name, i|
+        bid_avail = @game.config[:bids] && @game.config[:bids][i]
+        tricks_taken = (@game.config[:tricks_taken] && @game.config[:tricks_taken][i]) ? @game.config[:tricks_taken][i].size : 0
+        tricks_taken = "??" unless bid_avail
+        bid = bid_avail ? @game.config[:bids][i] : '??'
+        score = 0
+        if @game.config[:score] && @game.config[:score][i]
+          score = @game.config[:score][i].sum
+        end
+        bid_info = "Taken #{tricks_taken} / #{bid} Bid" 
+        bid_color = if (!bid_avail) || tricks_taken == bid
+                      :white
+                    else
+                      bid > tricks_taken ? :red : :yellow
+                    end
+        @names.push name
+        @total_scores.push score
+        @round_scores.push [bid_info, bid_color]
       end
-    end
-
-    # players hand
-    @cards = []
-    if @is_playing
-      @cards = @game.config[:player_hands][player_index] || @cards
-
-      # can't play any cards unless it's your turn
-      playable_cards = []
-      playable_cards = @game.get_playable_cards(@cards) unless invalid_user?
-
-      @cards.each do |card|
-        if playable_cards.include? card
-          card.playable = true
+  
+      @places = []
+      @total_scores.each_with_index do |score, i|
+        @places[i] = @total_scores.select{|t| t > i}.count + 1
+      end
+      
+      # cards that have been played
+      @played_cards = @game.config[:cards_in_play] || []
+      if @game_started
+        # display cards in different order since the user is on the bottom
+        @played_cards = []
+        @game.iterate_through_list_with_start_index(player_index, @game.config[:players]) do |player,i|
+          @played_cards.push @game.config[:cards_in_play][i]
         end
       end
-    end
-    @cards.sort! { |a,b| a.suit_order b }
-
-    # game status (ie. who we're waiting on)
-    @done_bidding = @game.done_bidding?
-    if @game.config[:waiting_on_index] 
-      @waiting_on_index = @game.config[:waiting_on_index]
-      @waiting_on = if @waiting_on_index 
-                      @game.config[:waiting_on_reason]
-                    else
-                      "Table to clear" # TODO: move into game
-                    end
-    end
-    @waiting_on_you = @waiting_on_index == @indexes[0] # seat 0 is the up-next user?
   
-    # show ace of spades if game hasnt started
-    @trump = @game.config[:trump_card] # || Card.new('Spades', 12)
+      # players hand
+      @cards = []
+      if @is_playing
+        @cards = @game.config[:player_hands][player_index] || @cards
+  
+        # can't play any cards unless it's your turn
+        playable_cards = []
+        playable_cards = @game.get_playable_cards(@cards) unless invalid_user?
+  
+        @cards.each do |card|
+          if playable_cards.include? card
+            card.playable = true
+          end
+        end
+      end
+      @cards.sort! { |a,b| a.suit_order b }
+  
+      # game status (ie. who we're waiting on)
+      @done_bidding = @game.done_bidding?
+      if @game.config[:waiting_on_index] 
+        @waiting_on_index = @game.config[:waiting_on_index]
+        @waiting_on = if @waiting_on_index 
+                        @game.config[:waiting_on_reason]
+                      else
+                        "Table to clear" # TODO: move into game
+                      end
+      end
+      @waiting_on_you = @waiting_on_index == @indexes[0] # seat 0 is the up-next user?
+    
+      # show ace of spades if game hasnt started
+      @trump = @game.config[:trump_card] # || Card.new('Spades', 12)
+  
+      @poll = !@game_started # waiting room - everyone is waiting for updates
+      @poll = !@waiting_on_you unless @poll
+    end
 
-    @poll = !@game_started # waiting room - everyone is waiting for updates
-    @poll = !@waiting_on_you unless @poll
+    js_data = if request.format == "json" && @board_updated
+                { html: render_to_string(partial: "board_info", formats: ["html"]) }
+              else
+                nil
+              end
 
     respond_to do |format|
       format.html
       format.json { 
-        render :json => {
-          html: render_to_string(partial: "board_info", formats: ["html"])
-        }
+        render :json => js_data 
       }
     end
   end

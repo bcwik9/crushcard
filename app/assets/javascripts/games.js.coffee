@@ -36,7 +36,7 @@ class Games
   get_updated_board: =>
     # TODO: pass in last_updated_at, only get response if new state
     $.ajax({
-      url: config.url + ".json", 
+      url: config.url + ".json?updated=" + config.updated, 
       method: "GET", 
       success: @success,
       error: @failed
@@ -47,8 +47,11 @@ class Games
     setTimeout @get_updated_board, 3000
 
   success: (data)=>
-    window.new_board = data
-    window.load_new_board();
+    if data
+      window.new_board = data
+      window.load_new_board();
+    else
+      @wait_and_poll()
 
   failed: -> 
     window.show_game_message "Failed to update game, please refresh page."

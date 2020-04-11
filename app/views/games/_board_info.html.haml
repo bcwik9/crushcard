@@ -1,5 +1,6 @@
 - dealt = @cards.collect {|c| [ c.suit, c.abbreviated_name ]}
-#game{data: {url: game_path(@game), table: cards_shown_on_table, dealt: dealt, player_path: games_player_action_path, id: @game.id, poll: @poll.to_s } }
+/ todo - remove dealt - use rendered html/data
+#game{data: {url: game_path(@game), table: cards_shown_on_table, dealt: dealt, player_path: games_player_action_path, id: @game.id, poll: @poll.to_s, updated: @game.updated_at } }
   - if @winners.present?
     %h2
       Winners:
