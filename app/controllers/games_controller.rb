@@ -144,10 +144,8 @@ class GamesController < ApplicationController
     end
 
     if error.present?
-      puts "PLAYER ACTION: ERROR".red
       render json: { message: error }
     else
-      puts "PLAYER ACTION: SUCCESS".green
       show
     end
   end
@@ -174,11 +172,9 @@ class GamesController < ApplicationController
   end
 
   def show
-    if params[:action] != 'show'
-      @game = Game.find(@game.id)
-    end
+    # Refresh game in memory after commiting action
+    @game = Game.find(@game.id) if params[:action] != 'show'
 
-    puts "Request for: #{current_user_name}".green
     @board_updated = if params[:updated].nil? # hard page hit - from browser
                        true
                      else

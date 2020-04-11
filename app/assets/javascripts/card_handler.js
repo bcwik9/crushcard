@@ -1,11 +1,6 @@
 CardHandler = function(game){
-  console.log("Card Handler");
-  console.log(game);
     var correctCards = 0;
     var d = game.data();
-    console.log("Game Data");
-    console.log(game);
-    console.log(d);
     var game_id = d.id,
      played_cards = d.table,
      player_action_path = d.playerPath;
@@ -18,7 +13,6 @@ CardHandler = function(game){
       game.find(".playing_card").each(function(i, card){
         card = $(card);
         if(card.data('suit')){
-          console.log("LOAD CARD: " + card.attr("id"));
           DrawCard.draw_card(card.data('suit'), card.data('value'), card.attr('id'), game);
         }
       });
@@ -91,8 +85,6 @@ CardHandler = function(game){
     }
 
     var card_played = function(data){
-      console.log("Card Played!!!")
-      console.log(data);
       if(data['html']){
         window.new_board = data;
         window.load_new_board();

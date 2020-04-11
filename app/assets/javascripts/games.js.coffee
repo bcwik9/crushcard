@@ -1,7 +1,5 @@
 window.new_board = null
 window.load_new_board = ()->
-  console.log("LOAD NEW BOARD");
-  console.log(window.new_board);
   board = $(window.new_board['html']); # TODO: if html present
   new Games(board)
   $('#game-wrapper').html(board)
@@ -22,28 +20,22 @@ class Games
   config = null
 
   constructor: (game_element)->
-    console.log("Games New ------")
     game = game_element
     config = game.data();
 
     new CardHandler(game); # draw cards and setup action listeners
 
     if config.poll == true
-      console.log("Poll for updates from other users");
       @wait_and_poll()
     else 
-      console.log("Dont Poll - waiting for current user action");
  
     game.find(".start_game").on('click', @start_game_clicked)
     game.find(".bid_form a").on('click', @bid_clicked)
     game.find("a.deal").on('click', @deal_clicked)
-    console.log("Deal button");
-    console.log(game.find("a.deal"))
     $(document).find(".join_game button").on('click', @add_player_clicked)
 
   deal_clicked: (e) =>
     e.preventDefault();
-    console.log("Deal Clicked");
     path = $(e.target).data('url')
     $.ajax(
       path,
@@ -57,7 +49,6 @@ class Games
     e.preventDefault();
     path = $(e.target).data('url')
     bid = game.find(".bid_form #bid").val()
-    console.log("Bid Clicked: Submitting: " + bid);
     $.ajax(
       path,
       data: {bid: bid},
@@ -110,13 +101,10 @@ class Games
     setTimeout @get_updated_board, 5000
 
   success: (data)=>
-    console.log("SUCCESS FROM SERVER")
     if data && data['html']
-      console.log("Loading HTML")
       window.new_board = data
       window.load_new_board();
     else if data && data['message']
-      console.log("Loading message")
       window.show_game_message(data['message'])
     else
       @wait_and_poll()
@@ -126,7 +114,6 @@ class Games
 
 
 jQuery ->
-  console.log("Games.js starting");
   new Games($("#game"))
 
   $('#successMessage').css({
