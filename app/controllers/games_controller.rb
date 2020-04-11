@@ -124,6 +124,8 @@ class GamesController < ApplicationController
 
     if invalid_user?
       error = "It's not your turn, waiting for \"#{expected_user}\""
+    elsif @game.config[:waiting_for_reason] == "Clear"
+      error = "Waiting for next hand." 
     elsif params[:bid]
       if @game.done_bidding?
         error = 'Bidding is over'
@@ -232,6 +234,13 @@ class GamesController < ApplicationController
         @places[i] = @total_scores.select{|t| t > i}.count + 1
       end
       
+      # players hand
+      @cards = []
+      if is_playing?
+        @cards = @game.config[:player_hands][player_index] || @cards
+      end
+      @cards.sort! { |a,b| a.suit_order b }
+
       # cards that have been played
       @played_cards = @game.config[:cards_in_play] || []
       if @game_started
@@ -242,12 +251,6 @@ class GamesController < ApplicationController
         end
       end
   
-      # players hand
-      @cards = []
-      if @is_playing
-        @cards = @game.config[:player_hands][player_index] || @cards
-      end
-      @cards.sort! { |a,b| a.suit_order b }
   
       # game status (ie. who we're waiting on)
       @done_bidding = @game.done_bidding?

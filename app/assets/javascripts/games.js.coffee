@@ -95,10 +95,8 @@ class Games
     })
 
   wait_and_poll: =>
-    # TODO: faster once game strarted
-    # Note: poll time should get faster
-    # poll should hard-refresh after 10 seconds
-    setTimeout @get_updated_board, 5000
+    # TODO: poll should hard-refresh after 15 seconds/tries
+    setTimeout @get_updated_board, 1000
 
   success: (data)=>
     if data && data['html']

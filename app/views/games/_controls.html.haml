@@ -1,7 +1,7 @@
 - if @can_start_game && !@dealt
   = link_to 'Start Game', "#", class: "start_game btn btn-lg btn-success", data: {url: start_game_path}
 
-- if @waiting_on_you && @game.config[:waiting_on_reason] == "Deal"
+- if @waiting_on_you && @game.config[:waiting_on_reason] == "Clear" && @winners.nil? 
   = link_to 'Clear/Next', "#", class: "deal btn btn-lg btn-success", data: {url: deal_game_path}
 
 - show_bid_form = @waiting_on_you && @dealt && !@done_bidding
@@ -9,7 +9,8 @@
   .bid_form
     %h3#bid-title{style: "color: red;"} Bid Now
     .input-group{style: "width:150px; margin: auto;"}
-      = number_field_tag("bid", 0, min: 0, max: 10, class: "form-control input-lg")
+      - max = @cards.size
+      = number_field_tag("bid", 0, min: 0, max: max, class: "form-control input-lg")
       %span.input-group-btn
         = link_to("Bid", "#", class: "btn btn-lg btn-success", data: {url: player_action_game_path, disable: true, disable_with: "Bidding..."})
 

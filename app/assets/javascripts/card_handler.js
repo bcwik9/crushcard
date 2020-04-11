@@ -9,10 +9,12 @@ CardHandler = function(game){
 
     var init = function(){
       hand.on("click", ".playing_card", card_in_hand_clicked)
-      
+     
       game.find(".playing_card").each(function(i, card){
         card = $(card);
         if(card.data('suit')){
+        console.log("DRAWING CARD");
+        console.log(card);
           DrawCard.draw_card(card.data('suit'), card.data('value'), card.attr('id'), game);
         }
       });

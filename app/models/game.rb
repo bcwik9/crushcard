@@ -3,7 +3,7 @@ class Game < ActiveRecord::Base
 
   def set_up
     state = {
-      total_rounds: 10,
+      total_rounds: 2,
       rounds_played: 0,
       dealer_index: 0,
       waiting_on: nil, # creator 
@@ -31,9 +31,9 @@ class Game < ActiveRecord::Base
   end
 
   def set_new_dealer
+    # Could use dealer_index + 1 % size
     config[:dealer_index] = config[:rounds_played] % config[:players].size
     config[:dealer] = config[:players][config[:dealer_index]] # deprecated - use index
-    add_waiting_info(config[:dealer_index], 'Deal')
   end
   
   def deal_cards
@@ -152,9 +152,7 @@ class Game < ActiveRecord::Base
       set_winner_card_index(current_player_index) # is this correct...
       # check to see if all players have played a card
       if all_players_played_a_card?
-        # make sure nobody can do anything
-        #add_waiting_info(current_player_index, "Table to clear")
-        set_new_dealer
+        add_waiting_info(config[:winner_index], 'Clear')
       else
         # set next player to play a card
         next_up = next_player_index(current_player_index)
@@ -225,7 +223,7 @@ class Game < ActiveRecord::Base
           end
         end
       else
-        puts "SET DEALER AND WAIT".red
+        set_new_dealer
         deal_cards
       end
     else

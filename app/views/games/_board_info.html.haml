@@ -1,14 +1,18 @@
 - puts "RENDERING BOARD INFO FOR: #{@game.id}".red
 #game{data: {url: game_path(@game), player_path: player_action_game_path, poll: @poll.to_s, updated: @game.updated_at } }
   - if @winners.present?
-    %h2
-      Winners:
-      \#{@winners.join(', ')}
-  - if @notice.present?
-    %h4{style: 'margin-bottom: 10px;'}
-      = @notice
+    %h2{style: "margin-bottom: 10px;"}
+      Game Over:
+      Winner:
+      = "\"#{@winners.join(', ')}\""
+    = link_to "New Game", new_game_path, class: "btn btn-lg btn-success"
+    %br
 
   .row
+    - if @notice.present?
+      %h4{style: 'position: absolute;'}
+        = @notice
+
     .col-xs-3{style: "position: relative"}
       - if @dealt
         .trump_suit{style: "position: absolute; right: 10px;"}

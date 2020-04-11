@@ -16,6 +16,8 @@
   %h3{style: "margin-bottom: 10px;"}
     - if show
       = "\"#{@names[index]}\""
+      - if @indexes[index] == @game.config[:dealer_index]
+        = "*"
     - else
       Player not present
 

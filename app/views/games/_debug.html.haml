@@ -1,9 +1,8 @@
-.row
+.row.hidden
   %hr
   .col-xs-12
     %pre{style: "max-width: 400px; margin: auto; text-align: left;"}
       = "POLLING: #{@poll}"
-      = ""
   
       - c = @game.config
       - c[:player_hands] = c[:player_hands].collect {|h| "Hand size: #{h.size}"} if c[:player_hands]
