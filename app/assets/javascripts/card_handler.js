@@ -1,20 +1,25 @@
 CardHandler = function(game){
+  console.log("Card Handler");
+  console.log(game);
     var correctCards = 0;
     var d = game.data();
+    console.log("Game Data");
+    console.log(game);
+    console.log(d);
     var game_id = d.id,
      played_cards = d.table,
-     dealt_cards = d.dealt, // in this persons hand only
      player_action_path = d.playerPath;
 
    var hand = game.find("#cardPile"); 
 
     var init = function(){
       hand.on("click", ".playing_card", card_in_hand_clicked)
-      $.each(dealt_cards, function(i, card){
-        var canvas = game.find("#canv"+i);
-        // TODO: use canvas.data()... or vice versa
-        // loop over rendered cards - no need for 'dealt-cards' at all
-        DrawCard.draw_card(card[0], card[1], "canv"+i, game);
+      
+      game.find(".playing_card").each(function(i, card){
+        card = $(card);
+        if(card.data('suit')){
+          DrawCard.draw_card(card.data('suit'), card.data('value'), card.attr('id'), game);
+        }
       });
     
       game.find('#bottom').droppable( {
@@ -25,7 +30,6 @@ CardHandler = function(game){
     
       // Create the card slots
       var words = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
-
       // TODO: drag and drop not working
       for ( var i=1; i<=10; i++ ) {
         $('<div>' + words[i-1] + '</div>').data( 'number', i ).appendTo( '#cardSlots' ).droppable( {
@@ -34,10 +38,6 @@ CardHandler = function(game){
           drop: handleCardDrop
         });
       }
-
-      $.each(played_cards, function(i, card){
-        DrawCard.draw_card(card[0], card[1], card[2], game);
-      });
     }
     
   var card_in_hand_clicked = function(e){
@@ -56,8 +56,11 @@ CardHandler = function(game){
     function playCard(event) {
       var card = $(event.target);
       // only accept playable cards
+      // Note: use server for validation with more precise messaging
+      // instead of js flag here
+      /*
       var playable  = card.data("playable");
-        if(!playable) {
+        if(false && !playable) {
           hand.find(".playing").removeClass("playing")
           // TODO: add reason
           window.show_game_message(
@@ -65,6 +68,7 @@ CardHandler = function(game){
           );
           return;
         }
+        */
     
         var cardSuit = card.data('suit');
         var cardValue = card.data('actualvalue');
@@ -72,33 +76,48 @@ CardHandler = function(game){
           url: player_action_path + ".json", 
           type: "POST", 
           data: {id: game_id, suit: cardSuit, value: cardValue},
-          success: function(data){
-            console.log("Card Played!");
-            console.log(data);
-            window.new_board = data;
-            setTimeout(window.load_new_board, 2500);
-          }
+          success: card_played,
+          error: failed
         });
 
     }
+
+    var failed = function(){
+      window.show_game_message(
+        "Failed to make action. Please refresh page"
+      )
+    }
+
+    var card_played = function(data){
+      console.log("Card Played!!!")
+      console.log(data);
+      if(data['html']){
+        window.new_board = data;
+        setTimeout(window.load_new_board, 2500);
+      } else {// expect message
+        hand.find(".playing").removeClass("playing")
+        window.show_game_message(
+          data['message'] || "Unknown error, please refresh page"
+        )
+      }
+      
+    };
     
     function testDrop(event, ui) {
-        var cardIsPlayable = $(ui.draggable.context.children[0]).data("playable");
-        if(!cardIsPlayable) {
-          window.show_game_message(
-              "You can't play this card right now!"
-              );
-          return;
-        }
-    
-        ui.draggable.addClass( 'correct' );
-        ui.draggable.draggable( 'disable' );
-        $(this).droppable( 'disable' );
-        ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
-        ui.draggable.draggable( 'option', 'revert', false );
-        var cardSuit = ui.draggable.context.children[0].dataset.suit;
-        var cardValue = ui.draggable.context.children[0].dataset.actualvalue;
-        $.ajax({url: player_action_path, type: "POST", data: {id: game_id, suit: cardSuit, value: cardValue}});
+      ui.draggable.addClass( 'correct' );
+      ui.draggable.draggable( 'disable' );
+      $(this).droppable( 'disable' );
+      ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
+      ui.draggable.draggable( 'option', 'revert', false );
+      var cardSuit = ui.draggable.context.children[0].dataset.suit;
+      var cardValue = ui.draggable.context.children[0].dataset.actualvalue;
+      $.ajax({
+        url: player_action_path + ".json", 
+        type: "POST", 
+        data: {id: game_id, suit: cardSuit, value: cardValue},
+        success: card_played,
+        error: failed
+      });
     }
     
     function handleCardDrop( event, ui ) {

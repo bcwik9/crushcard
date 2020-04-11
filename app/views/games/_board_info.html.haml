@@ -1,17 +1,19 @@
-- dealt = @cards.collect {|c| [ c.suit, c.abbreviated_name ]}
-/ todo - remove dealt - use rendered html/data
-#game{data: {url: game_path(@game), table: cards_shown_on_table, dealt: dealt, player_path: games_player_action_path, id: @game.id, poll: @poll.to_s, updated: @game.updated_at } }
+- puts "RENDERING BOARD INFO FOR: #{@game.id}".red
+#game{data: {url: game_path(@game), player_path: player_action_game_path, poll: @poll.to_s, updated: @game.updated_at } }
   - if @winners.present?
     %h2
       Winners:
       \#{@winners.join(', ')}
+  - if @notice.present?
+    %h4{style: 'margin-bottom: 10px;'}
+      = @notice
 
   .row
     .col-xs-3{style: "position: relative"}
       - if @dealt
         .trump_suit{style: "position: absolute; right: 10px;"}
           %h4{style: "margin-bottom: 10px;"} Trump Suit
-          %canvas#trump.playing_card
+          = render 'playing_card', id: "trump", card: @game[:trump_card]
       - else
         %h4{style: "border: 1px solid white; border-radius: 5px; padding: 15px;"} 
           Waiting For: 
@@ -42,10 +44,11 @@
           .ok
             = link_to "Ok", "#", class: "btn btn-success btn-lg"
         #board
-          %canvas#top.playing_card
-          %canvas#left.playing_card
-          %canvas#right.playing_card
-          %canvas#bottom.playing_card
+          - cards = cards_shown_on_table
+          = render 'playing_card', id: :top, card: cards[2]
+          = render 'playing_card', id: :left, card: cards[1]
+          = render 'playing_card', id: :right, card: cards[3]
+          = render 'playing_card', id: :bottom, card: cards[0]
   
     .col-xs-3{style: "padding: 100px 0 0 0;"}
       = render 'player', index: 3

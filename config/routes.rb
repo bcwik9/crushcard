@@ -1,9 +1,13 @@
 Rails.application.routes.draw do
-  resources :games
+  resources :games do
+    member do
+      post 'add_player', format: [:json]
+      post 'start', formats: [:json]
+      post 'player_action', formats: [:json]
+    end
+  end
+  # TODO: convert these to member calls
   post 'games/add_cpu_player'
-  post 'games/add_player'
-  post 'games/deal'
-  post 'games/player_action'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

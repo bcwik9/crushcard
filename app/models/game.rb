@@ -70,14 +70,31 @@ class Game < ActiveRecord::Base
     save_state config
   end
 
+  def player_index(player_id)
+    config[:players].index(player_id)
+  end
+
+  def player_up?(current_user)
+    current_user_index = player_index(current_user)
+
+    waiting_user = config[:waiting_on] # deprecated
+    waiting_user_index = config[:waiting_on_index]
+    info = "##{current_user_index} vs ##{waiting_user_index} - #{current_user} vs #{waiting_user}"
+    if current_user_index != waiting_user_index 
+      false
+    elsif current_user != waiting_user # deprecated
+      #raise "SHOULD NOT GET HERE"
+      #false
+      true
+    else
+      true
+    end
+  end
+
   # player either bids or plays a card if it's their turn
   def player_action user_id, user_input=nil
-    # return false if it's not the players turn
-    return false if user_id != config[:waiting_on]
-
-    # TODO: just use waiting_on_index 
-    current_player_index = config[:players].find_index user_id
-    raise "Mismatch in index expectations" unless current_player_index == config[:waiting_on_index]
+    return false unless player_up?(user_id)
+    current_player_index = player_index(user_id)
     
     # check if we are in bidding or playing a card
     if !done_bidding?
@@ -121,6 +138,7 @@ class Game < ActiveRecord::Base
       # ensure that the card is actually playable
       config[:first_suit_played] ||= card.suit
       playable_cards = get_playable_cards(config[:player_hands][current_player_index])
+      # TODO: add a message here?
       return false unless playable_cards.include? card
       
       # actually play the card
@@ -129,17 +147,16 @@ class Game < ActiveRecord::Base
       # check to see if all players have played a card
       if all_players_played_a_card?
         # make sure nobody can do anything
-        config[:waiting_on] = "Table to clear" # not a real id - transition for new tric
+        add_waiting_info(current_player_index, "Table to clear")
         clear_table(current_player_index)
       else
         # set next player to play a card
-        next_up = next_player_index(config[:waiting_on_index])
+        next_up = next_player_index(current_player_index)
         add_waiting_info(next_up, "Play")
       end
     end
     
     save_state config 
-    return true
   end
 
   # clear the table of cards and calculate who won the trick/game
@@ -195,8 +212,7 @@ class Game < ActiveRecord::Base
         deal_cards config
       end
     else
-      # winner is the first to play a card next
-      config[:waiting_on] = config[:players][winner_index]
+      add_waiting_info(winner_index, "First")
     end
 
     save_state 
@@ -260,7 +276,8 @@ class Game < ActiveRecord::Base
     (current_index + 1) % config[:players].size
   end
 
-  def get_next_player current_player # aka: config[:waiting_on]
+  def get_next_player current_player 
+    # aka: next up from config[:waiting_on]
     next_up = next_player_index(players.find_index(current_player))
     return players[next_up]
   end

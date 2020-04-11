@@ -5,10 +5,19 @@ class GamesController < ApplicationController
 
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
+  def player_up?
+    @game.player_up?(@_current_user)
+  end
+
   def invalid_user?
-    inv = @game.config[:waiting_on] != @_current_user
-    #puts "\nINVALID USER: #{inv} :::: #{@game.config[:waiting_on]} != #{@_current_user}\n".red
-    inv
+    !player_up?
+  end
+
+  def expected_user
+    return nil unless @game.config.try(:[],:players).present?
+    expected_user = @game.config[:players].index(@game.config[:waiting_on])
+    expected_user = @game.config[:names][expected_user]
+    expected_user
   end
 
   def already_started?
@@ -75,56 +84,61 @@ class GamesController < ApplicationController
     @game.config[:names].push params[:username]
 
     if @game.save_state
-      redirect_to @game, notice: 'Joined the game!'
+      show
     else
-      redirect_to @game, notice: 'Failed to join the game'
+      render json: { message: 'Failed to join the game' }
     end
   end
 
-  def deal
+  def start
     set_game
+    error = nil
     if @game.config[:players].size < 3 || @game.config[:players].size > 5
-      redirect_to @game, notice: 'Must have between 3 and 5 players to start'
-      return
-    end
-    if @game.config[:cards_in_play].nil?
+      error = 'Must have between 3 and 5 players to start'
+    elsif @game.config[:cards_in_play].nil?
       @game.deal_cards
-      redirect_to @game, notice: 'Game has started!'
+      @notice = "Game has started!"
     else
-      redirect_to @game, notice: 'Game has already started'
+      error = 'Game has already started'
+    end
+
+    if error
+      render json: {message: error}
+    else
+      show
     end
   end
 
   def player_action
     set_game
-    # player isnt allowed to do anything if it's not their turn
+    error = nil
+
     if invalid_user?
-      redirect_to @game, notice: "It's not your turn"
-      return
-    end
-    
-    if params[:bid]
-      # user is making a bid
+      error = "It's not your turn, waiting for \"#{expected_user}\""
+    elsif params[:bid]
       if @game.done_bidding?
-        redirect_to @game, notice: 'Bidding is over'
-        return
+        error = 'Bidding is over'
       else
         if @game.player_action(@_current_user, params[:bid])
-          @game.save
-          redirect_to @game, notice: 'Placed bid!'
+          @notice = "Placed bid!"
         else
-          redirect_to @game, notice: "Can bid anything BUT #{params[:bid]}"
+          error = "Can bid anything BUT #{params[:bid]}" 
         end
       end
     else
       # user is playing a card
       card = Card.new(params[:suit], params[:value])
       if @game.player_action(@_current_user, card)
-        @game.save
-        show
+        @notice = "Played card!"
       else
-        redirect_to @game, notice: "Nice try, but you have to play a #{@game.config[:first_suit_played].chop.downcase}"
+        error = "You must follow the first suit played: \"#{@game.config[:first_suit_played]}\""
       end
+    end
+
+    if error.present?
+      render json: { message: error }
+    else
+      show
     end
   end
 
@@ -136,21 +150,36 @@ class GamesController < ApplicationController
 
   # GET /games/1
   # GET /games/1.json
+  def is_playing?
+    @is_playing ||= @game.config[:players].include?(@_current_user) 
+  end
+
+  def current_user_name
+    if is_playing?
+      i = @game.config[:players].index(@_current_user)
+      @game.config[:names][i]
+    else 
+      "ANONYMOUS"
+    end
+  end
+
   def show
+    if params[:action] != 'show'
+      @game = Game.find(@game.id)
+    end
+
+    puts "Request for: #{current_user_name}".green
     @board_updated = if params[:updated].nil? # hard page hit - from browser
                        true
                      else
                        last_update = DateTime.parse(params[:updated])
                        #updated = @game.updated_at > last_update
-                       updated = (@game.updated_at - last_update) > 0.3 # ignore partial second rounding errors
+                       updated = (@game.updated_at - last_update) > 0.99 # ignore milisecond rounding errors
                        updated
                      end
 
     if @board_updated
-      @is_playing = @game.config[:players].include?(@_current_user)
       @enough_players = @game.config[:players].compact.size >= 3
-  
-      # TODO: game @game.config machine - waiting-for-palyers, waiting-to-deal, bidding
   
       @dealt = @game.config[:player_hands].present?
       @game_started = !@game.config[:bids].nil?
@@ -211,16 +240,6 @@ class GamesController < ApplicationController
       @cards = []
       if @is_playing
         @cards = @game.config[:player_hands][player_index] || @cards
-  
-        # can't play any cards unless it's your turn
-        playable_cards = []
-        playable_cards = @game.get_playable_cards(@cards) unless invalid_user?
-  
-        @cards.each do |card|
-          if playable_cards.include? card
-            card.playable = true
-          end
-        end
       end
       @cards.sort! { |a,b| a.suit_order b }
   
@@ -243,18 +262,21 @@ class GamesController < ApplicationController
       @poll = !@waiting_on_you unless @poll
     end
 
-    js_data = if request.format == "json" && @board_updated
-                { html: render_to_string(partial: "board_info", formats: ["html"]) }
+    js_data = if request.xhr? && @board_updated
+                { html: json_board }
               else
                 nil
               end
 
-    respond_to do |format|
-      format.html
-      format.json { 
-        render :json => js_data 
-      }
+    if request.xhr? 
+      render :json => js_data 
+    else
+      render 'show'
     end
+  end
+
+  def json_board
+    render_to_string(partial: "board_info", formats: ["html"])
   end
 
   def seat_index_for_player(player_id)
@@ -277,48 +299,17 @@ class GamesController < ApplicationController
     @game = Game.new
   end
 
-  # GET /games/1/edit
   def edit
   end
 
-  # POST /games
-  # POST /games.json
   def create
     @game = Game.new(game_params)
     @game.set_up
 
-    respond_to do |format|
-      if @game.save
-        format.html { redirect_to @game, notice: 'New game was successfully created. Copy and share this URL with your friends.' }
-        format.json { render :show, status: :created, location: @game }
-      else
-        format.html { render :new }
-        format.json { render json: @game.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  # PATCH/PUT /games/1
-  # PATCH/PUT /games/1.json
-  def update
-    respond_to do |format|
-      if @game.update(game_params)
-        format.html { redirect_to @game, notice: 'Game was successfully updated.' }
-        format.json { render :show, status: :ok, location: @game }
-      else
-        format.html { render :edit }
-        format.json { render json: @game.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  # DELETE /games/1
-  # DELETE /games/1.json
-  def destroy
-    @game.destroy
-    respond_to do |format|
-      format.html { redirect_to games_url, notice: 'Game was successfully destroyed.' }
-      format.json { head :no_content }
+    if @game.save
+      redirect_to game_path(@game), notice: 'New game was successfully created. Copy and share this URL with your friends.'
+    else
+      new
     end
   end
 

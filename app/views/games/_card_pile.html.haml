@@ -1,4 +1,4 @@
 - unless @cards.empty?
   - @cards.each_with_index do |card,i|
     %span{id: "card#{i}"}
-      %canvas.playing_card{id: "canv#{i}", data: { actualvalue: card.value, playable: card.playable.to_s, suit: card.suit, value: card.abbreviated_name}} 
+      = render 'playing_card', id: "canv#{i}", card: card

@@ -1,14 +1,12 @@
 - if !(@game_started || @is_playing)
-  .join_game{style: "max-width: 300px; margin: auto;"}
+  .join_game{style: "max-width: 300px; margin: auto;", data: { url: add_player_game_path }}
     %h4{style: "margin-bottom: 10px"}
       Join game!
-    = form_tag(games_add_player_path) do
-      = hidden_field_tag(:id, params[:id]) # is this needed here?
-      %div
-        #username-input.input-group
-          = text_field_tag("username", nil, class: "form-control input-lg", placeholder: "Username", required: true)
-          %span.input-group-btn
-            = button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary", data: {disable: true})
+    %div
+      #username-input.input-group
+        = text_field_tag(:username, nil, class: "form-control input-lg", placeholder: "Player name")
+        %span.input-group-btn
+          = button_tag("Join game", type: "submit", class: "btn btn-lg btn-primary", data: {disable: true, disable_with: "Joining..."})
     /= button_to 'Add Computer Player', games_add_cpu_player_path, method: :post, params: { id: params[:id] }, class: 'btn btn-lg btn-primary'
     %br
     %br
