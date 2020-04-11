@@ -34,12 +34,17 @@
     .col-xs-3{style: "padding: 80px 0 0 0;"}
       = render 'player', index: 1
   
-    .col-xs-6{style: "padding: 0px;"}
-      #board
-        %canvas#top.playing_card
-        %canvas#left.playing_card
-        %canvas#right.playing_card
-        %canvas#bottom.playing_card
+    .col-xs-6{style: "padding: 0px"}
+      #board-wrapper
+        #message.hidden
+          .text
+          .ok
+            = link_to "Ok", "#", class: "btn btn-success btn-lg"
+        #board
+          %canvas#top.playing_card
+          %canvas#left.playing_card
+          %canvas#right.playing_card
+          %canvas#bottom.playing_card
   
     .col-xs-3{style: "padding: 100px 0 0 0;"}
       = render 'player', index: 3

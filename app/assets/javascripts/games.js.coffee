@@ -5,6 +5,17 @@ window.load_new_board = ()->
   new Games(board)
   $('#game-wrapper').html(board)
 
+window.show_game_message = (message)->
+  msg = $('#game-wrapper #message')
+  msg.find(".text").html(message)
+  msg.removeClass("hidden")
+  msg.find("a").focus()
+  msg.one "click", "a", (e)->
+    e.preventDefault();
+    $('#game-wrapper #message').addClass("hidden");
+    return false
+
+
 class Games
   game = null
   config = null
@@ -40,7 +51,7 @@ class Games
     window.load_new_board();
 
   failed: -> 
-    alert("Failed to game update");
+    window.show_game_message "Failed to update game, please refresh page."
 
 jQuery ->
   console.log("Games.js starting");

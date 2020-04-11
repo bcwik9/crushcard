@@ -1,34 +1,19 @@
 CardHandler = function(game){
     var correctCards = 0;
-
     var d = game.data();
-    var game_id = d.id;
-    var played_cards = d.table; 
-    var dealt_cards = d.dealt;
-    var player_action_path = d.playerPath;
+    var game_id = d.id,
+     played_cards = d.table,
+     dealt_cards = d.dealt, // in this persons hand only
+     player_action_path = d.playerPath;
+
+   var hand = game.find("#cardPile"); 
 
     var init = function(){
-      // Reset the game
-      correctCards = 0;
-     
-      // Create the pile of shuffled cards
-      var numbers = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
-      numbers.sort( function() { return Math.random() - .5 } );
-
-      game.on("click", "#cardPile .playing_card", function(e){
-        var card = $(e.target);
-        if(card.hasClass("selected")){
-          playCard(e);
-        } else {
-          card.parents("#cardPile").find(".selected").removeClass("selected");
-          card.addClass("selected");
-        }
-      });
-
-      console.log(dealt_cards);
+      hand.on("click", ".playing_card", card_in_hand_clicked)
       $.each(dealt_cards, function(i, card){
         var canvas = game.find("#canv"+i);
-        console.log(canvas.data()); // TODO: use card.data()... or vice versa
+        // TODO: use canvas.data()... or vice versa
+        // loop over rendered cards - no need for 'dealt-cards' at all
         DrawCard.draw_card(card[0], card[1], "canv"+i, game);
       });
     
@@ -55,14 +40,29 @@ CardHandler = function(game){
       });
     }
     
+  var card_in_hand_clicked = function(e){
+    if(hand.find(".playing").length > 0){ return; } // already played a card
+    var card = $(e.target);
+
+    if(card.hasClass("selected")){
+      card.addClass("playing");
+      playCard(e);
+    } else {
+      hand.find(".selected").removeClass("selected");
+      card.addClass("selected");
+    }
+  };
+    
     function playCard(event) {
       var card = $(event.target);
       // only accept playable cards
       var playable  = card.data("playable");
         if(!playable) {
-          // TODO: show notification
-          alert("You can't play this card right now! You have to follow suit.");
-          // TODO: add reason - waiting for - or - follow suit
+          hand.find(".playing").removeClass("playing")
+          // TODO: add reason
+          window.show_game_message(
+            "You can't play this card right now!" // Not your turn/You have to bid/follow suit."
+          );
           return;
         }
     
@@ -83,10 +83,11 @@ CardHandler = function(game){
     }
     
     function testDrop(event, ui) {
-        // only accept playable cards
-        var cardIsPlayable = ui.draggable.context.children[0].dataset.playable;
-        if(!(/true/i).test(cardIsPlayable)) {
-          alert("You can't play this card right now!");
+        var cardIsPlayable = $(ui.draggable.context.children[0]).data("playable");
+        if(!cardIsPlayable) {
+          window.show_game_message(
+              "You can't play this card right now!"
+              );
           return;
         }
     
