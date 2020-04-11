@@ -1,2 +1,3 @@
 - card_data = card.present? ? { actualvalue: card.value, suit: card.suit, value: card.abbreviated_name } : nil
-%canvas.playing_card{id: id, data: card_data}
+- extra_class ||= extra_class 
+%canvas.playing_card{id: id, class: extra_class, data: card_data}

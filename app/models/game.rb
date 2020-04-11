@@ -5,6 +5,7 @@ class Game < ActiveRecord::Base
     state = {
       total_rounds: 10,
       rounds_played: 0,
+      dealer_index: 0,
       waiting_on: nil, # creator 
       waiting_on_index: 0,
       waiting_on_reason: "Game to start",
@@ -13,6 +14,7 @@ class Game < ActiveRecord::Base
       score: [],
       deck: [],
       player_hands: [],
+      winner_index: nil,
       winners: [],
     }
 
@@ -27,6 +29,12 @@ class Game < ActiveRecord::Base
       waiting_on_reason: reason 
     )
   end
+
+  def set_new_dealer
+    config[:dealer_index] = config[:rounds_played] % config[:players].size
+    config[:dealer] = config[:players][config[:dealer_index]] # deprecated - use index
+    add_waiting_info(config[:dealer_index], 'Deal')
+  end
   
   def deal_cards
     # need to have at least 3 players to start the game
@@ -36,14 +44,11 @@ class Game < ActiveRecord::Base
     config[:deck] = Card.get_deck
     config[:deck].shuffle!
 
-    config[:dealer_index] = config[:rounds_played] % config[:players].size
-    config[:dealer] = config[:players][config[:dealer_index]]
-
     # reset bids hash and determine who bids first
     # person to the 'left' of the dealer bids first
     config[:bids] = []
 
-    # next player is always +1 on dealer
+    # next player is always +1 on dealer (could use waiting_on_index)
     to_left = (config[:dealer_index] + 1) % config[:players].size
     add_waiting_info(to_left, "Bid")
     
@@ -144,11 +149,12 @@ class Game < ActiveRecord::Base
       # actually play the card
       config[:cards_in_play][current_player_index] = config[:player_hands][current_player_index].delete(card)
 
+      set_winner_card_index(current_player_index) # is this correct...
       # check to see if all players have played a card
       if all_players_played_a_card?
         # make sure nobody can do anything
-        add_waiting_info(current_player_index, "Table to clear")
-        clear_table(current_player_index)
+        #add_waiting_info(current_player_index, "Table to clear")
+        set_new_dealer
       else
         # set next player to play a card
         next_up = next_player_index(current_player_index)
@@ -159,15 +165,26 @@ class Game < ActiveRecord::Base
     save_state config 
   end
 
+  def set_winner_card_index(index)
+    # all cards played?
+    #if config[:cards_in_play].size == config[:players].size
+    highest_card = get_highest_card(config[:cards_in_play], config[:first_suit_played], config[:trump_card], index+1)
+    config[:winner_index] = config[:cards_in_play].find_index(highest_card)
+  end
+
   # clear the table of cards and calculate who won the trick/game
-  def clear_table current_player_index
+  def clear_table user_id
+    return false unless player_up?(user_id)
+    current_player_index = player_index(user_id)
+
     # determine who won the trick
-    highest_card = get_highest_card(config[:cards_in_play], config[:first_suit_played], config[:trump_card], current_player_index+1)
-    winner_index = config[:cards_in_play].find_index(highest_card)
+    # TODO: test if this index value is correct 
+    winner_index = config[:winner_index]
     config[:tricks_taken][winner_index] ||= []
     config[:tricks_taken][winner_index].push config[:cards_in_play]
 
     # reset variables
+    config[:winner_index] = nil
     config[:cards_in_play] = []
     config[:first_suit_played] = nil
     
@@ -208,8 +225,8 @@ class Game < ActiveRecord::Base
           end
         end
       else
-        # deal cards for the next round
-        deal_cards config
+        puts "SET DEALER AND WAIT".red
+        deal_cards
       end
     else
       add_waiting_info(winner_index, "First")
@@ -235,11 +252,11 @@ class Game < ActiveRecord::Base
 
     # if trump was played, ignore other cards
     # an ace indicates no trump, so ignore it if that's the case
-    trump_cards = (trump.value_name =~ /ace/i) ? [] : cards.select { |c| c.suit == trump.suit }
+    trump_cards = (trump.value_name =~ /ace/i) ? [] : cards.compact.select { |c| c.suit == trump.suit }
 
     # if trump wasn't played or there is no trump (ace),
     # only cards that are the same suit as the first card played matter
-    same_suit_cards = cards.select { |c| c.suit == first_suit_played }
+    same_suit_cards = cards.compact.select { |c| c.suit == first_suit_played }
     card_set = trump_cards.empty? ? same_suit_cards : trump_cards
     
     # now simply get the highest card left

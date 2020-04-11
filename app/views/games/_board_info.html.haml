@@ -13,7 +13,7 @@
       - if @dealt
         .trump_suit{style: "position: absolute; right: 10px;"}
           %h4{style: "margin-bottom: 10px;"} Trump Suit
-          = render 'playing_card', id: "trump", card: @game[:trump_card]
+          = render 'playing_card', id: :trump, card: @game.config[:trump_card]
       - else
         %h4{style: "border: 1px solid white; border-radius: 5px; padding: 15px;"} 
           Waiting For: 
@@ -45,10 +45,10 @@
             = link_to "Ok", "#", class: "btn btn-success btn-lg"
         #board
           - cards = cards_shown_on_table
-          = render 'playing_card', id: :top, card: cards[2]
-          = render 'playing_card', id: :left, card: cards[1]
-          = render 'playing_card', id: :right, card: cards[3]
-          = render 'playing_card', id: :bottom, card: cards[0]
+          - layout = %w(bottom left top right)
+          - (0..3).each do |index|
+            - winning = @names[index].present? && @indexes[index] == @game.config[:winner_index]
+            = render 'playing_card', id: layout[index], card: cards[index], extra_class: (winning ? "winning" : nil)
   
     .col-xs-3{style: "padding: 100px 0 0 0;"}
       = render 'player', index: 3
@@ -60,7 +60,9 @@
       = render 'player', index: 0, you: @is_playing
   .row
     .col-xs-12
-      Your Hand / Cards
+      Your Hand 
+      %i (double click)
+      /or drag and drop) # TODO
       #cardPile
         = render "card_pile"
 

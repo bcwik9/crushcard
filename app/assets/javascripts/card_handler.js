@@ -18,6 +18,7 @@ CardHandler = function(game){
       game.find(".playing_card").each(function(i, card){
         card = $(card);
         if(card.data('suit')){
+          console.log("LOAD CARD: " + card.attr("id"));
           DrawCard.draw_card(card.data('suit'), card.data('value'), card.attr('id'), game);
         }
       });
@@ -69,13 +70,16 @@ CardHandler = function(game){
           return;
         }
         */
-    
-        var cardSuit = card.data('suit');
-        var cardValue = card.data('actualvalue');
+        
+        var suit = card.data('suit');
+        var value = card.data('actualvalue');
+
+        DrawCard.draw_card(suit, card.data('value'), "bottom", game);
+
         $.ajax({
           url: player_action_path + ".json", 
           type: "POST", 
-          data: {id: game_id, suit: cardSuit, value: cardValue},
+          data: {suit: suit, value: value},
           success: card_played,
           error: failed
         });
@@ -83,9 +87,7 @@ CardHandler = function(game){
     }
 
     var failed = function(){
-      window.show_game_message(
-        "Failed to make action. Please refresh page"
-      )
+      show_failure("Failed to make action. Please refresh page")
     }
 
     var card_played = function(data){
@@ -93,15 +95,17 @@ CardHandler = function(game){
       console.log(data);
       if(data['html']){
         window.new_board = data;
-        setTimeout(window.load_new_board, 2500);
+        window.load_new_board();
       } else {// expect message
-        hand.find(".playing").removeClass("playing")
-        window.show_game_message(
-          data['message'] || "Unknown error, please refresh page"
-        )
+        show_failure(data['message'] || "Unknown error, please refresh page")
       }
-      
     };
+
+    var show_failure = function(message){
+      hand.find(".playing").removeClass("playing")
+      DrawCard.clear_bottom_card(game);
+      window.show_game_message(message)
+    }
     
     function testDrop(event, ui) {
       ui.draggable.addClass( 'correct' );

@@ -3,6 +3,7 @@ Rails.application.routes.draw do
     member do
       post 'add_player', format: [:json]
       post 'start', formats: [:json]
+      post 'deal', formats: [:json]
       post 'player_action', formats: [:json]
     end
   end

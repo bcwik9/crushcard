@@ -36,16 +36,32 @@ class Games
  
     game.find(".start_game").on('click', @start_game_clicked)
     game.find(".bid_form a").on('click', @bid_clicked)
+    game.find("a.deal").on('click', @deal_clicked)
+    console.log("Deal button");
+    console.log(game.find("a.deal"))
     $(document).find(".join_game button").on('click', @add_player_clicked)
+
+  deal_clicked: (e) =>
+    e.preventDefault();
+    console.log("Deal Clicked");
+    path = $(e.target).data('url')
+    $.ajax(
+      path,
+      method: "POST",
+      success: @success,
+      error: @failed
+    )
+    return false
 
   bid_clicked: (e) =>
     e.preventDefault();
     path = $(e.target).data('url')
     bid = game.find(".bid_form #bid").val()
-    console.log("Bid Clicked: " + bid);
-    $.post(
+    console.log("Bid Clicked: Submitting: " + bid);
+    $.ajax(
       path,
-      {bid: bid},
+      data: {bid: bid},
+      method: "POST",
       success: @success,
       error: @failed
     )
@@ -54,9 +70,9 @@ class Games
   start_game_clicked: (e)=>
     e.preventDefault();
     path = $(e.target).data('url')
-    $.post(
+    $.ajax(
       path,
-      {},
+      method: "POST",
       success: @success,
       error: @failed
     )
@@ -68,9 +84,10 @@ class Games
     if username && username.length >= 1
       jg.addClass("hidden")
       path = jg.data("url")
-      $.post(
+      $.ajax(
         path,
-        { username: username },
+        data: { username: username },
+        method: "POST",
         success: @success,
         error: @failed
       )
@@ -90,7 +107,7 @@ class Games
     # TODO: faster once game strarted
     # Note: poll time should get faster
     # poll should hard-refresh after 10 seconds
-    setTimeout @get_updated_board, 1000
+    setTimeout @get_updated_board, 5000
 
   success: (data)=>
     console.log("SUCCESS FROM SERVER")

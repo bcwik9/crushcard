@@ -1,4 +1,9 @@
 DrawCard = {
+    clear_bottom_card: function(game){
+      canvas = game.find("#bottom")[0];
+      context = canvas.getContext("2d");
+      context.clearRect(0,0,canvas.width, canvas.height);
+    },
     draw_card: function(suit, value, canvas, game){
         canvas = game.find("#" + canvas)[0];
         canvas.height = 110;

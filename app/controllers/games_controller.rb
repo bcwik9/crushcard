@@ -109,6 +109,15 @@ class GamesController < ApplicationController
     end
   end
 
+  def deal
+    set_game
+    if @game.clear_table(@_current_user)
+      show
+    else
+      render json: {message: "You are not the dealer"}
+    end
+  end
+
   def player_action
     set_game
     error = nil
@@ -126,7 +135,6 @@ class GamesController < ApplicationController
         end
       end
     else
-      # user is playing a card
       card = Card.new(params[:suit], params[:value])
       if @game.player_action(@_current_user, card)
         @notice = "Played card!"
@@ -136,8 +144,10 @@ class GamesController < ApplicationController
     end
 
     if error.present?
+      puts "PLAYER ACTION: ERROR".red
       render json: { message: error }
     else
+      puts "PLAYER ACTION: SUCCESS".green
       show
     end
   end
