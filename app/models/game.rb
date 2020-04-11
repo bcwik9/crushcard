@@ -3,7 +3,7 @@ class Game < ActiveRecord::Base
 
   def set_up
     state = {
-      total_rounds: 2,
+      total_rounds: 10,
       rounds_played: 0,
       dealer_index: 0,
       waiting_on: nil, # creator 
