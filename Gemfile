@@ -28,6 +28,7 @@ gem 'sdoc', '~> 0.4.0',          group: :doc
 
 gem "haml-rails" #, "~> 2.0"
 
+gem 'colorize'
 
 
 # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring

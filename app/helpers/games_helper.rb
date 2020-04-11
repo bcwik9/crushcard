@@ -2,7 +2,9 @@ module GamesHelper
 
   def cards_shown_on_table
     cards = []
-    cards << [ "#{@trump.suit}", "#{@trump.abbreviated_name}", "trump" ]
+    if @game_started
+      cards << [ "#{@trump.suit}", "#{@trump.abbreviated_name}", "trump" ]
+    end
     if @played_cards && !@played_cards.empty?
       # TODO: loop for X players
       {
@@ -12,9 +14,10 @@ module GamesHelper
         3 => :right
       }.each do |i, side|
         next unless @played_cards[i].present?
-        cards << [@played_cards[i].suit, @played_cards[i].abbreviated_name, side] 
+        cards << [@played_cards[i].suit, @played_cards[i].abbreviated_name, side.to_s] 
       end
     end
     cards
   end
+
 end

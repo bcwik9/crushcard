@@ -44,6 +44,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.12.2)
+    colorize (0.8.1)
     commonjs (0.2.7)
     concurrent-ruby (1.1.6)
     connection_pool (2.2.2)
@@ -190,6 +191,7 @@ PLATFORMS
 
 DEPENDENCIES
   coffee-rails (~> 4.0.0)
+  colorize
   haml-rails
   jbuilder (~> 2.0)
   jquery-datatables-rails (~> 3.3.0)

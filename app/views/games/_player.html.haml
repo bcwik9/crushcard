@@ -2,22 +2,34 @@
 - you ||= false
 - classes = ''
 - classes << " you" if you
-- classes << " waiting_for" if index == @waiting_on_index
-.player_card{class: classes, data: {index: index}}
-  %h3{style: "margin-bottom: 10px;"}
+- classes << " waiting_for" if @indexes[index] == @waiting_on_index && @names.size >= 3
+
+.player_card{class: classes}
+  - if show && @waiting_on !~ /game\sto\sstart/i
     .waiting_notice
       %h4{style: "margin-bottom: 10px;"}
-        Waiting for:
+        - if you
+          Your turn:
+        - else
+          Waiting to: 
         #{@waiting_on}
-
+  %h3{style: "margin-bottom: 10px;"}
     - if show
       = "\"#{@names[index]}\""
     - else
       Player not present
+
   - if show
     %h4.score{style: "margin-bottom: 10px;"}
       #{@places[index]}#{ActiveSupport::Inflector.ordinal(@places[index])}
       \-
       #{@total_scores[index]} points
-    %h4.bid_info{style: "margin-bottom: 10px;"}
-      = @round_scores[index]
+    - bid = @round_scores[index]
+    %h4.bid_info{style: "margin-bottom: 10px; color: #{bid.last}"}
+      = bid.first
+
+    - if false
+      / debug
+      %h4{style: "margin-bottom: 10px;"}
+        Seat: #{index}
+        Profile: #{@indexes[index]}

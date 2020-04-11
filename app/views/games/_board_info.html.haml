@@ -1,39 +1,58 @@
-- if @winners.present?
-  %h2
-    Winners:
-    \#{@winners.join(', ')}
+- dealt = @cards.collect {|c| [ c.suit, c.abbreviated_name ]}
+#game{data: {url: game_path(@game), table: cards_shown_on_table, dealt: dealt, player_path: games_player_action_path, id: @game.id, poll: @poll.to_s } }
+  - if @winners.present?
+    %h2
+      Winners:
+      \#{@winners.join(', ')}
 
-.row
-  .col-xs-3{style: "position: relative"}
-    .trump_suit{style: "position: absolute; right: 10px;"}
-      %h4{style: "margin-bottom: 10px;"} Trump Suit
-      %canvas#trump.playing_card
-
-  .col-xs-6{style: "padding: 0px;"}
-    = render 'player', index: 2
-
-.row
-  .col-xs-3{style: "padding: 80px 0 0 0;"}
-    = render 'player', index: 1
-
-  .col-xs-6{style: "padding: 0px;"}
-    #board
-      %canvas#top.playing_card
-      %canvas#left.playing_card
-      %canvas#right.playing_card
-      %canvas#bottom.playing_card
-
-  .col-xs-3{style: "padding: 100px 0 0 0;"}
-    = render 'player', index: 3
-
-.row
-  .col-xs-3
-    #buttons
+  .row
+    .col-xs-3{style: "position: relative"}
+      - if @dealt
+        .trump_suit{style: "position: absolute; right: 10px;"}
+          %h4{style: "margin-bottom: 10px;"} Trump Suit
+          %canvas#trump.playing_card
+      - else
+        %h4{style: "border: 1px solid white; border-radius: 5px; padding: 15px;"} 
+          Waiting For: 
+          %br
+          #{@game.config[:waiting_on_reason]}.
+          - if @is_playing 
+            %br
+            - if @enough_players
+              - if @can_start_game
+                You
+              - else
+                Dealer
+              can Deal/Start.
+            - else
+              Need more players.
+  
+    .col-xs-6{style: "padding: 0px;"}
+      = render 'player', index: 2
+  
+  .row
+    .col-xs-3{style: "padding: 80px 0 0 0;"}
+      = render 'player', index: 1
+  
+    .col-xs-6{style: "padding: 0px;"}
+      #board
+        %canvas#top.playing_card
+        %canvas#left.playing_card
+        %canvas#right.playing_card
+        %canvas#bottom.playing_card
+  
+    .col-xs-3{style: "padding: 100px 0 0 0;"}
+      = render 'player', index: 3
+  
+  .row
+    .col-xs-3
       = render "controls"
-  .col-xs-6{style: "padding-top: 15px;"}
-    = render 'player', index: 0, you: true
-.row
-  .col-xs-12
-    Your Hand / Cards
-    #cardPile
-      = render "card_pile"
+    .col-xs-6{style: "padding-top: 15px;"}
+      = render 'player', index: 0, you: @is_playing
+  .row
+    .col-xs-12
+      Your Hand / Cards
+      #cardPile
+        = render "card_pile"
+
+  = render "debug"

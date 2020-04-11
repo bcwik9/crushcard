@@ -5,194 +5,213 @@ class Game < ActiveRecord::Base
     state = {
       total_rounds: 10,
       rounds_played: 0,
+      waiting_on: nil, # creator 
+      waiting_on_index: 0,
+      waiting_on_reason: "Game to start",
       players: [],
-      player_hands: [],
+      names: [],
       score: [],
       deck: [],
-      names: [],
-      winners: []
+      player_hands: [],
+      winners: [],
     }
 
     save_state state
   end
+
+  def add_waiting_info(index, reason)
+    player = config[:players][index]
+    config.merge!(
+      waiting_on: player, 
+      waiting_on_index: index,
+      waiting_on_reason: reason 
+    )
+  end
   
-  def deal_cards state
+  def deal_cards
     # need to have at least 3 players to start the game
-    raise 'Must have between 3 and 5 players to start' if state[:players].size < 3 || state[:players].size > 5
+    raise 'Must have between 3 and 5 players to start' if config[:players].size < 3 || config[:players].size > 5
 
     # shuffle deck
-    state[:deck] = Card.get_deck
-    state[:deck].shuffle!
+    config[:deck] = Card.get_deck
+    config[:deck].shuffle!
 
-    # determine who the dealer is
-    state[:dealer] = state[:players][state[:rounds_played] % state[:players].size]
+    config[:dealer_index] = config[:rounds_played] % config[:players].size
+    config[:dealer] = config[:players][config[:dealer_index]]
 
     # reset bids hash and determine who bids first
     # person to the 'left' of the dealer bids first
-    state[:bids] = []
-    state[:waiting_on] = get_next_player state[:dealer], state[:players]
+    config[:bids] = []
+
+    # next player is always +1 on dealer
+    to_left = (config[:dealer_index] + 1) % config[:players].size
+    add_waiting_info(to_left, "Bid")
     
+    num_cards_per_player = config[:total_rounds] - config[:rounds_played]
     # deal out number of cards equal to whatever round we are on
     # to each player
     # deal cards first to player on 'right' of dealer
-    num_cards_per_player = state[:total_rounds] - state[:rounds_played]
-    iterate_through_list_with_start_index(state[:players].find_index(state[:waiting_on]), state[:players]) { |player, i|
-      state[:player_hands][i] = state[:deck].slice!(0..(num_cards_per_player-1))
-    }
+    #iterate_through_list_with_start_index(to_left, config[:players]) { |player, i|
+    config[:player_hands] = [] # reset
+    config[:players].each_with_index do |p, i|
+      config[:player_hands][i] = config[:deck].slice!(0..(num_cards_per_player-1))
+    end
     
     # the next card in the deck is trump
     # whatever suit is trump is valued higher than non-trump suits
     # an Ace as trump means there is "no trump"
-    state[:trump_card] = state[:deck].slice! 0
+    config[:trump_card] = config[:deck].slice! 0
 
     # set a few default values
-    state[:cards_in_play] = []
-    state[:first_suit_played] = nil
-    state[:tricks_taken] = []
+    config[:cards_in_play] = []
+    config[:first_suit_played] = nil
+    config[:tricks_taken] = []
 
-    return state
+    save_state config
   end
 
   # player either bids or plays a card if it's their turn
   def player_action user_id, user_input=nil
-    state = load_state
-    
     # return false if it's not the players turn
-    return false if user_id != state[:waiting_on]
+    return false if user_id != config[:waiting_on]
 
-    current_player_index = state[:players].find_index user_id
+    # TODO: just use waiting_on_index 
+    current_player_index = config[:players].find_index user_id
+    raise "Mismatch in index expectations" unless current_player_index == config[:waiting_on_index]
     
     # check if we are in bidding or playing a card
-    if !done_bidding? state
+    if !done_bidding?
       # player is making a bid
       bid = user_input.to_i
-      
       # dealer cannot bid the same amount as the number of cards dealt
-      total_bids = state[:bids].select { |bid| !bid.nil? }.inject(:+)
-      num_cards_per_player = state[:total_rounds] - state[:rounds_played]
-      if state[:dealer] == user_id && total_bids + bid == num_cards_per_player
+      total_bids = config[:bids].compact.sum
+      num_cards_per_player = config[:total_rounds] - config[:rounds_played]
+
+      all_add_up = total_bids + bid == num_cards_per_player
+      is_dealer = config[:dealer] == user_id
+      if is_dealer && all_add_up
         return false
       end
       
       # record the bid
-      state[:bids][current_player_index] = bid
+      config[:bids][current_player_index] = bid
 
-      if state[:dealer] == user_id
-        # dealer is last to bid
-        # so now determine who bid the highest, since they are the
-        # first to play a card
-        # bidding is done at this point
-        iterate_through_list_with_start_index(current_player_index+1, state[:bids]) do |bid,i|
-          if state[:bids].max == bid
-            state[:waiting_on] = state[:players][i]
+      if config[:dealer] == user_id
+        # dealer is last to bid, bidding is done
+        # determine who bid highest (first if tie), they are first to play a card
+        max_bid = config[:bids].max
+        iterate_through_list_with_start_index(current_player_index+1, config[:bids]) do |bid,i|
+          if max_bid == bid
+            add_waiting_info(@player_index, "Play")
             break
           end
         end
       else
-        # set next player to bid
-        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+        to_left = next_player_index config[:waiting_on_index]
+        add_waiting_info(to_left, "Bid")
       end
 
-    elsif !state[:player_hands][current_player_index].empty?
+    elsif !config[:player_hands][current_player_index].empty?
       # player is playing a card
       card = user_input
       
       # ensure that the card is in their inventory
-      return false unless state[:player_hands][current_player_index].any? { |player_card| player_card == card }
+      return false unless config[:player_hands][current_player_index].any? { |player_card| player_card == card }
 
       # ensure that the card is actually playable
-      state[:first_suit_played] ||= card.suit
-      playable_cards = get_playable_cards(state[:first_suit_played], state[:player_hands][current_player_index])
+      config[:first_suit_played] ||= card.suit
+      playable_cards = get_playable_cards(config[:player_hands][current_player_index])
       return false unless playable_cards.include? card
       
       # actually play the card
-      state[:cards_in_play][current_player_index] = state[:player_hands][current_player_index].delete(card)
+      config[:cards_in_play][current_player_index] = config[:player_hands][current_player_index].delete(card)
 
       # check to see if all players have played a card
-      if all_players_played_a_card?(state)
+      if all_players_played_a_card?
         # make sure nobody can do anything
-        state[:waiting_on] = "Table to clear"
-        delay.clear_table(current_player_index, state)
+        config[:waiting_on] = "Table to clear" # not a real id - transition for new tric
+        clear_table(current_player_index)
       else
         # set next player to play a card
-        state[:waiting_on] = get_next_player state[:waiting_on], state[:players]
+        next_up = next_player_index(config[:waiting_on_index])
+        add_waiting_info(next_up, "Play")
       end
     end
     
-    save_state state
+    save_state config 
     return true
   end
 
   # clear the table of cards and calculate who won the trick/game
-  def clear_table current_player_index, state
-    # sleep a bit so the table isn't cleared immediately
-    sleep 2
-
+  def clear_table current_player_index
     # determine who won the trick
-    highest_card = get_highest_card(state[:cards_in_play], state[:first_suit_played], state[:trump_card], current_player_index+1)
-    winner_index = state[:cards_in_play].find_index(highest_card)
-    state[:tricks_taken][winner_index] ||= []
-    state[:tricks_taken][winner_index].push state[:cards_in_play]
+    highest_card = get_highest_card(config[:cards_in_play], config[:first_suit_played], config[:trump_card], current_player_index+1)
+    winner_index = config[:cards_in_play].find_index(highest_card)
+    config[:tricks_taken][winner_index] ||= []
+    config[:tricks_taken][winner_index].push config[:cards_in_play]
 
     # reset variables
-    state[:cards_in_play] = []
-    state[:first_suit_played] = nil
+    config[:cards_in_play] = []
+    config[:first_suit_played] = nil
     
 
     # check to see if we're done with this round
-    if state[:player_hands].first.empty?
+    if config[:player_hands].first.empty?
       # increment rounds played
-      state[:rounds_played] += 1
+      config[:rounds_played] += 1
 
       # determine scores
-      state[:bids].each_with_index do |bid, i|
-        tricks = state[:tricks_taken][i] || []
-        if tricks.size < state[:bids][i]
-          player_score = tricks.size - state[:bids][i]
-        elsif tricks.size > state[:bids][i]
+      config[:bids].each_with_index do |bid, i|
+        tricks = config[:tricks_taken][i] || []
+        if tricks.size < config[:bids][i]
+          player_score = tricks.size - config[:bids][i]
+        elsif tricks.size > config[:bids][i]
           player_score = tricks.size
         else
           player_score = tricks.size + 10
         end
-        state[:score][i] ||= []
-        state[:score][i].push player_score
+        config[:score][i] ||= []
+        config[:score][i].push player_score
       end
       
       # check to see if that was the last round (game over)
-      if state[:rounds_played] == state[:total_rounds]
+      if config[:rounds_played] == config[:total_rounds]
         # game is over, determine who won
         # winners list is necessary since there can be ties
-        state[:winners] = []
+        config[:winners] = []
         highest_score = nil
-        state[:score].each_with_index do |score, i|
+        config[:score].each_with_index do |score, i|
           player_score = score.inject :+ # add up score from each round
           if highest_score.nil? || player_score >= highest_score
             # clear winners list if there's a new high score
-            state[:winners].clear if highest_score.present? && player_score > highest_score
+            config[:winners].clear if highest_score.present? && player_score > highest_score
             # set new high score and record as winner
             highest_score = player_score
-            state[:winners].push state[:players][i]
+            config[:winners].push config[:players][i]
           end
         end
       else
         # deal cards for the next round
-        deal_cards state
+        deal_cards config
       end
     else
       # winner is the first to play a card next
-      state[:waiting_on] = state[:players][winner_index]
+      config[:waiting_on] = config[:players][winner_index]
     end
 
-    save_state state
-    self.save!
+    save_state 
   end
 
+  def config
+    @config ||= load_state
+  end
+  # TODO: make this a db:JSON field for easier reference, remove config
   def load_state
     return YAML.load(self.state)
   end
-  
-  def save_state state
-    self.state = state.to_yaml
+  def save_state new_state = config
+    self.state = new_state.to_yaml
+    self.save
   end
 
   def get_highest_card cards, first_suit_played, trump, start_index
@@ -214,12 +233,13 @@ class Game < ActiveRecord::Base
     #end
   end
   
-  def get_playable_cards first_suit_played, cards
+  def get_playable_cards cards # for a players hand
+    first_suit = config[:first_suit_played]
     # player can play any card if they are the first to play a card
     # or if they only have a single card left
-    return cards if first_suit_played.nil? || cards.size == 1
+    return cards if first_suit.nil? || cards.size == 1
     # player must play the same suit as the first card played
-    playable_cards = cards.select { |card| card.suit == first_suit_played }
+    playable_cards = cards.select { |card| card.suit == first_suit }
     # if player doesn't have any of the same suit as the first card played
     # they can play any card
     playable_cards = cards if playable_cards.empty?
@@ -227,32 +247,40 @@ class Game < ActiveRecord::Base
   end
 
   def iterate_through_list_with_start_index start_index, list
+    # start_index is relative to player seat - different for each user
     list.size.times do |offset|
       index = (start_index + offset) % list.size
+      @player_index = offset
       yield list[index], index
     end
   end
 
   # returns the index of the next player
-  def get_next_player current_player, players
-    return players[(players.find_index(current_player) + 1) % players.size]
+  def next_player_index(current_index)
+    (current_index + 1) % config[:players].size
+  end
+
+  def get_next_player current_player # aka: config[:waiting_on]
+    next_up = next_player_index(players.find_index(current_player))
+    return players[next_up]
   end
 
   # returns true if the input array is the same size as the number of
   # players we have, and doesn't include nil
-  def player_size_and_nil_check arr, state
-    return (arr.size == state[:players].size && !arr.include?(nil))
+  def player_size_and_nil_check arr
+    all_players = config[:players].size
+    return arr.present? && (arr.compact.size == all_players)
   end
 
   # return true or false if we're done bidding
   # done bidding if there are the same number of valids bids
   # as there are players in the game
-  def done_bidding? state
-    return player_size_and_nil_check(state[:bids], state)
+  def done_bidding? 
+    return player_size_and_nil_check(config[:bids])
   end
 
-  def all_players_played_a_card? state
-    return player_size_and_nil_check(state[:cards_in_play], state)
+  def all_players_played_a_card?
+    return player_size_and_nil_check(config[:cards_in_play])
   end
 end
 

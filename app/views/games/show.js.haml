@@ -1,55 +1,16 @@
-\// update basic game status
-$('#game-stat').html("#{j render 'game_status'}");
-draw_card("#{@trump.suit}", "#{@trump.abbreviated_name}", "trump");
-
-\// update the game display
-$('#board-info').html("#{j render 'board_info'}");
+// todo - refresh game board
+console.log("Rendering updated board");
+$('#board-wrapper').html("#{j render 'board_info'}");
 $('#bottom').droppable( {
 accept: '#cardPile div',
 hoverClass: 'hovered',
 drop: testDrop
-} );
-- if @played_cards and not @played_cards[0].nil?
-  draw_card("#{@played_cards[0].suit}", "#{@played_cards[0].abbreviated_name}", "bottom");
-- if @played_cards and not @played_cards[1].nil?
-  draw_card("#{@played_cards[1].suit}", "#{@played_cards[1].abbreviated_name}", "left");
-- if @played_cards and not @played_cards[2].nil?
-  draw_card("#{@played_cards[2].suit}", "#{@played_cards[2].abbreviated_name}", "top");
-- if @played_cards and not @played_cards[3].nil?
-  draw_card("#{@played_cards[3].suit}", "#{@played_cards[3].abbreviated_name}", "right");
-\// update users hand
-$('#cardPile').html("#{j render 'card_pile'}");
-for ( var i=0; i#{@cards.size}; i++ ) {
-\//$("#card"+i).draggable( {
-\//  containment: '#board-wrapper',
-\//  stack: '#cardPile div',
-\//  cursor: 'move',
-\//  revert: true
-\//} );
-$("#card"+i).click(function(event) {
-if($(this).hasClass("selected")) {
-playCard(event);
-}
-$(this).addClass("selected");
-$(this).siblings().removeClass("selected");
-$(this).css({"background":"blue"});
-$(this).siblings().css({"background":"white"});
 });
-var currentCanvas = document.getElementById("canv"+i);
-draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
-}
 
-\// update control buttons
-- if @is_playing
-  $('#buttons').html("#{j render 'controls'}");
-\// continue polling unless we're waiting on the player to play a card
-- if @waiting_on !~ /^YOU/
-  GamePoller.poll();
-- else
-  var current_player_display = $("#game-stat h4:last");
-  current_player_display.css('color', 'red');
-  \// flash the player display to alert the player
-  setInterval(function(){
-  current_player_display.fadeOut(500);
-  current_player_display.fadeIn(500);
-  }, 1000);
+- if @waiting_on_index != @indexes[0] # watiing on someone else
+  console.log("Waiting on others");
+- else # it's your action
+  console.log("Waiting on you!");
+
+Games.init();
+

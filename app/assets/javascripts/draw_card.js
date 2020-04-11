@@ -1,14 +1,12 @@
 DrawCard = {
-    draw_card: function(suit, value, canvas){
-        console.log("Canvas ID: #" + canvas);
-        var canvas = document.getElementById(canvas);
+    draw_card: function(suit, value, canvas, game){
+        canvas = game.find("#" + canvas)[0];
         canvas.height = 110;
         canvas.width = 70;
         var context = canvas.getContext("2d");
      
         var suit_width = canvas.width * 0.285;
         var suit_height = canvas.height * 0.257;
-    
     
         context.font = "bold 20px Arial";
         context.fillText(value, canvas.width/2-8, canvas.height/2+5);

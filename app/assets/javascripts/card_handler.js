@@ -1,20 +1,13 @@
-CardHandler = function(){
+CardHandler = function(game){
     var correctCards = 0;
 
-    var d = $("#game_path")
-    var game_id = d.data("id");
-    var played_cards = d.data("table"); 
-    var dealt_cards = d.data("dealt");
-    var player_action_path = d.data("playerPath")
+    var d = game.data();
+    var game_id = d.id;
+    var played_cards = d.table; 
+    var dealt_cards = d.dealt;
+    var player_action_path = d.playerPath;
 
     var init = function(){
-      $('#successMessage').css( {
-        left: '580px',
-        top: '250px',
-        width: 0,
-        height: 0
-      } );
-     
       // Reset the game
       correctCards = 0;
      
@@ -22,7 +15,7 @@ CardHandler = function(){
       var numbers = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
       numbers.sort( function() { return Math.random() - .5 } );
 
-      $(document).on("click", "#cardPile .playing_card", function(e){
+      game.on("click", "#cardPile .playing_card", function(e){
         var card = $(e.target);
         if(card.hasClass("selected")){
           playCard(e);
@@ -32,47 +25,59 @@ CardHandler = function(){
         }
       });
 
+      console.log(dealt_cards);
       $.each(dealt_cards, function(i, card){
-        var currentCanvas = document.getElementById("canv"+i);
-        DrawCard.draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
+        var canvas = game.find("#canv"+i);
+        console.log(canvas.data()); // TODO: use card.data()... or vice versa
+        DrawCard.draw_card(card[0], card[1], "canv"+i, game);
       });
     
-      $('#bottom').droppable( {
+      game.find('#bottom').droppable( {
         accept: '#cardPile div',
         hoverClass: 'hovered',
         drop: testDrop
-      } );
+      });
     
       // Create the card slots
       var words = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
+
+      // TODO: drag and drop not working
       for ( var i=1; i<=10; i++ ) {
         $('<div>' + words[i-1] + '</div>').data( 'number', i ).appendTo( '#cardSlots' ).droppable( {
-          accept: '#cardPile div',
+          accept: '#cardPile .playing_card',
           hoverClass: 'hovered',
           drop: handleCardDrop
-        } );
+        });
       }
 
       $.each(played_cards, function(i, card){
-        DrawCard.draw_card(card[0], card[1], card[2]);
+        DrawCard.draw_card(card[0], card[1], card[2], game);
       });
     }
     
     function playCard(event) {
-        // only accept playable cards
-        var cardIsPlayable = event.target.getAttribute('data-playable');
-        if(!(/true/i).test(cardIsPlayable)) {
+      var card = $(event.target);
+      // only accept playable cards
+      var playable  = card.data("playable");
+        if(!playable) {
+          // TODO: show notification
           alert("You can't play this card right now! You have to follow suit.");
-          // T ODO: add reason - waiting for - or - follow suit
+          // TODO: add reason - waiting for - or - follow suit
           return;
         }
     
-        var cardSuit = event.target.getAttribute('data-suit');
-        var cardValue = event.target.getAttribute('data-actualvalue');
+        var cardSuit = card.data('suit');
+        var cardValue = card.data('actualvalue');
         $.ajax({
-          url: player_action_path, 
+          url: player_action_path + ".json", 
           type: "POST", 
-          data: {id: game_id, suit: cardSuit, value: cardValue}
+          data: {id: game_id, suit: cardSuit, value: cardValue},
+          success: function(data){
+            console.log("Card Played!");
+            console.log(data);
+            window.new_board = data;
+            setTimeout(window.load_new_board, 2500);
+          }
         });
 
     }
