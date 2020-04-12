@@ -116,7 +116,9 @@ class Games
 
 
 jQuery ->
-  new Games($("#game"))
+  game = $("#game")
+  if game.length > 0
+    new Games($("#game"))
 
   $('#game_list').DataTable({
     "order": [[0, "desc"]],
