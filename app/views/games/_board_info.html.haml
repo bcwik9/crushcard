@@ -8,9 +8,6 @@
     %br
 
   .row
-    - if @notice.present?
-      %h4{style: 'position: absolute;'}
-        = @notice
 
     .col-xs-3{style: "position: relative"}
       - if @dealt
@@ -35,7 +32,7 @@
   
     .col-xs-6{style: "padding: 0px;"}
       = render 'player', index: 2
-  
+
   .row
     .col-xs-3{style: "padding: 80px 0 0 0;"}
       = render 'player', index: 1

@@ -112,13 +112,6 @@ class Games
 jQuery ->
   new Games($("#game"))
 
-  $('#successMessage').css({
-    left: '580px',
-    top: '250px',
-    width: 0,
-    height: 0
-  });
-  # TODO: if game_list present
   $('#game_list').DataTable({
     "order": [[0, "desc"]],
     "columnDefs":[{ "targets":[0], "visible": false, "searchable": false}]

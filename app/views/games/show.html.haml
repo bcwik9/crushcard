@@ -1,14 +1,7 @@
-.show_body{style: "background-color: black"}
-
-  %p#notice{:style => "text-align:center;"}= notice 
+.show_body{style: "padding-top: 50px; background-color: black"}
 
   .row
     .col-xs-12
       = render 'join_game'
       #game-wrapper
         = render "board_info"
-
-  #content
-    #successMessage.hidden
-      %h2 You did it!
-      %button{:onclick => "init()"} Play Again
