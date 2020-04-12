@@ -44,11 +44,17 @@
           .ok
             = link_to "Ok", "#", class: "btn btn-success btn-lg"
         #board
-          - cards = cards_shown_on_table
-          - layout = %w(bottom left top right)
-          - (0..3).each do |index|
+          - layout = YAML.load_file("config/board-layout.yml")
+          - num_players = @game.config[:players].compact.size
+          - layout = layout[num_players]
+
+          - (0..num_players - 1).each do |index|
             - winning = @names[index].present? && @indexes[index] == @game.config[:winner_index]
-            = render 'playing_card', id: layout[index], card: cards[index], extra_class: (winning ? "winning" : nil)
+            - extra_class = []
+            - extra_class << :winning if winning
+            - extra_class << :your_slot if index == 0
+            - card = @played_cards[index]
+            = render 'playing_card', id: "table-card-#{index}", card: card, extra_class: extra_class, position: layout[index]
   
     .col-xs-3{style: "padding: 100px 0 0 0;"}
       = render 'player', index: 3

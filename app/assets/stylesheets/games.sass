@@ -77,29 +77,15 @@
   padding: 5px
   //text-shadow: 0 0 3px #000
  
-  &#top
+#board
+  .playing_card
     position: absolute
-    top: 10px
-    left: 115px
-  &#bottom
-    position: absolute
-    left: 115px
-    bottom: 10px
-    &.hovered 
-      // if drag and dropping a card
-      background: #aaa
-
-  &#right
-    position: absolute
-    top: 100px
-    right: 10px
-  &#left
-    position: absolute
-    left: 10px
-    top: 100px
-  &.winning
-    border-width: 2px
-    border-color: red
+    &.your_slot
+      &.hovered 
+        background: #aaa
+    &.winning
+      border-width: 2px
+      border-color: red
 
 #cardPile
   margin: auto

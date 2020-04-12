@@ -1,0 +1,23 @@
+# Players => Layout Mapping
+first_position: &first_position
+  top: 190px
+  left: 115px
+
+1:
+  - <<: *first_position
+2: 
+  - <<: *first_position
+3:
+  - <<: *first_position
+  - top: 95px
+    left: 0px
+  - top: 0px
+    left: 115px
+4:
+  - <<: *first_position
+  - top: 95px
+    left: 0px
+  - top: 0px
+    left: 115px
+  - top: 95px
+    left: 230px
