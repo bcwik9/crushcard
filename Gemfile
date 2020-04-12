@@ -2,6 +2,9 @@ source 'https://rubygems.org'
 
 ruby '2.6.3'
 gem 'rails', '4.2.8'
+group :development do
+  gem 'rails_real_favicon'
+end
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 # Use sqlite3 as the database for Active Record
