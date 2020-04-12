@@ -1,3 +1,11 @@
+- if @waiting_on !~ /game\sto\sstart/i
+  .waiting_notice
+    %h4{style: "margin-bottom: 10px;"}
+      %i
+        - name = @waiting_on_index == @indexes[0] ? "You" : @names[@waiting_on_index] 
+        Waiting for #{name}
+        to #{@waiting_on}
+
 - if @can_start_game && !@dealt
   = link_to 'Start Game', "#", class: "start_game btn btn-lg btn-success", data: {url: start_game_path}
 

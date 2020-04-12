@@ -1,4 +1,6 @@
-%div{:style => "text-align:center;"}
-  %h1 Create a New Game
-  = render 'form'
-  = link_to 'Back', games_path, class: "btn btn-lg btn-default"
+.container{style: "padding-top: 20%;"}
+  .row
+    .col-xs-12.text-center
+      %h1 Create a New Game
+      = render 'form'
+      = link_to 'Back', games_path, class: "btn btn-lg btn-default"

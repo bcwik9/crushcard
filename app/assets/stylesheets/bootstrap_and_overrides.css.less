@@ -177,8 +177,8 @@ input {
 
 .intro {
     display: table;
-    width: 100%;
-    height: auto;
+    width: 100vw;
+    height: 100vh;
     padding: 100px 0;
     text-align: center;
     color: #fff;
@@ -193,6 +193,8 @@ input {
 .intro .intro-body {
     display: table-cell;
     vertical-align: middle;
+    padding-top: 150px;
+    padding-bottom: 120px;
 }
 
 .intro .intro-body .brand-heading {
@@ -330,13 +332,17 @@ input {
 }
 
 .btn {
-    border-radius: 0;
+    border-radius: 5px;
     text-transform: uppercase;
     font-family: Montserrat,"Helvetica Neue",Helvetica,Arial,sans-serif;
-    font-weight: 400;
+    font-weight: bold;
+    color: white;
     -webkit-transition: all .3s ease-in-out;
     -moz-transition: all .3s ease-in-out;
     transition: all .3s ease-in-out;
+}
+.btn:visited {
+  color: white;
 }
 
 .btn-default {
@@ -377,6 +383,7 @@ ul.banner-social-buttons {
 
 footer {
     padding: 50px 0;
+    padding-top: 200px;
 }
 
 footer p {

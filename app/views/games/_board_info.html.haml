@@ -8,37 +8,9 @@
     %br
 
   .row
-
-    .col-xs-3{style: "position: relative"}
-      - if @dealt
-        .trump_suit{style: "position: absolute; right: 10px;"}
-          %h4{style: "margin-bottom: 10px;"} Trump Suit
-          = render 'playing_card', id: :trump, card: @game.config[:trump_card]
-      - else
-        %h4{style: "border: 1px solid white; border-radius: 5px; padding: 15px;"} 
-          Waiting For: 
-          %br
-          #{@game.config[:waiting_on_reason]}.
-          - if @is_playing 
-            %br
-            - if @enough_players
-              - if @can_start_game
-                You
-              - else
-                Dealer
-              can Deal/Start.
-            - else
-              Need more players.
-  
-    .col-xs-6{style: "padding: 0px;"}
-      = render 'player', index: 2
-
-  .row
-    .col-xs-3{style: "padding: 80px 0 0 0;"}
-      = render 'player', index: 1
-  
-    .col-xs-6{style: "padding: 0px"}
-      #board-wrapper
+    .col-xs-12
+      - top_margin = [0, 1, 3].include?(@names.size) ? 0 : 100 
+      #board-wrapper{style: "margin-top: #{top_margin}px; margin-bottom: 0px;"}
         #message.hidden
           .text
           .ok
@@ -54,22 +26,37 @@
             - extra_class << :winning if winning
             - extra_class << :your_slot if index == 0
             - card = @played_cards[index]
-            = render 'playing_card', id: "table-card-#{index}", card: card, extra_class: extra_class, position: layout[index]
-  
-    .col-xs-3{style: "padding: 100px 0 0 0;"}
-      = render 'player', index: 3
-  
-  .row
-    .col-xs-3
-      = render "controls"
-    .col-xs-6{style: "padding-top: 15px;"}
-      = render 'player', index: 0, you: @is_playing
-  .row
-    .col-xs-12
-      Your Hand 
-      %i (double click to play)
-      /or drag and drop) # TODO
-      #cardPile
-        = render "card_pile"
+            = render 'playing_card', id: "table-card-#{index}", card: card, extra_class: extra_class, position: layout['cards'][index]
+            = render 'player', index: index, you: (@is_playing && index == 0), position: layout['players'][index]
 
+      .row{style: "height: 130px;"}
+        .col-xs-3
+          = render "controls"
+        .col-xs-6
+        .col-xs-3{style: "position: relative;"}
+          - if @dealt
+            .trump_suit{style: "position: absolute; left: -20px; top: -25px;"}
+              %h4{style: "margin-bottom: 10px;"} Trump Suit
+              = render 'playing_card', id: :trump, card: @game.config[:trump_card]
+          - else
+            %h4{style: "border: 1px solid white; border-radius: 5px; padding: 15px;"} 
+              Waiting For: 
+              %br
+              #{@game.config[:waiting_on_reason]}.
+              - if @is_playing 
+                %br
+                - if @enough_players
+                  - if @can_start_game
+                    You
+                  - else
+                    Dealer
+                  can Deal/Start.
+                - else
+                  Need more players.
+      .row
+        .col-xs-12
+          Your Hand 
+          %i (double click to play)
+          #cardPile
+            = render "card_pile"
   = render "debug"

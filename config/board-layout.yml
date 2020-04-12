@@ -1,23 +1,58 @@
 # Players => Layout Mapping
-first_position: &first_position
-  top: 190px
+first_card: &first_card
+  top: 180px
   left: 115px
+first_player: &first_player
+  top: 310px
+  left: 15px
+top_card: &top_card
+  top: 10px
+  left: 115px
+top_player: &top_player
+  top: -120px
+  left: 15px
+left_card: &left_card
+  top: 95px
+  left: 10px
+left_player: &left_player
+  top: 80px
+  left: -280px
+right_card: &right_card
+  top: 95px
+  left: 220px
+right_player: &right_player
+  top: 80px
+  left: 310px
 
 1:
-  - <<: *first_position
+  cards:
+    - <<: *first_card
+  players:
+    - <<: *first_player
 2: 
-  - <<: *first_position
+  cards:
+    - <<: *first_card
+    - <<: *top_card
+  players:
+    - <<: *first_player
+    - <<: *top_player
 3:
-  - <<: *first_position
-  - top: 95px
-    left: 0px
-  - top: 0px
-    left: 115px
+  cards:
+    - <<: *first_card
+    - <<: *left_card
+    - <<: *right_card
+  players:
+    - <<: *first_player
+    - <<: *left_player
+    - <<: *right_player
 4:
-  - <<: *first_position
-  - top: 95px
-    left: 0px
-  - top: 0px
-    left: 115px
-  - top: 95px
-    left: 230px
+  cards:
+    - <<: *first_card
+    - <<: *left_card
+    - <<: *top_card
+    - <<: *right_card
+  players:
+    - <<: *first_player
+    - <<: *left_player
+    - <<: *top_player
+    - <<: *right_player

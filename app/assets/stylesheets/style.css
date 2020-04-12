@@ -1,7 +1,5 @@
-/* Add some margin to the page and set a default font and colour */
- 
 body {
-  margin: 30px;
+  /* margin: 30px; */
   font-family: "Georgia", serif;
   line-height: 1.8em;
   color: #333;
@@ -11,33 +9,5 @@ body {
  
 h1, h2, h3, h4 {
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-}
- 
-/* Main content area */
- 
-#content {
-  margin: 80px 70px;
-  text-align: center;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
- 
-/* Header/footer boxes */
- 
-.wideBox {
-  clear: both;
-  text-align: center;
-  margin: 70px;
-  padding: 10px;
-  background: #ebedf2;
-  border: 1px solid #333;
-}
- 
-.wideBox h1 {
-  font-weight: bold;
-  margin: 20px;
-  color: #666;
-  font-size: 1.5em;
 }
  

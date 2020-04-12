@@ -3,16 +3,10 @@
 - classes = ''
 - classes << " you" if you
 - classes << " waiting_for" if @indexes[index] == @waiting_on_index && @names.size >= 3
+- position ||= nil
+- style = position.present? ? "position: absolute; top: #{position['top']}; left: #{position['left']};" : nil
 
-.player_card{class: classes}
-  - if show && @waiting_on !~ /game\sto\sstart/i
-    .waiting_notice
-      %h4{style: "margin-bottom: 10px;"}
-        - if you
-          Your turn:
-        - else
-          Waiting to: 
-        #{@waiting_on}
+.player_card{class: classes, style: style}
   %h3{style: "margin-bottom: 10px;"}
     - if show
       = "\"#{@names[index]}\""

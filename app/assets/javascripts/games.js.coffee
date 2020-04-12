@@ -76,7 +76,7 @@ class Games
   add_player_clicked: (e)=>
     jg = $(document).find(".join_game")
     username = jg.find("#username").val()
-    if username && username.length == 0
+    if username && username.length >= 0
       jg.addClass("hidden")
       path = jg.data("url")
       $.ajax(
