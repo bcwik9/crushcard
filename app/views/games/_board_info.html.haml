@@ -1,4 +1,5 @@
-#game{data: {url: game_path(id: @game), player_path: player_action_game_path, poll: @poll.to_s, updated: @game.updated_at } }
+- poll = params[:debug] ? false : @poll
+#game{data: {url: game_path(id: @game), player_path: player_action_game_path, poll: poll.to_s, updated: @game.updated_at } }
   - if @winners.present?
     %h2{style: "margin-bottom: 10px;"}
       Game Over:
@@ -9,10 +10,7 @@
 
   .row
     .col-xs-12
-      - layout = YAML.load_file("config/board-layout.yml")
-      - num_players = @game.config[:players].compact.size
-      - layout = layout[num_players]
-      - top_margin = layout.try(:[], 'top_margin') || '30px'
+      - top_margin = board_layout.try(:[], 'top_margin') || '30px'
       #board-wrapper{style: "margin-top: #{top_margin}; margin-bottom: 0px;"}
         #message.hidden
           .text
@@ -25,12 +23,13 @@
             - extra_class << :winning if winning
             - extra_class << :your_slot if index == 0
             - card = @played_cards[index]
-            = render 'playing_card', id: "table-card-#{index}", card: card, extra_class: extra_class, position: layout['cards'][index]
-            = render 'player', index: index, you: (@is_playing && index == 0), position: layout['players'][index]
+            = render 'playing_card', id: "table-card-#{index}", card: card, extra_class: extra_class, position: board_layout['cards'][index]
+            = render 'player', index: index, you: (@is_playing && index == 0), position: board_layout['players'][index]
 
       .row{style: "height: 130px;"}
-        .col-xs-3
-          = render "controls"
+        .col-xs-3{style: "padding-right: 0px; position: relative;"}
+          .controls{style: "position: absolute; top: 15px; right: -40px;"}
+            = render "controls"
         .col-xs-6
         .col-xs-3{style: "position: relative;"}
           - if @dealt

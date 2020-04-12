@@ -39,6 +39,20 @@ class Games
 
     $(document).find(".join_game button").on('click', @add_player_clicked)
 
+    game.find(".morph").on('click', @morph_clicked)
+
+  morph_clicked: (e) =>
+    e.preventDefault();
+    index = $(document).find(".morph_form #index").val();
+    $.ajax(
+      $(e.target).data('url'),
+      data: { index: index },
+      method: "POST",
+      success: @success,
+      error: @failed
+    )
+    return false
+
   deal_clicked: (e) =>
     e.preventDefault();
     path = $(e.target).data('url')

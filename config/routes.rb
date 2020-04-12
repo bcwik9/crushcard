@@ -5,6 +5,7 @@ Rails.application.routes.draw do
       post 'start', formats: [:json]
       post 'deal', formats: [:json]
       post 'player_action', formats: [:json]
+      post 'morph', formats: [:json]
     end
   end
   # TODO: convert these to member calls

@@ -3,7 +3,7 @@ class GamesController < ApplicationController
   require 'action_view/helpers'
   include ActionView::Helpers::DateHelper
 
-  before_action :set_game, only: [:show, :edit, :update, :destroy]
+  before_action :set_game, except: [:index, :new, :create]
 
   def default_url_options(options = {})
     if params[:debug]
@@ -11,6 +11,14 @@ class GamesController < ApplicationController
     else
       {}
     end
+  end
+
+  def morph
+    morph_to = params[:index].to_i
+    new_id = @game.config[:players][morph_to]
+    session[:id] = new_id
+    @_current_user = new_id
+    show
   end
 
   def player_up?
@@ -47,7 +55,6 @@ class GamesController < ApplicationController
   end
 
   def add_cpu_player
-    set_game
 
     return if already_started?
     return if too_many_players?
@@ -68,7 +75,6 @@ class GamesController < ApplicationController
   end
 
   def add_player
-    set_game
 
     if @_current_user.nil?
       redirect_to @game, notice: 'Unable to determine current user'
@@ -101,7 +107,6 @@ class GamesController < ApplicationController
   end
 
   def start
-    set_game
     error = nil
     if !@game.enough_players?
       error = "Must have between #{Game::MIN_PLAYERS} and #{Game::MAX_PLAYERS} players to start"
@@ -120,7 +125,6 @@ class GamesController < ApplicationController
   end
 
   def deal
-    set_game
     if @game.clear_table(@_current_user)
       show
     else
@@ -129,12 +133,11 @@ class GamesController < ApplicationController
   end
 
   def player_action
-    set_game
     error = nil
 
     if invalid_user?
       error = "It's not your turn, waiting for \"#{expected_user}\""
-    elsif @game.config[:waiting_for_reason] == "Clear"
+    elsif @game.config[:waiting_on_reason] == "Clear"
       error = "Waiting for next hand." 
     elsif params[:bid]
       if @game.done_bidding?
@@ -244,7 +247,7 @@ class GamesController < ApplicationController
   
       @places = []
       @total_scores.each_with_index do |score, i|
-        @places[i] = @total_scores.select{|t| t > i}.count + 1
+        @places[i] = @total_scores.select{|t| t > score}.count + 1
       end
       
       # players hand
@@ -319,9 +322,6 @@ class GamesController < ApplicationController
   # GET /games/new
   def new
     @game = Game.new
-  end
-
-  def edit
   end
 
   def create

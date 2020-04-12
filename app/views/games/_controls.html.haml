@@ -6,8 +6,11 @@
         Waiting for 
         %br
         = "\"#{name}\""
+        - if params[:debug]
+          = "(profile: #{@waiting_on_index})"
         %br
         to #{@waiting_on}
+
 
 - if @can_start_game && !@dealt
   = link_to 'Start Game', "#", class: "start_game btn btn-lg btn-success", data: {url: start_game_path}

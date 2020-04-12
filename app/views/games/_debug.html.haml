@@ -1,10 +1,18 @@
 - if params[:debug]
+  %hr
   .row
-    %hr
+    .col-xs-6.text-right
+      = link_to "Poll (TODO)", "#", class: "btn btn-lg btn-success"
+    .col-xs-6.text-left
+      .morph_form
+        - morph = []
+        - @game.config[:names].each_with_index {|n, i| morph << [n, i]}
+        = select_tag :index, options_for_select(morph, @waiting_for_index), blank: false, style: "color: black; height: 35px; width: 100px;"
+        = link_to "Morph!", "#", class: "morph btn btn-lg btn-success", data: {url: morph_game_path}
+  .row{style: "padding-top: 20px;"}
     .col-xs-12
       %pre{style: "max-width: 400px; margin: auto; text-align: left;"}
         = "POLLING: #{@poll}"
-    
         - c = @game.config
         - c[:player_hands] = c[:player_hands].collect {|h| "Hand size: #{h.size}"} if c[:player_hands]
         - c[:deck] = "Cards remaining: #{c[:deck].size}" if c[:deck]
