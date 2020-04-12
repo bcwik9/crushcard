@@ -92,7 +92,7 @@ class Games
   get_updated_board: =>
     # TODO: pass in last_updated_at, only get response if new state
     $.ajax({
-      url: config.url + ".json?updated=" + config.updated, 
+      url: config.url + "&updated=" + config.updated, 
       method: "GET", 
       success: @success,
       error: @failed

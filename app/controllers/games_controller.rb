@@ -5,6 +5,14 @@ class GamesController < ApplicationController
 
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
+  def default_url_options(options = {})
+    if params[:debug]
+      { debug: true } 
+    else
+      {}
+    end
+  end
+
   def player_up?
     @game.player_up?(@_current_user)
   end
