@@ -1,5 +1,5 @@
 class Game < ActiveRecord::Base
-  require 'yaml'
+  #require 'yaml'
 
   MIN_PLAYERS=2 # should be 3
   MAX_PLAYERS=5 # crank up to 10 with rule tweaks
@@ -12,6 +12,7 @@ class Game < ActiveRecord::Base
       waiting_on: nil, # creator 
       waiting_on_index: 0,
       waiting_on_reason: "Game to start",
+      waiting_on_chime: nil,
       players: [],
       names: [],
       score: [],
@@ -29,7 +30,8 @@ class Game < ActiveRecord::Base
     config.merge!(
       waiting_on: player, 
       waiting_on_index: index,
-      waiting_on_reason: reason 
+      waiting_on_reason: reason,
+      waiting_on_chime: true
     )
   end
 

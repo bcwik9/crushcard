@@ -279,6 +279,11 @@ class GamesController < ApplicationController
                       end
       end
       @waiting_on_you = @waiting_on_index == @indexes[0] # seat 0 is the up-next user?
+      if @waiting_on_you && @game.config[:waiting_on_chime]
+        @game.config[:waiting_on_chime] = nil
+        @game.save_state
+        @chime = true
+      end
     
       # show ace of spades if game hasnt started
       @trump = @game.config[:trump_card] # || Card.new('Spades', 12)

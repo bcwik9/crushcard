@@ -14,7 +14,6 @@ window.show_game_message = (message)->
     $('#game-wrapper #message').addClass("hidden");
     return false
 
-
 class Games
   game = null
   config = null
@@ -41,8 +40,18 @@ class Games
 
     game.find(".morph").on('click', @morph_clicked)
 
+    if game.data("chime")
+      @chime()
+
+  chime: =>
+    sound = $(document).find(".youre_up_bell").data("src");
+    console.log("YOUR UP CHIME: " + sound);
+    audio =  new Audio(sound);
+    audio.play();
+
   morph_clicked: (e) =>
     e.preventDefault();
+    return
     index = $(document).find(".morph_form #index").val();
     $.ajax(
       $(e.target).data('url'),
