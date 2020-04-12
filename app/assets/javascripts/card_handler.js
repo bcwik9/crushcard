@@ -13,8 +13,6 @@ CardHandler = function(game){
       game.find(".playing_card").each(function(i, card){
         card = $(card);
         if(card.data('suit')){
-        console.log("DRAWING CARD");
-        console.log(card);
           DrawCard.draw_card(card.data('suit'), card.data('value'), card.attr('id'), game);
         }
       });

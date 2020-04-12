@@ -2,7 +2,7 @@
   = link_to 'Start Game', "#", class: "start_game btn btn-lg btn-success", data: {url: start_game_path}
 
 - if @waiting_on_you && @game.config[:waiting_on_reason] == "Clear" && @winners.try(:empty?)
-  = link_to 'Clear/Next', "#", class: "deal btn btn-lg btn-success", data: {url: deal_game_path}
+  = link_to 'Clear/Next', "#", class: "clear_hand btn btn-lg btn-success", data: {url: deal_game_path}
 
 - show_bid_form = @waiting_on_you && @dealt && !@done_bidding
 - if show_bid_form
