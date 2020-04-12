@@ -12,7 +12,7 @@
       - layout = YAML.load_file("config/board-layout.yml")
       - num_players = @game.config[:players].compact.size
       - layout = layout[num_players]
-      - top_margin = layout['top_margin']
+      - top_margin = layout.try(:[], 'top_margin') || '30px'
       #board-wrapper{style: "margin-top: #{top_margin}; margin-bottom: 0px;"}
         #message.hidden
           .text
