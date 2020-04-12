@@ -110,7 +110,8 @@ class Game < ActiveRecord::Base
       num_cards_per_player = config[:total_rounds] - config[:rounds_played]
 
       all_add_up = total_bids + bid == num_cards_per_player
-      is_dealer = config[:dealer] == user_id
+      is_dealer = config[:dealer_index] == current_player_index
+      #puts "#{all_add_up} = #{total_bids} + #{bid} == #{num_cards_per_player}".red
       if is_dealer && all_add_up
         return false
       end
