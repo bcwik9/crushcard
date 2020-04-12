@@ -21,19 +21,20 @@
 - show_bid_form = @waiting_on_you && @dealt && !@done_bidding
 - if show_bid_form
   .bid_form
-    %h3#bid-title{style: "color: red;"} Bid Now
+    /%h3#bid-title{style: "color: red;"} Bid Now
     .input-group{style: "width:150px; margin: auto;"}
       - max = @cards.size
       = number_field_tag("bid", 0, min: 0, max: max, class: "form-control input-lg")
       %span.input-group-btn
         = link_to("Bid", "#", class: "btn btn-lg btn-success", data: {disable: true, disable_with: "Bidding..."})
 
-  :javascript
-    var bid_title = $("#bid-title");
-    setInterval(function(){
-      bid_title.fadeOut(500);
-      bid_title.fadeIn(500);
-    }, 1000);
+  
+  /:javascript
+  /  var bid_title = $("#bid-title");
+  /  setInterval(function(){
+  /    bid_title.fadeOut(500);
+  /    bid_title.fadeIn(500);
+  /  }, 1000);
 
 - notice_message = @notice || notice 
 - if notice_message
