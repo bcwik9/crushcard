@@ -129,12 +129,14 @@ class GamesController < ApplicationController
     elsif params[:bid]
       if @game.done_bidding?
         error = 'Bidding is over'
+      elsif !@game.bid_in_range?(params[:bid]) 
+        error = "Bid must be between 0 and #{@game.num_cards_per_player}"
+      elsif @game.invalid_dealer_bid?(@_current_user, params[:bid])
+        error = "Can bid anything BUT #{params[:bid]}" 
+      elsif @game.player_action(@_current_user, params[:bid])
+        @notice = "Placed bid!"
       else
-        if @game.player_action(@_current_user, params[:bid])
-          @notice = "Placed bid!"
-        else
-          error = "Can bid anything BUT #{params[:bid]}" 
-        end
+        @error = "Could not place bid, please try refreshing the page"
       end
     else
       card = Card.new(params[:suit], params[:value])

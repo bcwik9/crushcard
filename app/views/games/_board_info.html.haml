@@ -1,4 +1,3 @@
-- puts "RENDERING BOARD INFO FOR: #{@game.id}".red
 #game{data: {url: game_path(@game), player_path: player_action_game_path, poll: @poll.to_s, updated: @game.updated_at } }
   - if @winners.present?
     %h2{style: "margin-bottom: 10px;"}

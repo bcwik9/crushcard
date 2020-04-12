@@ -96,6 +96,26 @@ class Game < ActiveRecord::Base
     end
   end
 
+  def num_cards_per_player
+    config[:total_rounds] - config[:rounds_played]
+  end
+
+  def bid_in_range?(bid)
+    bid = bid.to_i if bid.is_a?(String)
+    bid >= 0 && bid <= num_cards_per_player
+  end
+
+  def invalid_dealer_bid?(user_id, bid)
+    bid = bid.to_i if bid.is_a?(String)
+    # dealer cannot bid the same amount as the number of cards dealt
+    is_dealer = player_index(user_id) == config[:dealer_index]
+    return false unless is_dealer
+
+    bid_total = bid + config[:bids].compact.sum 
+    all_add_up = bid_total == num_cards_per_player
+    all_add_up
+  end
+
   # player either bids or plays a card if it's their turn
   def player_action user_id, user_input=nil
     return false unless player_up?(user_id)
@@ -103,22 +123,15 @@ class Game < ActiveRecord::Base
     
     # check if we are in bidding or playing a card
     if !done_bidding?
-      # player is making a bid
       bid = user_input.to_i
-      # dealer cannot bid the same amount as the number of cards dealt
-      total_bids = config[:bids].compact.sum
-      num_cards_per_player = config[:total_rounds] - config[:rounds_played]
-
-      all_add_up = total_bids + bid == num_cards_per_player
-      is_dealer = config[:dealer_index] == current_player_index
-      #puts "#{all_add_up} = #{total_bids} + #{bid} == #{num_cards_per_player}".red
-      if is_dealer && all_add_up
+      if !bid_in_range?(bid) 
+        return false
+      elsif invalid_dealer_bid?(user_id, bid)
         return false
       end
       
       # record the bid
       config[:bids][current_player_index] = bid
-
       if config[:dealer] == user_id
         # dealer is last to bid, bidding is done
         # determine who bid highest (first if tie), they are first to play a card

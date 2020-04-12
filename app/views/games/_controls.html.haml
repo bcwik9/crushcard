@@ -12,7 +12,7 @@
       - max = @cards.size
       = number_field_tag("bid", 0, min: 0, max: max, class: "form-control input-lg")
       %span.input-group-btn
-        = link_to("Bid", "#", class: "btn btn-lg btn-success", data: {url: player_action_game_path, disable: true, disable_with: "Bidding..."})
+        = link_to("Bid", "#", class: "btn btn-lg btn-success", data: {disable: true, disable_with: "Bidding..."})
 
   :javascript
     var bid_title = $("#bid-title");

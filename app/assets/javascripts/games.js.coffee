@@ -27,7 +27,6 @@ class Games
 
     if config.poll == true
       @wait_and_poll()
-    else 
  
     game.find(".start_game").on('click', @start_game_clicked)
     game.find(".bid_form a").on('click', @bid_clicked)
@@ -47,10 +46,9 @@ class Games
 
   bid_clicked: (e) =>
     e.preventDefault();
-    path = $(e.target).data('url')
     bid = game.find(".bid_form #bid").val()
     $.ajax(
-      path,
+      config.playerPath,
       data: {bid: bid},
       method: "POST",
       success: @success,
@@ -60,7 +58,7 @@ class Games
 
   start_game_clicked: (e)=>
     e.preventDefault();
-    path = $(e.target).data('url')
+    path = $(e.target).data('url') # TODO: player_path { start: true }
     $.ajax(
       path,
       method: "POST",
@@ -72,7 +70,7 @@ class Games
   add_player_clicked: (e)=>
     jg = $(document).find(".join_game")
     username = jg.find("#username").val()
-    if username && username.length >= 1
+    if username && username.length == 0
       jg.addClass("hidden")
       path = jg.data("url")
       $.ajax(
