@@ -17,7 +17,7 @@ CardHandler = function(game){
         }
       });
     
-      game.find('#bottom').droppable( {
+      game.find('#table-card-0').droppable( {
         accept: '#cardPile div',
         hoverClass: 'hovered',
         drop: testDrop
@@ -68,7 +68,7 @@ CardHandler = function(game){
         var suit = card.data('suit');
         var value = card.data('actualvalue');
 
-        DrawCard.draw_card(suit, card.data('value'), "bottom", game);
+        DrawCard.draw_card(suit, card.data('value'), "table-card-0", game);
 
         $.ajax({
           url: player_action_path + ".json", 
@@ -134,20 +134,6 @@ CardHandler = function(game){
         correctCards++;
       } 
        
-      // If all the cards have been placed correctly then display a message
-      // and reset the cards for another go
-     
-      if ( correctCards == 10 ) {
-        $('#successMessage').removeClass("hidden");
-        $('#successMessage').animate({
-          left: '380px',
-          top: '200px',
-          width: '400px',
-          height: '100px',
-          opacity: 1
-        });
-      }
-     
     }
 
   init();

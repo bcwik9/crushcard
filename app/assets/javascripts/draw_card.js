@@ -1,6 +1,6 @@
 DrawCard = {
     clear_bottom_card: function(game){
-      canvas = game.find("#bottom")[0];
+      canvas = game.find("#table-card-0")[0];
       context = canvas.getContext("2d");
       context.clearRect(0,0,canvas.width, canvas.height);
     },
