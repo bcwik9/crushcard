@@ -3,7 +3,10 @@
     %h4{style: "margin-bottom: 10px;"}
       %i
         - name = @waiting_on_index == @indexes[0] ? "You" : @names[@waiting_on_index] 
-        Waiting for #{name}
+        Waiting for 
+        %br
+        = "\"#{name}\""
+        %br
         to #{@waiting_on}
 
 - if @can_start_game && !@dealt

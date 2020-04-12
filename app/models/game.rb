@@ -1,6 +1,9 @@
 class Game < ActiveRecord::Base
   require 'yaml'
 
+  MIN_PLAYERS=2 # should be 3
+  MAX_PLAYERS=5 # crank up to 10 with rule tweaks
+
   def set_up
     state = {
       total_rounds: 10,
@@ -35,10 +38,15 @@ class Game < ActiveRecord::Base
     config[:dealer_index] = config[:rounds_played] % config[:players].size
     config[:dealer] = config[:players][config[:dealer_index]] # deprecated - use index
   end
+
+  def enough_players?
+    player_count = config[:players].size
+    player_count >= MIN_PLAYERS && player_count <= MAX_PLAYERS
+  end
   
   def deal_cards
-    # need to have at least 3 players to start the game
-    raise 'Must have between 3 and 5 players to start' if config[:players].size < 3 || config[:players].size > 5
+    player_count = config[:players].size
+    return false unless enough_players?
 
     # shuffle deck
     config[:deck] = Card.get_deck

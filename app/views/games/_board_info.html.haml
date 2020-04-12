@@ -9,17 +9,16 @@
 
   .row
     .col-xs-12
-      - top_margin = [0, 1, 3].include?(@names.size) ? 0 : 100 
-      #board-wrapper{style: "margin-top: #{top_margin}px; margin-bottom: 0px;"}
+      - layout = YAML.load_file("config/board-layout.yml")
+      - num_players = @game.config[:players].compact.size
+      - layout = layout[num_players]
+      - top_margin = layout['top_margin']
+      #board-wrapper{style: "margin-top: #{top_margin}; margin-bottom: 0px;"}
         #message.hidden
           .text
           .ok
             = link_to "Ok", "#", class: "btn btn-success btn-lg"
         #board
-          - layout = YAML.load_file("config/board-layout.yml")
-          - num_players = @game.config[:players].compact.size
-          - layout = layout[num_players]
-
           - (0..num_players - 1).each do |index|
             - winning = @names[index].present? && @indexes[index] == @game.config[:winner_index]
             - extra_class = []

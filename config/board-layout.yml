@@ -23,13 +23,40 @@ right_card: &right_card
 right_player: &right_player
   top: 80px
   left: 310px
+top_left_card: &top_left_card
+  <<: *left_card
+  top: 10px
+top_right_card: &top_right_card
+  <<: *right_card
+  top: 10px
+top_left_player: &top_left_player
+  <<: *left_player
+  top: -10px
+top_right_player: &top_right_player
+  <<: *right_player
+  top: -10px
+bottom_left_card: &bottom_left_card
+  <<: *left_card
+  top: 140px
+bottom_right_card: &bottom_right_card
+  <<: *right_card
+  top: 140px
+bottom_left_player: &bottom_left_player
+  <<: *left_player
+  top: 140px
+bottom_right_player: &bottom_right_player
+  <<: *right_player
+  top: 140px
+
 
 1:
+  top_margin: 40px
   cards:
     - <<: *first_card
   players:
     - <<: *first_player
 2: 
+  top_margin: 100px
   cards:
     - <<: *first_card
     - <<: *top_card
@@ -37,15 +64,17 @@ right_player: &right_player
     - <<: *first_player
     - <<: *top_player
 3:
+  top_margin: 40px
   cards:
     - <<: *first_card
-    - <<: *left_card
-    - <<: *right_card
+    - <<: *top_left_card
+    - <<: *top_right_card
   players:
     - <<: *first_player
-    - <<: *left_player
-    - <<: *right_player
+    - <<: *top_left_player
+    - <<: *top_right_player
 4:
+  top_margin: 100px
   cards:
     - <<: *first_card
     - <<: *left_card
@@ -56,3 +85,21 @@ right_player: &right_player
     - <<: *left_player
     - <<: *top_player
     - <<: *right_player
+5:
+  top_margin: 40px
+  cards:
+    - <<: *first_card
+    - <<: *bottom_left_card
+    - <<: *top_left_card
+      left: 190px
+    - <<: *top_right_card
+      left: 40px
+    - <<: *bottom_right_card
+  players:
+    - <<: *first_player
+    - <<: *bottom_left_player
+    - <<: *top_left_player
+      top: -50px
+    - <<: *top_right_player
+      top: -50px
+    - <<: *bottom_right_player

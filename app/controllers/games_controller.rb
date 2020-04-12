@@ -30,7 +30,7 @@ class GamesController < ApplicationController
   end
 
   def too_many_players?
-    if @game.config[:players].size >= 5
+    if @game.config[:players].size >= Game::MAX_PLAYERS
       redirect_to @game, notice: 'There are too many players in the game already'
       true
     else
@@ -66,8 +66,10 @@ class GamesController < ApplicationController
       redirect_to @game, notice: 'Unable to determine current user'
       return
     end
+
     return if already_started?
     return if too_many_players?
+
     if @game.config[:players].include?(@_current_user)
       redirect_to @game, notice: "You're already in the game"
       return
@@ -93,8 +95,8 @@ class GamesController < ApplicationController
   def start
     set_game
     error = nil
-    if @game.config[:players].size < 3 || @game.config[:players].size > 5
-      error = 'Must have between 3 and 5 players to start'
+    if !@game.enough_players?
+      error = "Must have between #{Game::MIN_PLAYERS} and #{Game::MAX_PLAYERS} players to start"
     elsif @game.config[:cards_in_play].nil?
       @game.deal_cards
       @notice = "Game has started!"
@@ -189,10 +191,11 @@ class GamesController < ApplicationController
                      end
 
     if @board_updated
-      @enough_players = @game.config[:players].compact.size >= 3
+      @enough_players = @game.enough_players?
   
       @dealt = @game.config[:player_hands].present?
       @game_started = !@game.config[:bids].nil?
+
       @can_start_game = (!@game_started) && @game.config[:players].first == @_current_user && @enough_players # can deal
   
       @winners = @game.config[:winners].map{|player| @game.config[:names][@game.config[:players].index(player)] } rescue nil
