@@ -46,7 +46,8 @@ class Games
   chime: =>
     sound = $(document).find(".youre_up_bell").data("src");
     console.log("YOUR UP CHIME: " + sound);
-    audio =  new Audio(sound);
+    audio = new Audio(sound);
+    audio.volume = 0.05;
     audio.play();
 
   morph_clicked: (e) =>
