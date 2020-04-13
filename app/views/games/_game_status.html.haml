@@ -6,10 +6,10 @@
   %h2
     Game: #{@game.name}
   %br/
-  = succeed ":" do
-    %strong
-      %h4 Current round
-  = @round
+  %strong
+    %h4
+      Current round:
+      = @round
   %div
     %h4
       %strong> Trump

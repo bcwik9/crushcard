@@ -122,11 +122,11 @@
     }
 %body
   #game_path{"data-url" => "#{game_path(@game)}"}
-  /
-    <strong>State:</strong>
-    <haml_loud> @game.state </haml_loud>
-  / <haml_loud> link_to &#39;Edit&#39;, edit_game_path(@game) </haml_loud> |
-  / <haml_loud> link_to &#39;Back&#39;, games_path </haml_loud>
+
+  //%strong State:
+  = #@game.state
+  = #link_to "Edit", edit_game_path(@game)
+  = link_to "Back", games_path
   %p#notice{style: "text-align:center;"}= notice
   #board-wrapper{style: "text-align:center;"}
     .row
@@ -143,7 +143,7 @@
       Your Cards
       #cardPile
         = render "card_pile"
-    / <div id="cardSlots"> </div>
+  
   #content
     #successMessage
       %h2 You did it!
@@ -180,14 +180,18 @@
     }
     
     window.onload = function(){
-        draw_card("#{@trump.suit}", "#{@trump.abbreviated_name}", "trump");
-    <haml_silent>     if @played_cards and not @played_cards[0].nil? 
-    </haml_silent><haml_block>    draw_card("#{@played_cards[0].suit}", "#{@played_cards[0].abbreviated_name}", "bottom");
-    </haml_block><haml_silent>     if @played_cards and not @played_cards[1].nil? 
-    </haml_silent><haml_block>    draw_card("#{@played_cards[1].suit}", "#{@played_cards[1].abbreviated_name}", "left");
-    </haml_block><haml_silent>     if @played_cards and not @played_cards[2].nil? 
-    </haml_silent><haml_block>    draw_card("#{@played_cards[2].suit}", "#{@played_cards[2].abbreviated_name}", "top");
-    </haml_block><haml_silent>     if @played_cards and not @played_cards[3].nil? 
-    </haml_silent><haml_block>    draw_card("#{@played_cards[3].suit}", "#{@played_cards[3].abbreviated_name}", "right");
-    </haml_block>}
+      draw_card("#{@trump.suit}", "#{@trump.abbreviated_name}", "trump");
+      if(#{@played_cards[0].present? rescue false}) {
+        draw_card("#{@played_cards[0].suit rescue nil}", "#{@played_cards[0].abbreviated_name rescue nil}", "bottom");
+      }
+      if(#{@played_cards[1].present? rescue false}) {
+        draw_card("#{@played_cards[1].suit rescue nil}", "#{@played_cards[1].abbreviated_name rescue nil}", "left");
+      }
+      if(#{@played_cards[2].present? rescue false}) {
+        draw_card("#{@played_cards[2].suit rescue nil}", "#{@played_cards[2].abbreviated_name rescue nil}", "top");
+      }
+      if(#{@played_cards[3].present? rescue false}) {
+        draw_card("#{@played_cards[3].suit rescue nil}", "#{@played_cards[3].abbreviated_name rescue nil}", "right");
+      }
+    }
   = javascript_include_tag "cards.js"
