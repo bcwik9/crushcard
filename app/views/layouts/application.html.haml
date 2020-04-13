@@ -40,6 +40,15 @@
               = "- \"#{@game.name}\""
               - if @round.present?
                 = " - Round ##{@round}"
+
+          - if @game.present? && @game.name.present?
+            %ul.nav.navbar-nav.navbar-right
+              %ul.nav.navbar-nav
+                %li
+                  = link_to "#", data: { toggle: "modal", target: "#rules-modal" } do
+                    %h4{style: "margin: 0;"}
+                      %i.fa.fa-book
+                      Rules
                 
         / Collect the nav links, forms, and other content for toggling
         - if false
