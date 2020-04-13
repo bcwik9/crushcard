@@ -1,13 +1,45 @@
 = form_for(@game) do |f|
-  - if @game.errors.any?
-    #error_explanation
-      %h2
-        = pluralize(@game.errors.count, "error")
-        prohibited this game from being saved:
-      %ul
-        - @game.errors.full_messages.each do |message|
-          %li= message
-  .form-group
-    = f.text_field :name, class: "input-lg", placeholder: "Game Name", required: true
-  .actions
-    = f.submit class: "btn btn-lg btn-success"
+  .row
+    .col-xs-2
+    .col-xs-4.text-right
+      = f.text_field :name, class: "input-lg", placeholder: "Game Name", required: true, style: "width: 240px;"
+    .col-xs-4.text-left
+      = f.submit class: "btn btn-lg btn-success", style: "width: 240px;"
+  .row
+    .col-xs-12
+      %h3{style: "margin: 20px;"} Extra Game Options 
+      %i (* in the works)
+  .row
+    .col-xs-12
+      = label_tag :total_rounds, "*Total Rounds (Cards)", style: "font-size: 120%;"
+      = number_field_tag :total_rounds, 10
+  .row
+    .col-xs-12
+      / TODO: make 1-10 default - easier for new people
+      = label_tag :rounds_direction, "*Rounds Direction", style: "font-size: 120%;"
+      - opts = [["From 10 to 1", 'down'], ["From 1 to 10", 'up'],["Up then Down", 'both']] 
+      = select_tag :rounds_direction, options_for_select(opts, selected: 'down')
+  .row
+    .col-xs-12
+      = label_tag :bids_total, "*Bids Total", style: "font-size: 120%;"
+      - opts = [["Someone must loose", 'loose'], ["Everyone can win", 'win']]
+      = select_tag :bids_total, options_for_select(opts, selected: 'loose')
+  .row
+    .col-xs-12
+      = label_tag :underbid, "*Under Bid", style: "font-size: 120%;"
+      - opts = [["Loose points", 'loose'], ["No points", 'none']]
+      = select_tag :underbid, options_for_select(opts, selected: 'loose')
+  .row
+    .col-xs-12
+      = label_tag :ace_of_trump, "*Ace of Trump", style: "font-size: 120%;"
+      - opts = [["No Trump Round", 'no_trump'], ["Still Trump", 'trump']]
+      = select_tag :ace_of_trump, options_for_select(opts, selected: 'no_trump')
+  .row
+    .col-xs-12
+      = label_tag :trump_hint, "*Trump hint", style: "font-size: 120%;"
+      - opts = [["Not shown", 'no'], ["Shown on cards", 'yes']]
+      = select_tag :trump_hint, options_for_select(opts, selected: 'no')
+
+
+     
+  
