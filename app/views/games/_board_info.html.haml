@@ -1,5 +1,6 @@
 - poll = params[:debug] ? false : @poll
-#game{data: {url: game_path(id: @game), player_path: player_action_game_path, poll: poll.to_s, updated: @game.updated_at, chime: @chime.to_s } }
+- extra_class = @game.config[:trump_hint] == 'yes' && !@game.ignore_trump? ? 'trump_flag' : nil
+#game{class: extra_class, data: {url: game_path(id: @game), player_path: player_action_game_path, poll: poll.to_s, updated: @game.updated_at, chime: @chime.to_s } }
   - if @winners.present?
     %h2{style: "margin-bottom: 10px;"}
       Game Over:
@@ -34,7 +35,11 @@
         .col-xs-3{style: "position: relative;"}
           - if @dealt
             .trump_suit{style: "position: absolute; left: -20px; top: -25px;"}
-              %h4{style: "margin-bottom: 10px;"} Trump Suit
+              %h4{style: "margin-bottom: 10px;"} 
+                - if @game.ignore_trump?
+                  No Trump!!
+                - else
+                  Trump Suit
               = render 'playing_card', id: :trump, card: @game.config[:trump_card]
           - else
             %h4{style: "border: 1px solid white; border-radius: 5px; padding: 15px;"} 

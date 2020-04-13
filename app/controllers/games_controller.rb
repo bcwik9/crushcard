@@ -331,7 +331,7 @@ class GamesController < ApplicationController
 
   def create
     @game = Game.new(game_params)
-    @game.set_up
+    @game.set_up(game_options)
 
     if @game.save
       redirect_to game_path(@game), notice: 'New game was successfully created. Copy and share this URL with your friends.'
@@ -349,5 +349,9 @@ class GamesController < ApplicationController
     # Never trust parameters from the scary internet, only allow the white list through.
     def game_params
       params.require(:game).permit(:name, :state)
+    end
+
+    def game_options
+      params.permit(*Game::OPTIONS.keys).to_h
     end
 end

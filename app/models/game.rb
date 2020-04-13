@@ -1,12 +1,49 @@
 class Game < ActiveRecord::Base
-  #require 'yaml'
 
   MIN_PLAYERS=2 # should be 3
   MAX_PLAYERS=5 # crank up to 10 with rule tweaks
 
-  def set_up
+  # TODO: add options here and allowed values
+  # for select boxes anyways
+  OPTIONS = {
+    total_rounds: {
+      label: "Total Rounds",
+      default: 10
+    },
+    rounds_direction: { # TODO
+      label: "*Rounds Direction",
+      default: 'down',
+      select: [["From 10 to 1", 'down'], ["From 1 to 10", 'up'],["Up then Down", 'both']] 
+    },
+    bids_total: {
+      label: "Bids Total",
+      default: 'loose',
+      select: [["Someone must loose", 'loose'], ["Everyone can win", 'win']]
+    },
+    underbid: {
+      label: "Under Bid",
+      default: 'loose',
+      select: [["Loose points", 'loose'], ["No points", 'none']]
+    },
+    ace_of_trump: { 
+      label: "Ace of Trump",
+      default: 'no_trump',
+      select: [["No Trump Round", 'no_trump'], ["Still Trump", 'trump']]
+    },
+    trump_hint: { 
+      label: "Trump Hint",
+      default: 'no',
+      select: [["Not shown", 'no'], ["Shown on cards", 'yes']]
+    }
+  }
+
+  def set_up(options)
+    # TODO: validate options?  ehhh, later
+    total_rounds = options.delete('total_rounds').to_i
+    total_rounds = 10 if total_rounds < 2 || total_rounds > 10
+
     state = {
-      total_rounds: 10,
+      total_rounds: total_rounds,
       rounds_played: 0,
       dealer_index: 0,
       waiting_on: nil, # creator 
@@ -21,7 +58,11 @@ class Game < ActiveRecord::Base
       winner_index: nil,
       winners: [],
     }
+    options.each do |k, v|
+      state.merge! k.to_sym => v
+    end
 
+    # TODO: stringify all keys - json field 
     save_state state
   end
 
@@ -116,6 +157,8 @@ class Game < ActiveRecord::Base
   end
 
   def invalid_dealer_bid?(user_id, bid)
+    return false if config[:bids_total] == 'win'
+
     bid = bid.to_i if bid.is_a?(String)
     # dealer cannot bid the same amount as the number of cards dealt
     is_dealer = player_index(user_id) == config[:dealer_index]
@@ -219,12 +262,16 @@ class Game < ActiveRecord::Base
       # determine scores
       config[:bids].each_with_index do |bid, i|
         tricks = config[:tricks_taken][i] || []
-        if tricks.size < config[:bids][i]
-          player_score = tricks.size - config[:bids][i]
-        elsif tricks.size > config[:bids][i]
-          player_score = tricks.size
+        player_score = if tricks.size < bid
+          if config[:underbid] == 'loose'
+            tricks.size - bid 
+          else
+            0
+          end
+        elsif tricks.size > bid
+          tricks.size
         else
-          player_score = tricks.size + 10
+          bid + 10
         end
         config[:score][i] ||= []
         config[:score][i].push player_score
@@ -269,12 +316,16 @@ class Game < ActiveRecord::Base
     self.save
   end
 
+  def ignore_trump?
+    (config[:trump_card].value_name =~ /ace/i) && config[:ace_of_trump] == 'no_trump'
+  end
+
   def get_highest_card cards, first_suit_played, trump, start_index
     return cards.first if cards.size <= 1
 
     # if trump was played, ignore other cards
     # an ace indicates no trump, so ignore it if that's the case
-    trump_cards = (trump.value_name =~ /ace/i) ? [] : cards.compact.select { |c| c.suit == trump.suit }
+    trump_cards = ignore_trump? ? [] : cards.compact.select { |c| c.suit == trump.suit }
 
     # if trump wasn't played or there is no trump (ace),
     # only cards that are the same suit as the first card played matter

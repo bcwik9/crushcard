@@ -9,37 +9,12 @@
     .col-xs-12
       %h3{style: "margin: 20px;"} Extra Game Options 
       %i (* in the works)
-  .row
-    .col-xs-12
-      = label_tag :total_rounds, "*Total Rounds (Cards)", style: "font-size: 120%;"
-      = number_field_tag :total_rounds, 10
-  .row
-    .col-xs-12
-      / TODO: make 1-10 default - easier for new people
-      = label_tag :rounds_direction, "*Rounds Direction", style: "font-size: 120%;"
-      - opts = [["From 10 to 1", 'down'], ["From 1 to 10", 'up'],["Up then Down", 'both']] 
-      = select_tag :rounds_direction, options_for_select(opts, selected: 'down')
-  .row
-    .col-xs-12
-      = label_tag :bids_total, "*Bids Total", style: "font-size: 120%;"
-      - opts = [["Someone must loose", 'loose'], ["Everyone can win", 'win']]
-      = select_tag :bids_total, options_for_select(opts, selected: 'loose')
-  .row
-    .col-xs-12
-      = label_tag :underbid, "*Under Bid", style: "font-size: 120%;"
-      - opts = [["Loose points", 'loose'], ["No points", 'none']]
-      = select_tag :underbid, options_for_select(opts, selected: 'loose')
-  .row
-    .col-xs-12
-      = label_tag :ace_of_trump, "*Ace of Trump", style: "font-size: 120%;"
-      - opts = [["No Trump Round", 'no_trump'], ["Still Trump", 'trump']]
-      = select_tag :ace_of_trump, options_for_select(opts, selected: 'no_trump')
-  .row
-    .col-xs-12
-      = label_tag :trump_hint, "*Trump hint", style: "font-size: 120%;"
-      - opts = [["Not shown", 'no'], ["Shown on cards", 'yes']]
-      = select_tag :trump_hint, options_for_select(opts, selected: 'no')
-
-
-     
-  
+  - Game::OPTIONS.each do |key, c|
+    .row
+      .col-xs-12
+        = label_tag key, c[:label], style: "font-size: 120%;"
+        - default = c[:default]
+        - if c.has_key?(:select)
+          = select_tag key, options_for_select(c[:select], selected: default)
+        - else # just total_rounds
+          = number_field_tag key, default
