@@ -1,0 +1,23 @@
+%table.text-center{style: "margin: 0 auto;"}
+  %thead
+    %tr
+      %th{style: "padding-right: 20px;"}
+        %h4{style: 'margin-bottom: 15px;'} Special Options
+      %th{style: "padding-left: 20px;"}
+        %h4{style: 'margin-bottom: 15px;'} Selected
+  %tbody
+    - Game::OPTIONS.each do |k, c|
+      %tr
+        %td{style: "padding-right: 20px;"}
+          %h5{style: "margin-bottom: 15px;"}= c[:label]
+        %td{style: "padding-left: 20px;"}
+          - v = @game.persisted? ? @game.config[k] : c[:default]
+          - if form
+            - if c.has_key?(:select)
+              = select_tag k, options_for_select(c[:select], selected: v)
+            - else # just total_rounds
+              = number_field_tag k, v, style: "width: 50px;" 
+          - else
+            %h5{style: "margin-bottom: 15px;"}
+              %i
+                = v.is_a?(String) ? v.titleize : v
