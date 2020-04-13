@@ -9,12 +9,6 @@
     .col-xs-12
       %h3{style: "margin: 20px;"} Extra Game Options 
       %i (* in the works)
-  - Game::OPTIONS.each do |key, c|
-    .row
-      .col-xs-12
-        = label_tag key, c[:label], style: "font-size: 120%;"
-        - default = c[:default]
-        - if c.has_key?(:select)
-          = select_tag key, options_for_select(c[:select], selected: default)
-        - else # just total_rounds
-          = number_field_tag key, default
+  .row
+    .col-xs-12
+      = render 'options_table', form: true
