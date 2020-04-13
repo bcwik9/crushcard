@@ -6,13 +6,12 @@
     = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
     %meta{:charset => "utf-8"}/
-    %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
-    %meta{:content => "width=device-width, initial-scale=1", :name => "viewport"}/
-    %meta{:content => "Crush, the card game", :name => "description"}/
-    %meta{:content => "Ben Cwik and friends", :name => "author"}/
+    %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}
+    %meta{content: "width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1", name: :viewport}
+    %meta{:content => "Crush, the card game", :name => "description"}
+    %meta{:content => "Ben Cwik and Friends", :name => "author"}
 
     = render 'application/favicon'
-
 
     / Custom Fonts
     %link{:href => "http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic", :rel => "stylesheet", :type => "text/css"}/
