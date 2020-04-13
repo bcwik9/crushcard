@@ -10,10 +10,10 @@ class Game < ActiveRecord::Base
       label: "Total Rounds",
       default: 10
     },
-    rounds_direction: { # TODO
-      label: "*Rounds Direction",
-      default: 'down',
-      select: [["From 10 to 1", 'down'], ["From 1 to 10", 'up'],["Up then Down", 'both']] 
+    rounds_direction: { 
+      label: "Rounds Direction",
+      default: 'up',
+      select: [["From 1 to 10", 'up'], ["From 10 to 1", 'down'], ["**Up then Down", 'both']] 
     },
     bids_total: {
       label: "Bids Total",
@@ -32,7 +32,7 @@ class Game < ActiveRecord::Base
     },
     trump_hint: { 
       label: "Trump Hint",
-      default: 'no',
+      default: 'yes',
       select: [["Not shown", 'no'], ["Shown on cards", 'yes']]
     }
   }
@@ -99,15 +99,12 @@ class Game < ActiveRecord::Base
     # person to the 'left' of the dealer bids first
     config[:bids] = []
 
-    # next player is always +1 on dealer (could use waiting_on_index)
+    # next player is always +1 on dealer (could use waiting_on_index?)
     to_left = (config[:dealer_index] + 1) % config[:players].size
     add_waiting_info(to_left, "Bid")
     
-    num_cards_per_player = config[:total_rounds] - config[:rounds_played]
-    # deal out number of cards equal to whatever round we are on
-    # to each player
-    # deal cards first to player on 'right' of dealer
-    #iterate_through_list_with_start_index(to_left, config[:players]) { |player, i|
+    # deal out number of cards equal to whatever round we are on to all players
+    # deal cards first to player on 'right' of dealer (TODO)
     config[:player_hands] = [] # reset
     config[:players].each_with_index do |p, i|
       config[:player_hands][i] = config[:deck].slice!(0..(num_cards_per_player-1))
@@ -148,7 +145,14 @@ class Game < ActiveRecord::Base
   end
 
   def num_cards_per_player
-    config[:total_rounds] - config[:rounds_played]
+    case config[:rounds_direction] 
+    when 'down'
+      config[:total_rounds] - config[:rounds_played]
+    when 'up'
+      1 + config[:rounds_played]
+    when 'both'
+      raise "Playing Up & Down Not Implemented Yet"
+    end
   end
 
   def bid_in_range?(bid)
@@ -317,7 +321,10 @@ class Game < ActiveRecord::Base
   end
 
   def ignore_trump?
-    (config[:trump_card].value_name =~ /ace/i) && config[:ace_of_trump] == 'no_trump'
+    return false if config[:trump_card].nil?
+    rule_enabled = config[:ace_of_trump] == 'no_trump'
+    is_ace = config[:trump_card].value_name =~ /ace/i
+    rule_enabled && is_ace
   end
 
   def get_highest_card cards, first_suit_played, trump, start_index
