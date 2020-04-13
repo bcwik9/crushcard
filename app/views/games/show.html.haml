@@ -1,0 +1,193 @@
+%head
+  = stylesheet_link_tag 'style'
+  :javascript
+    var correctCards = 0;
+    $( init );
+     
+    function init() {
+      // Hide the success message
+      $('#successMessage').hide();
+      $('#successMessage').css( {
+        left: '580px',
+        top: '250px',
+        width: 0,
+        height: 0
+      } );
+     
+      // Reset the game
+      correctCards = 0;
+      //$('#cardPile').html( '' );
+      $('#cardSlots').html( '' );
+     
+      // Create the pile of shuffled cards
+      var numbers = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
+      numbers.sort( function() { return Math.random() - .5 } );
+     
+      for ( var i=0; i<#{@cards.size}; i++ ) {
+        $("#card"+i).click(function(event) {
+          if($(this).hasClass("selected")) {
+            playCard(event);
+          }
+          $(this).addClass("selected");
+          $(this).siblings().removeClass("selected");
+          $(this).css({"background":"blue"});
+          $(this).siblings().css({"background":"white"});
+        });
+        var currentCanvas = document.getElementById("canv"+i);
+        draw_card(currentCanvas.dataset.suit, currentCanvas.dataset.value, "canv"+i);
+      }
+    
+      $('#bottom').droppable( {
+        accept: '#cardPile div',
+        hoverClass: 'hovered',
+        drop: testDrop
+      } );
+    
+     
+      // Create the card slots
+      var words = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
+      for ( var i=1; i<=10; i++ ) {
+        $('<div>' + words[i-1] + '</div>').data( 'number', i ).appendTo( '#cardSlots' ).droppable( {
+          accept: '#cardPile div',
+          hoverClass: 'hovered',
+          drop: handleCardDrop
+        } );
+      }
+     
+    }
+    
+    function playCard(event) {
+        // only accept playable cards
+        var cardIsPlayable = event.target.getAttribute('data-playable');
+        if(!(/true/i).test(cardIsPlayable)) {
+          alert("You can't play this card right now!");
+          return;
+        }
+    
+        var cardSuit = event.target.getAttribute('data-suit');
+        var cardValue = event.target.getAttribute('data-actualvalue');
+        $.ajax({url: "#{games_player_action_path}", type: "POST", data: {id: #{params[:id]}, suit: cardSuit, value: cardValue}});
+    }
+    
+    function testDrop(event, ui) {
+        // only accept playable cards
+        var cardIsPlayable = ui.draggable.context.children[0].dataset.playable;
+        if(!(/true/i).test(cardIsPlayable)) {
+          alert("You can't play this card right now!");
+          return;
+        }
+    
+        ui.draggable.addClass( 'correct' );
+        ui.draggable.draggable( 'disable' );
+        $(this).droppable( 'disable' );
+        ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
+        ui.draggable.draggable( 'option', 'revert', false );
+        var cardSuit = ui.draggable.context.children[0].dataset.suit;
+        var cardValue = ui.draggable.context.children[0].dataset.actualvalue;
+        $.ajax({url: "#{games_player_action_path}", type: "POST", data: {id: #{params[:id]}, suit: cardSuit, value: cardValue}});
+    }
+    
+    function handleCardDrop( event, ui ) {
+      var slotNumber = $(this).data( 'number' );
+      var cardNumber = ui.draggable.data( 'number' );
+     
+      // If the card was dropped to the correct slot,
+      // change the card colour, position it directly
+      // on top of the slot, and prevent it being dragged
+      // again
+     
+      if ( slotNumber == cardNumber ) {
+        ui.draggable.addClass( 'correct' );
+        ui.draggable.draggable( 'disable' );
+        $(this).droppable( 'disable' );
+        ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
+        ui.draggable.draggable( 'option', 'revert', false );
+        correctCards++;
+      } 
+       
+      // If all the cards have been placed correctly then display a message
+      // and reset the cards for another go
+     
+      if ( correctCards == 10 ) {
+        $('#successMessage').show();
+        $('#successMessage').animate( {
+          left: '380px',
+          top: '200px',
+          width: '400px',
+          height: '100px',
+          opacity: 1
+        } );
+      }
+     
+    }
+%body
+  #game_path{"data-url" => "#{game_path(@game)}"}
+  /
+    <strong>State:</strong>
+    <haml_loud> @game.state </haml_loud>
+  / <haml_loud> link_to &#39;Edit&#39;, edit_game_path(@game) </haml_loud> |
+  / <haml_loud> link_to &#39;Back&#39;, games_path </haml_loud>
+  %p#notice{style: "text-align:center;"}= notice
+  #board-wrapper{style: "text-align:center;"}
+    .row
+      #game-stat.col-md-2{style: "padding-top:110px;"}
+        = render "game_status"
+      %br/
+      #board-info.col-md-8
+        = render "board_info"
+      %br/
+      #buttons.col-md-2{style: "padding-top:110px; text-align:left;"}
+        = render "controls"
+      %br/
+    %div{style: "text-align:center;"}
+      Your Cards
+      #cardPile
+        = render "card_pile"
+    / <div id="cardSlots"> </div>
+  #content
+    #successMessage
+      %h2 You did it!
+      %button{onclick: "init()"} Play Again
+  :javascript
+    function draw_card(suit, value, canvas){
+        console.log(canvas);
+        var canvas = document.getElementById(canvas);
+        var context = canvas.getContext("2d");
+     
+        var suit_width = canvas.width * 0.285;
+        var suit_height = canvas.height * 0.257;
+    
+    
+        context.font = "20pt c";
+        context.fillText(value, canvas.width/2-8, canvas.height/2+5);
+    
+        if((/spade/i).test(suit)){
+          drawSpade(context, (suit_width/2+5), 0, suit_width, suit_height);
+          drawSpade(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+        }
+        if((/diamond/i).test(suit)){
+          drawDiamond(context, (suit_width/2+5), 0, suit_width, suit_height);
+          drawDiamond(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+        }
+        if((/club/i).test(suit)){
+          drawClub(context, (suit_width/2+5), 0, suit_width, suit_height);
+          drawClub(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+        }
+        if((/heart/i).test(suit)){
+          drawHeart(context, (suit_width/2+5), 0, suit_width, suit_height);
+          drawHeart(context, canvas.width-((suit_width/2+5)), canvas.height-suit_height, suit_width, suit_height);
+        }
+    }
+    
+    window.onload = function(){
+        draw_card("#{@trump.suit}", "#{@trump.abbreviated_name}", "trump");
+    <haml_silent>     if @played_cards and not @played_cards[0].nil? 
+    </haml_silent><haml_block>    draw_card("#{@played_cards[0].suit}", "#{@played_cards[0].abbreviated_name}", "bottom");
+    </haml_block><haml_silent>     if @played_cards and not @played_cards[1].nil? 
+    </haml_silent><haml_block>    draw_card("#{@played_cards[1].suit}", "#{@played_cards[1].abbreviated_name}", "left");
+    </haml_block><haml_silent>     if @played_cards and not @played_cards[2].nil? 
+    </haml_silent><haml_block>    draw_card("#{@played_cards[2].suit}", "#{@played_cards[2].abbreviated_name}", "top");
+    </haml_block><haml_silent>     if @played_cards and not @played_cards[3].nil? 
+    </haml_silent><haml_block>    draw_card("#{@played_cards[3].suit}", "#{@played_cards[3].abbreviated_name}", "right");
+    </haml_block>}
+  = javascript_include_tag "cards.js"
