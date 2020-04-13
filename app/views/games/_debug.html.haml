@@ -1,9 +1,10 @@
 - if params[:debug]
   %hr
   .row
-    .col-xs-6.text-right
-      = link_to "Poll (TODO)", "#", class: "btn btn-lg btn-success"
-    .col-xs-6.text-left
+    .col-xs-12
+      = link_to "Poll/Refresh", "#", class: "btn btn-lg btn-success"
+  .row{style: "padding-top: 20px;"}
+    .col-xs-12
       .morph_form
         - morph = []
         - @game.config[:names].each_with_index {|n, i| morph << [n, i]}
