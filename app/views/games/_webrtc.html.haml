@@ -26,7 +26,7 @@
             %video.remote{playsinline: true, autoplay: true, id: "video-#{seat}"}
   = javascript_include_tag "https://webrtc.github.io/adapter/adapter-latest.js", async: false
 
-- if @is_playing && !show_video
+- if @is_playing && !show_video && false # TODO: for now
   = link_to game_path(webrtc: true), class: "btn btn-lg video_toggle" do
     %i.fa.fa-video
     Vidchat
