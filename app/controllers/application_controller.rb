@@ -3,9 +3,9 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
 
+=begin
   # run these methods on page load
   before_filter :current_user
-
   def require_ssl!
     update_protocol = request.protocol != "https://"
     return unless update_protocol
@@ -13,6 +13,7 @@ class ApplicationController < ActionController::Base
     puts "REDIRECT TO SSL: #{to_path}".red
     redirect_to to_path, status: 301
   end
+=end
 
   private
  

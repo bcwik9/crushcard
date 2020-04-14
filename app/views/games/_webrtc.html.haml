@@ -3,29 +3,30 @@
   / Examples: https://webrtc.github.io/samples/
   / Guide: http://www.html5rocks.com/en/tutorials/webrtc/basics/
   %h4{style: "margin-bottom: 20px;"} Videochat
-  /%i 
-  /  Requires HTTPS
-  /  %i.fa.fa-lock
-  /%br
-  = link_to "Call", "#", id: "callButton", class: "btn btn-lg"
-  %br
-  = link_to "Hang Up", "#", id: "hangupButton", class: "btn btn-lg"
-  %br
-  - opts = [["Default", ""], ["Unified Plan", "unified-plan"], ["Plan B", "plan-b"]]
-  = select_tag "sdpSemantics", options_for_select(opts, selected: "")
+  - if request.protocol != "https"
+    %i 
+      Requires HTTPS
+      %i.fa.fa-lock
+  - else
+    = link_to "Call", "#", id: "callButton", class: "btn btn-lg"
+    %br
+    = link_to "Hang Up", "#", id: "hangupButton", class: "btn btn-lg"
+    %br
+    - opts = [["Default", ""], ["Unified Plan", "unified-plan"], ["Plan B", "plan-b"]]
+    = select_tag "sdpSemantics", options_for_select(opts, selected: "")
+  
+    %table
+      - views = (0..4) # default
+      - views = (0..@game.config[:players].size - 1) if @game_started
+      - views.each do |seat|
+        %tr
+          %td
+            - if seat == 0 # YOU
+              %video{playsinline: true, autoplay: true, muted: true, id: "video-#{seat}"} 
+            - else
+              %video.remote{playsinline: true, autoplay: true, id: "video-#{seat}"}
+    = javascript_include_tag "https://webrtc.github.io/adapter/adapter-latest.js", async: false
 
-  %table
-    - views = (0..4) # default
-    - views = (0..@game.config[:players].size - 1) if @game_started
-    - views.each do |seat|
-      %tr
-        %td
-          - if seat == 0 # YOU
-            %video{playsinline: true, autoplay: true, muted: true, id: "video-#{seat}"} 
-          - else
-            %video.remote{playsinline: true, autoplay: true, id: "video-#{seat}"}
-
-  = javascript_include_tag "https://webrtc.github.io/adapter/adapter-latest.js", async: false
 - if @is_playing && !show_video
   = link_to game_path(webrtc: true), class: "btn btn-lg video_toggle" do
     %i.fa.fa-video
