@@ -4,6 +4,12 @@ class GamesController < ApplicationController
   include ActionView::Helpers::DateHelper
 
   before_action :set_game, except: [:index, :new, :create]
+  #around_action :silence_log
+  #def silence_log 
+  #  Rails.logger.silence do
+  #    yield
+  #  end
+  #end
 
   def game_redirect(notice)
     redirect_to game_url(id: @game.id), notice: notice
@@ -14,6 +20,7 @@ class GamesController < ApplicationController
     raise "Invalid Type: #{params[:type]}" unless params[:type].present?
     # TODO: validate types
 
+
     @game.config[:video_channels] ||= []
     player_index = @game.player_index(@_current_user)
     if params[:type] == "start_call" # RESET QUEUE
@@ -21,8 +28,16 @@ class GamesController < ApplicationController
     else
       @game.config[:video_channels][player_index] ||= [{ type: :ignore, message: nil }]
     end
-    @game.config[:video_channels][player_index] << { type: params[:type], message: params[:message] }
-    @game.save_state
+    # duplicate message check
+    last = @game.config[:video_channels][player_index].last
+    duplicate = last[:type] == params[:type] || last[:message] == params[:message]
+    ignore_start = player_index == 0 && params[:type] == "start_call"
+    #if duplicate
+    if !ignore_start
+      @game.config[:video_channels][player_index] << { type: params[:type], message: params[:message] }
+      @game.save_state
+    end
+    #end
     render json: { success: true }
   end
 
@@ -322,7 +337,6 @@ class GamesController < ApplicationController
                     # Technically - do not need to send the 0-seat, the 'local/current user'
                     vids << @game.config[:video_channels][profile_i]
                   end
-                  puts @game.config[:video_channels].to_yaml
                   d.merge!(video: vids) # Note this returns ALL messages from the user
                 end
 

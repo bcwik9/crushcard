@@ -1,10 +1,16 @@
 Vidchat = function(){
   var started = false;// this local host
+  var ice = null, offer = null, answer = null;
   var enabled = []; // other players
 
   var startButton = document.getElementById('callButton');
   var hangupButton = document.getElementById('hangupButton');
   hangupButton.disabled = true;
+
+  var current_player = $(".webrtc").data("index"); // Profile, not seat number (aka seat number always 0)
+  // TODO: make current_player comparisons
+  // between any 2 players - the 'lower index' is the offer index
+  // aka: compare current_player vs other_user
 
   hangupButton.addEventListener('click', function(){ alert("HANGUP TODO"); });
 
@@ -13,15 +19,16 @@ Vidchat = function(){
       {
         urls: [
           "stun:stun.stunprotocol.org",
-        ],
-      },
-    ],
+        ]
+      }
+    ]
   });
 
   $(startButton).on("click", function(){
     navigator
       .mediaDevices
-      .getUserMedia({ video: true })
+      //.getUserMedia({ video: true }) 
+      .getUserMedia({ video: true, audio: true})
       .then((localStream) => {
         // display our local video in the respective tag
         const localVideo = document.getElementById("video-0");
@@ -57,29 +64,42 @@ Vidchat = function(){
     // TODO: check who sent it - player index
     // TODO: check index of new message received?
     // TODO: dont re-process things from users
+    // TODO: offer, answer, ice should be arrays, with 'other_user'
+
     if(message.type === "start_call"){
+      if(current_player !== 0){ return }
       console.log("Remote party started call");
-      var offer = await webrtc.createOffer();
-      await webrtc.setLocalDescription(offer);
-      offer = JSON.parse(JSON.stringify(offer))
-      send_message('webrtc_offer', offer);
+      //if(!offer){
+        offer = await webrtc.createOffer();
+        await webrtc.setLocalDescription(offer);
+      //}
+      offer_s = JSON.parse(JSON.stringify(offer))
+      send_message('webrtc_offer', offer_s);
     } else if(message.type ===  'webrtc_offer'){
+      if(current_player === 0){ return }
+      // TODO: only non-0
       console.log("Remote party sent offer");
-      await webrtc.setRemoteDescription(data);
-      var answer = await webrtc.createAnswer();
-      await webrtc.setLocalDescription(answer);
-      answer = JSON.parse(JSON.stringify(answer))
-      send_message("webrtc_answer", answer)
+      //if(!answer){
+        await webrtc.setRemoteDescription(data);
+        answer = await webrtc.createAnswer();
+        await webrtc.setLocalDescription(answer);
+      //}
+      answer_s = JSON.parse(JSON.stringify(answer))
+      send_message("webrtc_answer", answer_s)
     } else if(message.type === 'webrtc_answer'){
+      if(current_player !== 0){ return }
+      // TODO: only host 0
       console.log("Remote party sent answer");
-      await webrtc.setRemoteDescription(data);
-      enabled[other_user] = true;
+      //if(!enabled[other_user]){
+        await webrtc.setRemoteDescription(data);
+        enabled[other_user] = true;
+      //}
     } else if(message.type === "webrtc_ice_candidate"){
       console.log("Remote party sent ice candidate:", data.candidate);
-      //var init = new RTCIceCandidateInit(data)
-      //var candidate = new RTCIceCandidate(data)
-      await webrtc.addIceCandidate(data); 
-      //await webrtc.addIceCandidate(data.candidate);
+      //if(!ice){
+        ice = data
+        await webrtc.addIceCandidate(data); 
+      //}
     } else {
       console.log("UNKNOWN MESSGAGE =====");
       console.log(message)

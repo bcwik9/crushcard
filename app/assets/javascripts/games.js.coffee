@@ -44,7 +44,8 @@ class Games
 
     game.find(".morph").on('click', @morph_clicked)
 
-    $(document).on("poll_for_update", @get_updated_board)
+    if !config.poll 
+      $(document).on("poll_for_update", @get_updated_board)
 
     if game.data("chime")
       @chime()
@@ -128,7 +129,7 @@ class Games
 
   wait_and_poll: =>
     # TODO: poll should hard-refresh after 15 seconds/tries
-    setTimeout @get_updated_board, 2000
+    setTimeout @get_updated_board, 3000
 
   success: (data)=>
     if data && data['html']
