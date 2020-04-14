@@ -129,7 +129,7 @@ class Games
 
   wait_and_poll: =>
     # TODO: poll should hard-refresh after 15 seconds/tries
-    setTimeout @get_updated_board, 3000
+    setTimeout @get_updated_board, 2000
 
   success: (data)=>
     if data && data['html']

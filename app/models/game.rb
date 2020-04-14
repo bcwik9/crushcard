@@ -256,8 +256,6 @@ class Game < ActiveRecord::Base
     return false unless player_up?(user_id)
     current_player_index = player_index(user_id)
 
-    # determine who won the trick
-    # TODO: test if this index value is correct 
     winner_index = config[:winner_index]
     config[:tricks_taken][winner_index] ||= []
     config[:tricks_taken][winner_index].push config[:cards_in_play]
@@ -463,7 +461,7 @@ class Card
 
   # creates a standard deck of 52 cards, Ace high
   # the '0' represents 2, and '12' is Ace
-  def self.get_deck
+  def self.get_shuffled_deck
     cards = []
     SUITS.each do |suit|
       1..13.times do |i|
