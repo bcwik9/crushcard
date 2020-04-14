@@ -5,12 +5,33 @@ class GamesController < ApplicationController
 
   before_action :set_game, except: [:index, :new, :create]
 
+  def game_redirect(notice)
+    redirect_to game_url(id: @game.id), notice: notice
+  end
+
+  def webrtc
+    raise "Must sign into game first" unless is_playing?
+    raise "Invalid Type: #{params[:type]}" unless params[:type].present?
+    # TODO: validate types
+
+    @game.config[:video_channels] ||= []
+    player_index = @game.player_index(@_current_user)
+    if params[:type] == "start_call" # RESET QUEUE
+      @game.config[:video_channels][player_index] = [{ type: :ignore, message: nil }]
+    else
+      @game.config[:video_channels][player_index] ||= [{ type: :ignore, message: nil }]
+    end
+    @game.config[:video_channels][player_index] << { type: params[:type], message: params[:message] }
+    @game.save_state
+    render json: { success: true }
+  end
+
   def default_url_options(options = {})
     if params[:debug]
       { debug: true } 
     else
       {}
-    end
+    end.merge(protocol: :https)
   end
 
   def morph
@@ -38,7 +59,7 @@ class GamesController < ApplicationController
 
   def already_started?
     if @game.config[:cards_in_play]
-      redirect_to @game, notice: "Can't join once the game has already started"
+      game_redirect "Can't join once the game has already started"
       true
     else
       false
@@ -47,7 +68,7 @@ class GamesController < ApplicationController
 
   def too_many_players?
     if @game.config[:players].size >= Game::MAX_PLAYERS
-      redirect_to @game, notice: 'There are too many players in the game already'
+      game_redirect 'There are too many players in the game already'
       true
     else
       false
@@ -68,16 +89,16 @@ class GamesController < ApplicationController
     @game.config[:names].push name
 
     if @game.save_state
-      redirect_to @game, notice: 'Joined the game!'
+      game_redirect 'Joined the game!'
     else
-      redirect_to @game, notice: 'Failed to join the game'
+      game_redirect 'Failed to join the game'
     end
   end
 
   def add_player
 
     if @_current_user.nil?
-      redirect_to @game, notice: 'Unable to determine current user'
+      game_redirect 'Unable to determine current user'
       return
     end
 
@@ -85,7 +106,7 @@ class GamesController < ApplicationController
     return if too_many_players?
 
     if @game.config[:players].include?(@_current_user)
-      redirect_to @game, notice: "You're already in the game"
+      game_redirect "You're already in the game"
       return
     end
 
@@ -210,7 +231,7 @@ class GamesController < ApplicationController
       @can_start_game = (!@game_started) && @game.config[:players].first == @_current_user && @enough_players # can deal
   
       @winners = @game.config[:winners].map{|player| @game.config[:names][@game.config[:players].index(player)] } rescue nil
-      player_index = @game.config[:players].index(@_current_user) || 0
+      player_index = @game.player_index(@_current_user) || 0
   
       # round number
       @round = @game.config[:total_rounds] - @game.config[:rounds_played]
@@ -293,7 +314,19 @@ class GamesController < ApplicationController
     end
 
     js_data = if request.xhr? && @board_updated
-                { html: json_board }
+                d = { html: json_board }
+
+                if @game.config[:video_channels].present?
+                  vids = [] 
+                  @indexes.each do |profile_i|
+                    # Technically - do not need to send the 0-seat, the 'local/current user'
+                    vids << @game.config[:video_channels][profile_i]
+                  end
+                  puts @game.config[:video_channels].to_yaml
+                  d.merge!(video: vids) # Note this returns ALL messages from the user
+                end
+
+                d
               else
                 nil
               end
@@ -309,21 +342,6 @@ class GamesController < ApplicationController
     render_to_string(partial: "board_info", formats: ["html"])
   end
 
-  def seat_index_for_player(player_id)
-    return 0 if @game.config[:players].nil? || @game.config[:players].size < 1
-
-    player_index = @game.config[:players].index(@_current_user) || 0 
-
-    seat_index = 0
-    @game.iterate_through_list_with_start_index(player_index, @game.config[:players]) do |player,i|
-      if player == player_id
-        seat_index = i 
-        break
-      end
-    end
-    seat_index
-  end
-
   # GET /games/new
   def new
     @game = Game.new
@@ -334,7 +352,7 @@ class GamesController < ApplicationController
     @game.set_up(game_options)
 
     if @game.save
-      redirect_to game_path(@game), notice: 'New game was successfully created. Copy and share this URL with your friends.'
+      game_redirect 'New game was successfully created. Copy and share this URL with your friends.'
     else
       new
     end

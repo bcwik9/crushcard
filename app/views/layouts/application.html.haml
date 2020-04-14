@@ -3,19 +3,18 @@
   %head
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %title Crush - The Card Game
-    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
-    = javascript_include_tag 'application', 'data-turbolinks-track' => true
     %meta{:charset => "utf-8"}/
     %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}
     %meta{content: "width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1", name: :viewport}
     %meta{:content => "Crush, the card game", :name => "description"}
     %meta{:content => "Ben Cwik and Friends", :name => "author"}
 
+    = stylesheet_link_tag    'application', media: 'all'
     = render 'application/favicon'
 
     / Custom Fonts
-    %link{:href => "http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic", :rel => "stylesheet", :type => "text/css"}/
-    %link{:href => "http://fonts.googleapis.com/css?family=Montserrat:400,700", :rel => "stylesheet", :type => "text/css"}/
+    %link{href: "https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic", rel: "stylesheet", type: "text/css"}
+    %link{href: "https://fonts.googleapis.com/css?family=Montserrat:400,700", rel: "stylesheet", type: "text/css"}
 
     = csrf_meta_tags
     :javascript
@@ -23,6 +22,7 @@
       analytics.load("EtqkTpuzTRfuQcYuwOxVEHrcgTwG8PLt");
       analytics.page()
       }}();
+
   %body#page-top{"data-spy" => "scroll", "data-target" => ".navbar-fixed-top"}
     %nav.navbar.navbar-custom.navbar-fixed-top{:role => "navigation"}
       .container
@@ -73,4 +73,6 @@
       = yield
     = render 'layouts/footer'
 
-    = stylesheet_link_tag 'bootstrap_and_overrides'
+  / TODO: move to head when webrtc logic wrapped up
+  = stylesheet_link_tag 'bootstrap_and_overrides' # why is this not just part of application.sass
+  = javascript_include_tag 'application' 

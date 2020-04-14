@@ -1,11 +1,13 @@
+= render 'webrtc'
+
 .container{style: "padding-top: 120px;"}
   .row
     .col-xs-12
-      = render 'game_rules'
       = render 'join_game'
       #game-wrapper
         = render "board_info"
 
+= render 'game_rules'
 .youre_up_bell{data: {src: "/hotel-call-bell.mp3"}}
   /License: The sound effect is permitted for non-commercial use under license ìAttribution-NonCommercial 4.0 International (CC BY-NC 4.0)
   /http://www.orangefreesounds.com/

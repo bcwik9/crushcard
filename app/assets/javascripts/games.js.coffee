@@ -4,6 +4,10 @@ window.load_new_board = ()->
   new Games(board)
   $('#game-wrapper').html(board)
 
+  if window.new_board['video'] && window.new_board.video.length > 0
+    $(document).trigger("vidchat_message", { streams: window.new_board.video })
+    
+
 window.show_game_message = (message)->
   msg = $('#game-wrapper #message')
   msg.find(".text").html(message)
@@ -40,6 +44,8 @@ class Games
 
     game.find(".morph").on('click', @morph_clicked)
 
+    $(document).on("poll_for_update", @get_updated_board)
+
     if game.data("chime")
       @chime()
 
@@ -52,7 +58,6 @@ class Games
 
   morph_clicked: (e) =>
     e.preventDefault();
-    return
     index = $(document).find(".morph_form #index").val();
     $.ajax(
       $(e.target).data('url'),
@@ -114,7 +119,6 @@ class Games
       window.show_game_message("Must set a name for yourself") 
 
   get_updated_board: =>
-    # TODO: pass in last_updated_at, only get response if new state
     $.ajax({
       url: config.url + "&updated=" + config.updated, 
       method: "GET", 
@@ -143,6 +147,7 @@ jQuery ->
   game = $("#game")
   if game.length > 0
     new Games($("#game"))
+    new Vidchat()
 
   $('#game_list').DataTable({
     "order": [[0, "desc"]],
