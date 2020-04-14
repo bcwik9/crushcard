@@ -3,7 +3,7 @@ Vidchat = function(){
   var ice = null, offer = null, answer = null;
   var enabled = []; // other players
 
-  var startButton = document.getElementById('callButton');
+  var startButton = $(document).find('#callButton');
   var hangupButton = document.getElementById('hangupButton');
   hangupButton.disabled = true;
 
@@ -24,7 +24,7 @@ Vidchat = function(){
     ]
   });
 
-  $(startButton).on("click", function(){
+  startButton.on("click", function(){
     navigator
       .mediaDevices
       //.getUserMedia({ video: true }) 
@@ -44,22 +44,26 @@ Vidchat = function(){
         send_message("start_call", null);
         started = true;
         $(document).trigger("poll_for_update"); // override polling process
+        startButton.addClass("hidden");
       });
+   
   })
 
   async function send_message(type, message){
+    console.log("Send Message: " + type);
     path = location.pathname + "/webrtc"
     $.ajax({
       url: path,
       data: { type: type, message: message },
       method: "POST",
-      success: function(){ console.log("Submitted message") },
+      success: function(){ /*console.log("Submitted message")*/ },
       error: function(){ console.log("Failed to submit") }
     })
   }
 
   async function handle_message(message, other_user) {
     var data = message.message;
+    console.log("Handle Message: Remote #" + other_user + ": " + message.type);
 
     // TODO: check who sent it - player index
     // TODO: check index of new message received?
@@ -68,7 +72,6 @@ Vidchat = function(){
 
     if(message.type === "start_call"){
       if(current_player !== 0){ return }
-      console.log("Remote party started call");
       //if(!offer){
         offer = await webrtc.createOffer();
         await webrtc.setLocalDescription(offer);
@@ -78,7 +81,6 @@ Vidchat = function(){
     } else if(message.type ===  'webrtc_offer'){
       if(current_player === 0){ return }
       // TODO: only non-0
-      console.log("Remote party sent offer");
       //if(!answer){
         await webrtc.setRemoteDescription(data);
         answer = await webrtc.createAnswer();
@@ -89,19 +91,16 @@ Vidchat = function(){
     } else if(message.type === 'webrtc_answer'){
       if(current_player !== 0){ return }
       // TODO: only host 0
-      console.log("Remote party sent answer");
       //if(!enabled[other_user]){
         await webrtc.setRemoteDescription(data);
         enabled[other_user] = true;
       //}
     } else if(message.type === "webrtc_ice_candidate"){
-      console.log("Remote party sent ice candidate:", data.candidate);
       //if(!ice){
         ice = data
         await webrtc.addIceCandidate(data); 
       //}
     } else {
-      console.log("UNKNOWN MESSGAGE =====");
       console.log(message)
       alert("Unknown message");
     }
@@ -120,13 +119,11 @@ Vidchat = function(){
     var other_user = 1
     if(enabled[other_user] === true){return} // stop processing
 
-    //var other_user = 0 // self chat - DOES NOT WORK - rtc config issue
+    // TODO: do we need to process multiple messages?
     var other_user_queue = data.streams[other_user];
-    console.log("Message Queue", other_user_queue)
     if(!other_user_queue){ return }
     if(other_user_queue.length === 0){ return }
     var message = other_user_queue[other_user_queue.length - 1]
-    console.log("Handle message: " + message.type, message.message)
     handle_message(message, other_user)
   });
 

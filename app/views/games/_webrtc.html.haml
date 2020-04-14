@@ -27,6 +27,6 @@
 
   = javascript_include_tag "https://webrtc.github.io/adapter/adapter-latest.js", async: false
 - if @is_playing && !show_video
-  = link_to game_path(webrtc: true), class: "btn btn-lg btn-success video_toggle" do
+  = link_to game_path(webrtc: true), class: "btn btn-lg video_toggle" do
     %i.fa.fa-video
     Vidchat
