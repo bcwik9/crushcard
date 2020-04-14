@@ -101,10 +101,8 @@ class Game < ActiveRecord::Base
     
     # deal cards first to player on 'right' of dealer (TODO)
     config[:player_hands] = [] # reset
-    puts "Deck size: #{config[:deck].size} / Hand Size: #{num_cards_per_player}".red
     config[:players].each_with_index do |p, i|
       config[:player_hands][i] = config[:deck].slice!(0..(num_cards_per_player-1))
-      puts "- Hand #{i} size: #{config[:player_hands][i].size} (deck: #{config[:deck].size})".red
     end
     
     # the next card in the deck is trump
