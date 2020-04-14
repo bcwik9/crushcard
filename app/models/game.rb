@@ -13,7 +13,7 @@ class Game < ActiveRecord::Base
     rounds_direction: { 
       label: "Rounds Direction",
       default: 'up',
-      select: [["From 1 to 10", 'up'], ["From 10 to 1", 'down'], ["**Up then Down", 'both']] 
+      select: [["From 1 to 10", 'up'], ["From 10 to 1", 'down'], ["Up then Down", 'both']] 
     },
     bids_total: {
       label: "Bids Total",
@@ -88,12 +88,8 @@ class Game < ActiveRecord::Base
   end
   
   def deal_cards
-    player_count = config[:players].size
-    return false unless enough_players?
-
     # shuffle deck
-    config[:deck] = Card.get_deck
-    config[:deck].shuffle!
+    config[:deck] = Card.get_shuffled_deck
 
     # reset bids hash and determine who bids first
     # person to the 'left' of the dealer bids first
@@ -103,11 +99,12 @@ class Game < ActiveRecord::Base
     to_left = (config[:dealer_index] + 1) % config[:players].size
     add_waiting_info(to_left, "Bid")
     
-    # deal out number of cards equal to whatever round we are on to all players
     # deal cards first to player on 'right' of dealer (TODO)
     config[:player_hands] = [] # reset
+    puts "Deck size: #{config[:deck].size} / Hand Size: #{num_cards_per_player}".red
     config[:players].each_with_index do |p, i|
       config[:player_hands][i] = config[:deck].slice!(0..(num_cards_per_player-1))
+      puts "- Hand #{i} size: #{config[:player_hands][i].size} (deck: #{config[:deck].size})".red
     end
     
     # the next card in the deck is trump
@@ -151,7 +148,20 @@ class Game < ActiveRecord::Base
     when 'up'
       1 + config[:rounds_played]
     when 'both'
-      raise "Playing Up & Down Not Implemented Yet"
+      # in this scenario - total rounds == max card round
+      if config[:rounds_played] < config[:total_rounds] # on way up
+        1 + config[:rounds_played] # keep going up
+      else # on way down
+        config[:total_rounds] - (config[:rounds_played] % config[:total_rounds]) - 1
+      end
+    end
+  end
+
+  def game_over?
+    if config[:rounds_direction] == 'both'
+      config[:rounds_played] == (config[:total_rounds] * 2) - 1
+    else
+      config[:rounds_played] == config[:total_rounds]
     end
   end
 
@@ -282,7 +292,7 @@ class Game < ActiveRecord::Base
       end
       
       # check to see if that was the last round (game over)
-      if config[:rounds_played] == config[:total_rounds]
+      if game_over?
         # game is over, determine who won
         # winners list is necessary since there can be ties
         config[:winners] = []
@@ -397,3 +407,70 @@ class Game < ActiveRecord::Base
     return player_size_and_nil_check(config[:cards_in_play])
   end
 end
+
+# Needed here for yaml serialization to work..... why?
+# TODO: make it all json, stringified
+class Card
+  include Comparable
+  
+  SUITS = %w{Spades Hearts Diamonds Clubs}
+  attr_accessor :suit, :value, :playable
+
+  # create a single card
+  def initialize suit, value
+    raise 'Invalid card suit' unless SUITS.include? suit
+    raise 'Invalid card value' unless value.to_i >= 0 && value.to_i < 13
+    @suit = suit
+    @value = value
+  end
+
+=begin
+  def to_json # to_yaml
+    { suit: suit, value: value }
+  end
+=end
+
+  def value_name
+    card_names = %w[Two Three Four Five Six Seven Eight Nine Ten Jack Queen King Ace]
+    return card_names[@value]
+  end
+
+  def abbreviated_name
+    %w[2 3 4 5 6 7 8 9 10 J Q K A][@value]
+  end
+  
+  def <=> other
+    return 1 if other.nil?
+    return 0 if @value.nil? && other.value.nil?
+    return 1 if other.value.nil?
+    return -1 if @value.nil?
+    @value.to_i <=> other.value.to_i
+  end
+
+  def == other
+    return false if other.nil?
+    return false if (@value.nil? || other.value.nil?) && @value != other.value
+    return (@value.to_i == other.value.to_i && @suit == other.suit)
+  end
+  
+  def suit_order other
+    if @suit != other.suit
+      SUITS.index( @suit ) <=> SUITS.index( other.suit )
+    else
+      @value <=> other.value
+    end
+  end
+
+  # creates a standard deck of 52 cards, Ace high
+  # the '0' represents 2, and '12' is Ace
+  def self.get_deck
+    cards = []
+    SUITS.each do |suit|
+      1..13.times do |i|
+        cards.push Card.new(suit, i)
+      end
+    end
+    cards.shuffle
+  end
+end
+

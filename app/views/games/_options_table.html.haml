@@ -20,4 +20,6 @@
           - else
             %h5{style: "margin-bottom: 15px;"}
               %i
-                = v.is_a?(String) ? v.titleize : v
+                - if c.has_key?(:select)
+                  - v = c[:select].find{|o| o.last == v}.first
+                = v
