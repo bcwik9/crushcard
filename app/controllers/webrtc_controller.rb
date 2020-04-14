@@ -1,0 +1,2 @@
+class WebrtcController < ApplicationController
+end
