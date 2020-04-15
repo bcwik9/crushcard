@@ -9,6 +9,12 @@
     %meta{:content => "#{t(:name)}, the card game", :name => "description"}
     %meta{:content => "Ben, Greg, & Mike", :name => "author"}
 
+    %meta{name: "og:site_name", content: "#{t(:name)}"}
+    %meta{name: "og:title", content: "#{t(:name)}"}
+    %meta{name: "og:url", content: "#{request.domain}"}
+    %meta{name: "og:type", content: "website"}
+    %meta{name: "og:description", content: "#{t(:name)}, the card game"}
+
     = stylesheet_link_tag    'application', media: 'all'
     = render 'application/favicon'
 
