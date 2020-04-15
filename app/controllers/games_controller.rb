@@ -1,15 +1,6 @@
 class GamesController < ApplicationController
-  require 'action_view'
-  require 'action_view/helpers'
-  include ActionView::Helpers::DateHelper
 
   before_action :set_game, except: [:index, :new, :create]
-  #around_action :silence_log
-  #def silence_log 
-  #  Rails.logger.silence do
-  #    yield
-  #  end
-  #end
 
   def game_redirect(notice)
     redirect_to game_url(id: @game.id), notice: notice
