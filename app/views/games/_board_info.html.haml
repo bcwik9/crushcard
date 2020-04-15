@@ -1,5 +1,6 @@
 - poll = params[:debug] ? false : @poll
-- extra_class = @game.config[:trump_hint] == 'yes' && !@game.ignore_trump? ? 'trump_flag' : nil
+- extra_class = @game.show_hints? && !@game.ignore_trump? ? 'trump_flag' : nil
+
 #game{class: extra_class, data: {url: game_path(id: @game), player_path: player_action_game_path, poll: poll.to_s, updated: @game.updated_at, chime: @chime.to_s } }
   - if @winners.present?
     %h2{style: "margin-bottom: 10px;"}
