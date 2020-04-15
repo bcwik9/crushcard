@@ -442,7 +442,8 @@ class Card
         cards.push Card.new(suit, i)
       end
     end
-    cards.shuffle
+    # Note: Babs said the shuffle algorithm sucked
+    # so added more shuffle ups
+    cards.shuffle.shuffle.reverse.shuffle.shuffle.reverse
   end
 end
-

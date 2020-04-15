@@ -11,7 +11,7 @@
     - if show
       = "\"#{@names[index]}\""
       - if @indexes[index] == @game.config[:dealer_index]
-        = "*"
+        = image_tag 'cards-favicon.png', size: "25x25", style: "border: 1px white solid; background-color: white;"
     - else
       Player not present
 
