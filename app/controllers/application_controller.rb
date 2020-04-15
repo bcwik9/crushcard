@@ -29,8 +29,12 @@ class ApplicationController < ActionController::Base
   end
 
   def set_locale
-    domain_locale = request.domain.include?('tishnow') ? :en_tish : :en
-    I18n.with_locale(domain_locale) do
+    locale = if lp = params[:locale]
+               lp.include?('crush') ? :en : :en_tish
+             else
+               request.domain.include?('tishnow') ? :en_tish : :en
+             end
+    I18n.with_locale(locale) do
       yield
     end
   end

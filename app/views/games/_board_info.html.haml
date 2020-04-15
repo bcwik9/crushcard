@@ -41,23 +41,22 @@
                 - else
                   Trump Suit
               = render 'playing_card', id: :trump, card: @game.config[:trump_card]
-          - else
+          - elsif !@game_started
             %h4{style: "border: 1px solid white; border-radius: 5px; padding: 15px;"} 
               Waiting For: 
               %br
               #{@game.config[:waiting_on_reason]}.
-              - if @is_playing 
-                %br
-                - if @enough_players
-                  - if @can_start_game
-                    You
-                  - else
-                    Dealer
-                  can Deal/Start.
+              %br
+              - if @enough_players
+                - if @can_start_game
+                  You
                 - else
-                  Need more players 
-                  %br
-                  (up to 5)
+                  Dealer
+                can Deal/Start.
+              - else
+                Need more players 
+                %br
+                (up to 5)
       .row
         .col-xs-12
           Your Hand 
