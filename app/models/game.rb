@@ -157,6 +157,22 @@ class Game < ActiveRecord::Base
     all_add_up
   end
 
+  def set_first_to_play_hand
+    left_of_dealer = (config[:dealer_index] + 1) % config[:players].size
+    if false # rule toggle: 'first_to_play' #TODO
+      # highest bid (first if tie)
+      max_bid = config[:bids].max
+      iterate_through_list_with_start_index(config[:dealer_index] + 1, config[:bids]) do |bid,i|
+        # i is relative 'seat' index, we're looking for absolute profile index
+        if max_bid == bid
+          left_of_dealer = @player_index # TODO: @player_index is wrong. :-(...
+          break
+        end
+      end
+    end
+    add_waiting_info(left_of_dealer, "Play")
+  end
+
   # player either bids or plays a card if it's their turn
   def player_action user_id, user_input=nil
     return false unless player_up?(user_id)
@@ -173,16 +189,9 @@ class Game < ActiveRecord::Base
       
       # record the bid
       config[:bids][current_player_index] = bid
-      if config[:dealer] == user_id
-        # dealer is last to bid, bidding is done
-        # determine who bid highest (first if tie), they are first to play a card
-        max_bid = config[:bids].max
-        iterate_through_list_with_start_index(current_player_index+1, config[:bids]) do |bid,i|
-          if max_bid == bid
-            add_waiting_info(@player_index, "Play")
-            break
-          end
-        end
+
+      if config[:dealer_index] == current_player_index # dealer is last to bid, bidding is done
+        set_first_to_play_hand
       else
         to_left = next_player_index config[:waiting_on_index]
         add_waiting_info(to_left, "Bid")
@@ -345,7 +354,7 @@ class Game < ActiveRecord::Base
     # start_index is relative to player seat - different for each user
     list.size.times do |offset|
       index = (start_index + offset) % list.size
-      @player_index = offset
+      @player_index = offset # TODO: is this correct?
       yield list[index], index
     end
   end
