@@ -1,0 +1,13 @@
+en_tish:
+  name: "Tish"
+  options:
+    rounds_direction: 
+      default: 'up'
+    bids_total: 
+      default: 'win'
+    underbid: 
+      default: 'none'
+    ace_of_trump: 
+      default: 'trump'
+    trump_hint: 
+      default: 'yes'

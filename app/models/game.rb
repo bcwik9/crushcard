@@ -3,39 +3,15 @@ class Game < ActiveRecord::Base
   MIN_PLAYERS=2 # should be 3
   MAX_PLAYERS=5 # crank up to 10 with rule tweaks
 
-  # TODO: add options here and allowed values
-  # for select boxes anyways
-  OPTIONS = {
-    total_rounds: {
-      label: "Total Rounds",
-      default: 10
-    },
-    rounds_direction: { 
-      label: "Rounds Direction",
-      default: 'up',
-      select: [["From 1 to 10", 'up'], ["From 10 to 1", 'down'], ["Up then Down", 'both']] 
-    },
-    bids_total: {
-      label: "Bids Total",
-      default: 'loose',
-      select: [["Someone must loose", 'loose'], ["Everyone can win", 'win']]
-    },
-    underbid: {
-      label: "Under Bid",
-      default: 'loose',
-      select: [["Loose points", 'loose'], ["No points", 'none']]
-    },
-    ace_of_trump: { 
-      label: "Ace of Trump",
-      default: 'no_trump',
-      select: [["No Trump Round", 'no_trump'], ["Still Trump", 'trump']]
-    },
-    trump_hint: { 
-      label: "Trump Hint",
-      default: 'yes',
-      select: [["Not shown", 'no'], ["Shown on cards", 'yes']]
-    }
-  }
+  # consolidate with en.options
+  OPTIONS = [
+    :total_rounds,
+    :rounds_direction,
+    :bids_total,
+    :underbid,
+    :ace_of_trump,
+    :trump_hint
+  ]
 
   def set_up(options)
     # TODO: validate options?  ehhh, later

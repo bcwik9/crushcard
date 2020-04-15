@@ -3,7 +3,7 @@
     .container
       .row
         .col-md-8.col-md-offset-2
-          %h1.brand-heading Crush
+          %h1.brand-heading= t(:name)
           %p.intro-text 
             %b
               A card game.
@@ -53,7 +53,7 @@
     .col-lg-8.col-lg-offset-2
       %h1 History
       %p
-        Crush is the oldest game played from around the world since ancient times. 
+        #{t(:name)} is the oldest game played from around the world since ancient times. 
         Deriving from the latin word "cruschen", the name comes from the Renaissance, when great leaders and thinkers were known to have been fond players. 
         They say the great Leonardo Da Vinci earned his first apprenticeship after defeating his master in just this game.
       %p

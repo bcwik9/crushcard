@@ -6,20 +6,20 @@
       %th{style: "padding-left: 20px;"}
         %h4{style: 'margin-bottom: 15px;'} Selected
   %tbody
-    - Game::OPTIONS.each do |k, c|
+    - Game::OPTIONS.each do |k|
       %tr
         %td{style: "padding-right: 20px;"}
-          %h5{style: "margin-bottom: 15px;"}= c[:label]
+          %h5{style: "margin-bottom: 15px;"}= t("options.#{k}.label")
         %td{style: "padding-left: 20px;"}
-          - v = @game.persisted? ? @game.config[k] : c[:default]
+          - v = @game.persisted? ? @game.config[k] : t("options.#{k}.default") 
+          - opts = t("options.#{k}.select")
           - if form
-            - if c.has_key?(:select)
-              = select_tag k, options_for_select(c[:select], selected: v)
+            - if k != :total_rounds
+              = select_tag k, options_for_select(opts, selected: v)
             - else # just total_rounds
               = number_field_tag k, v, style: "width: 50px;" 
           - else
             %h5{style: "margin-bottom: 15px;"}
               %i
-                - if c.has_key?(:select)
-                  - v = c[:select].find{|o| o.last == v}.first
+                - v = opts.find{|o| o.last == v}.first if k != :total_rounds
                 = v

@@ -384,6 +384,6 @@ class GamesController < ApplicationController
     end
 
     def game_options
-      params.permit(*Game::OPTIONS.keys).to_h
+      params.permit(*Game::OPTIONS).to_h
     end
 end

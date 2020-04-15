@@ -2,12 +2,12 @@
 %html
   %head
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
-    %title Crush - The Card Game
+    %title #{t(:name)} - The Card Game
     %meta{:charset => "utf-8"}/
     %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}
     %meta{content: "width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1", name: :viewport}
-    %meta{:content => "Crush, the card game", :name => "description"}
-    %meta{:content => "Ben Cwik and Friends", :name => "author"}
+    %meta{:content => "#{t(:name)}, the card game", :name => "description"}
+    %meta{:content => "Ben, Greg, & Mike", :name => "author"}
 
     = stylesheet_link_tag    'application', media: 'all'
     = render 'application/favicon'
@@ -27,14 +27,10 @@
     %nav.navbar.navbar-custom.navbar-fixed-top{:role => "navigation"}
       .container
         .navbar-header
-          - if false
-            %button.navbar-toggle{"data-target" => ".navbar-main-collapse", "data-toggle" => "collapse", :type => "button"}
-              %i.fa.fa-bars
-
           - target = @game.present? ? root_path : "#page-top"
           %a.navbar-brand.page-scroll{href: target}
             %i.fa.fa-play-circle
-            CRUSH
+            #{t('name').upcase}
             - if @game.present? && @game.name.present?
               = "- \"#{@game.name}\""
               - if @round.present?
@@ -49,28 +45,9 @@
                       %i.fa.fa-book
                       Rules
                 
-        / Collect the nav links, forms, and other content for toggling
-        - if false
-          .collapse.navbar-collapse.navbar-right.navbar-main-collapse
-            %ul.nav.navbar-nav
-              / Hidden li included to remove active class from about link when scrolled up past about section
-              %li.hidden
-                %a{:href => "#page-top"}
-              %li
-                %a.page-scroll{:href => "#games"}
-                  %i.fa.fa-gamepad
-                  Games
-              %li
-                %a.page-scroll{:href => "#about"}
-                  %i.fa.fa-question-circle
-                  How to Play
-              %li
-                %a.page-scroll{:href => "#contact"}
-                  %i.fa.fa-envelope
-                  Contact
-
     .body_content
       = yield
+
     = render 'layouts/footer'
 
   / TODO: move to head when webrtc logic wrapped up
