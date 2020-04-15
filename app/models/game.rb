@@ -10,7 +10,7 @@ class Game < ActiveRecord::Base
     :bids_total,
     :underbid,
     :ace_of_trump,
-    :trump_hint
+    :hints
   ]
 
   def set_up(options)
@@ -258,7 +258,7 @@ class Game < ActiveRecord::Base
       config[:bids].each_with_index do |bid, i|
         tricks = config[:tricks_taken][i] || []
         player_score = if tricks.size < bid
-          if config[:underbid] == 'loose'
+          if config[:underbid] == 'lose'
             tricks.size - bid 
           else
             0
@@ -309,6 +309,10 @@ class Game < ActiveRecord::Base
   def save_state new_state = config
     self.state = new_state.to_yaml
     self.save
+  end
+
+  def show_hints?
+    config[:hints] == 'yes'
   end
 
   def ignore_trump?

@@ -38,18 +38,18 @@ en:
           - 'both'
     bids_total: 
       label: "Bids Total"
-      default: 'loose'
+      default: 'lose'
       select: 
-        - - "Someone must loose"
-          - 'loose'
+        - - "Someone must lose"
+          - 'lose'
         - - "Everyone can win"
           - 'win'
     underbid: 
       label: "Under Bid"
-      default: 'loose'
+      default: 'lose'
       select: 
-        - - "Loose points"
-          - 'loose'
+        - - "Lose points"
+          - 'lose'
         - - "No points"
           - 'none'
     ace_of_trump: 
@@ -60,11 +60,11 @@ en:
           - 'no_trump'
         - - "Still Trump"
           - 'trump'
-    trump_hint: 
-      label: "Trump Hint"
+    hints: 
+      label: "Show Hints"
       default: 'yes'
       select: 
-        - - "Not shown"
+        - - "None shown"
           - 'no'
-        - - "Shown on cards"
+        - - "Shown on board"
           - 'yes'

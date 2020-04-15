@@ -14,15 +14,17 @@
         = image_tag 'cards-favicon.png', size: "25x25", style: "border: 1px white solid; background-color: white;"
     - else
       Player not present
-
-  - if show
+  
+  - if show 
     %h4.score{style: "margin-bottom: 10px;"}
       #{@total_scores[index]} points
       (#{@places[index]}#{ActiveSupport::Inflector.ordinal(@places[index])})
+  
     - bid = @round_scores[index]
-    %h4.bid_info{style: "margin-bottom: 5px; color: #{bid.last}"}
+    - extra_class = @game.show_hints? ? nil : :bid_hint
+    %h4.bid_info{class: extra_class, style: "margin-bottom: 5px; color: #{bid.last}"}
       = bid.first
-
+  
     - if params[:debug]
       %h4{style: "margin-bottom: 5px;"}
         Seat#: #{index}

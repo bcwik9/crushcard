@@ -9,5 +9,5 @@ en_tish:
       default: 'none'
     ace_of_trump: 
       default: 'trump'
-    trump_hint: 
+    hints: 
       default: 'yes'

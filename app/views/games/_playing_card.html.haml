@@ -1,6 +1,6 @@
 - card_data = card.present? ? { actualvalue: card.value, suit: card.suit, value: card.abbreviated_name } : nil
 - extra_class ||= extra_class || ""
-- extra_class << " trump" if card.present? && card.suit == @game.config[:trump_card].try(:suit)
+- extra_class << " trump" if card.present? && card.suit == @game.config[:trump_card].try(:suit) && @game.show_hints?
 - position ||= nil
 - style = position ? "top: #{position['top']}; left: #{position['left']};" : nil
 %canvas.playing_card{id: id, class: extra_class, style: style, data: card_data}

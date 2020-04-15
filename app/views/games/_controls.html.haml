@@ -1,4 +1,4 @@
-- if @waiting_on !~ /game\sto\sstart/i
+- if @waiting_on !~ /game\sto\sstart/i && @game.show_hints?
   .waiting_notice
     %h4{style: "margin-bottom: 10px;"}
       %i
@@ -10,7 +10,6 @@
           = "(profile: #{@waiting_on_index})"
         %br
         to #{@waiting_on}
-
 
 - if @can_start_game && !@dealt
   = link_to 'Start Game', "#", class: "start_game btn btn-lg btn-success", data: {url: start_game_path}
@@ -36,6 +35,7 @@
   /    bid_title.fadeIn(500);
   /  }, 1000);
 
+/ TODO: this is ok, but gets cleared by board updates too fast - maybe just remove it?
 - notice_message = @notice || notice 
 - if notice_message
   %h4
