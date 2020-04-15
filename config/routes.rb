@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  resources :games do
+  resources :games, only: [:index, :show, :new, :create], path: "/" do
     member do
       post 'add_player', format: [:json]
       post 'start', formats: [:json]
@@ -9,7 +9,6 @@ Rails.application.routes.draw do
 
       post 'morph', formats: [:json]
       post 'webrtc', formats: [:json]
-
     end
   end
   # TODO: convert these to member calls

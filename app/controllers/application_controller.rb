@@ -32,7 +32,7 @@ class ApplicationController < ActionController::Base
     locale = if lp = params[:locale]
                lp.include?('crush') ? :en : :en_tish
              else
-               request.domain.include?('tishnow') ? :en_tish : :en
+               request.domain.to_s.include?('tishnow') ? :en_tish : :en
              end
     I18n.with_locale(locale) do
       yield
