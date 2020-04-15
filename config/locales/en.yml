@@ -16,54 +16,64 @@
 #
 # This would use the information in config/locales/es.yml.
 #
+# The following keys must be escaped otherwise they will not be retrieved by
+# the default I18n backend:
+#
+# true, false, on, off, yes, no
+#
+# Instead, surround them with single quotes.
+#
+# en:
+#   'true': 'foo'
+#
 # To learn more, please read the Rails Internationalization guide
-# available at http://guides.rubyonrails.org/i18n.html.
+# available at https://guides.rubyonrails.org/i18n.html.
 
 en:
   name: "Crush"
 
   options:
-    total_rounds: 
+    total_rounds:
       label: "Total Rounds"
       default: 10
-    rounds_direction: 
+    rounds_direction:
       label: "Rounds Direction"
       default: 'down'
-      select: 
+      select:
         - - "From 1 to 10"
           - 'up'
         - - "From 10 to 1"
           - 'down'
         - - "Up then Down"
           - 'both'
-    bids_total: 
+    bids_total:
       label: "Bids Total"
       default: 'lose'
-      select: 
+      select:
         - - "Someone must lose"
           - 'lose'
         - - "Everyone can win"
           - 'win'
-    underbid: 
+    underbid:
       label: "Under Bid"
       default: 'lose'
-      select: 
+      select:
         - - "Lose points"
           - 'lose'
         - - "No points"
           - 'none'
-    ace_of_trump: 
+    ace_of_trump:
       label: "Ace of Trump"
       default: 'no_trump'
-      select: 
+      select:
         - - "No Trump Round"
           - 'no_trump'
         - - "Still Trump"
           - 'trump'
-    hints: 
+    hints:
       label: "Show Hints"
       default: 'yes'
-      select: 
+      select:
         - - "None shown"
           - 'no'
         - - "Shown on board"

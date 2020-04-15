@@ -1,4 +1,4 @@
-class Game < ActiveRecord::Base
+class Game < ApplicationRecord
 
   MIN_PLAYERS=2 # should be 3
   MAX_PLAYERS=5 # crank up to 10 with rule tweaks

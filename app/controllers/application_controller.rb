@@ -2,8 +2,8 @@ class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
-  around_filter :set_locale
-  before_filter :current_user
+  around_action :set_locale
+  before_action :current_user
 
 
 =begin
@@ -34,6 +34,7 @@ class ApplicationController < ActionController::Base
              else
                request.domain.to_s.include?('tishnow') ? :en_tish : :en
              end
+
     I18n.with_locale(locale) do
       yield
     end
