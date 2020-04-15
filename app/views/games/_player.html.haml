@@ -2,14 +2,14 @@
 - you ||= false
 - classes = ''
 - classes << " you" if you
-- classes << " waiting_for" if @indexes[index] == @waiting_on_index && @enough_players
+- classes << " waiting_for" if show && @indexes[index] == @waiting_on_index && @enough_players
 - position ||= nil
 - style = position.present? ? "position: absolute; top: #{position['top']}; left: #{position['left']};" : nil
 
 .player_card{class: classes, style: style}
   %h3{style: "margin-bottom: 10px;"}
     - if show
-      = "\"#{@names[index]}\""
+      "#{@names[index]}"
       - if @indexes[index] == @game.config[:dealer_index]
         = image_tag 'cards-favicon.png', size: "25x25", style: "border: 1px white solid; background-color: white;"
     - else

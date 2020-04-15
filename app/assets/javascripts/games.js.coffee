@@ -1,9 +1,9 @@
 window.new_board = null
 window.load_new_board = ()->
+  window.game.stop();
   board = $(window.new_board['html']); # TODO: if html present
-  new Games(board)
+  window.game = new Games(board)
   $('#game-wrapper').html(board)
-
   if window.new_board['video'] && window.new_board.video.length > 0
     $(document).trigger("vidchat_message", { streams: window.new_board.video })
     
@@ -19,10 +19,12 @@ window.show_game_message = (message)->
     return false
 
 class Games
+  stopped = null
   game = null
   config = null
 
   constructor: (game_element)->
+    stopped = false
     game = game_element
     config = game.data();
 
@@ -49,6 +51,9 @@ class Games
 
     if game.data("chime")
       @chime()
+
+  stop: =>
+    stopped = true
 
   chime: =>
     sound = $(document).find(".youre_up_bell").data("src");
@@ -120,6 +125,9 @@ class Games
       window.show_game_message("Must set a name for yourself") 
 
   get_updated_board: =>
+    if stopped
+      return
+
     $.ajax({
       url: config.url + "&updated=" + config.updated, 
       method: "GET", 
@@ -147,7 +155,8 @@ class Games
 jQuery ->
   game = $("#game")
   if game.length > 0
-    new Games($("#game"))
+    g = new Games($("#game"))
+    window.game = g;
     new Vidchat()
 
   $('#game_list').DataTable({
