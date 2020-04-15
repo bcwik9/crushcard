@@ -361,6 +361,12 @@ class GamesController < ApplicationController
     @game = Game.new
   end
 
+  def toggle_hints
+    @game.config[:hints] = @game.show_hints? ? 'no' : 'yes'
+    @game.save_state
+    game_redirect "Set Show Hints: #{@game.config[:hints]}"
+  end
+
   def create
     @game = Game.new(game_params)
     @game.set_up(game_options)

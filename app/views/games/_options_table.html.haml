@@ -1,4 +1,4 @@
-%table.text-center{style: "margin: 0 auto;"}
+%table.game_options.text-center{style: "margin: 0 auto;"}
   %thead
     %tr
       %th{style: "padding-right: 20px;"}
@@ -23,3 +23,5 @@
               %i
                 - v = opts.find{|o| o.last == v}.first if k != :total_rounds
                 = v
+                - if k == :hints
+                  = link_to "Toggle", toggle_hints_game_path

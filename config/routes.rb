@@ -5,8 +5,10 @@ Rails.application.routes.draw do
       post 'start', formats: [:json]
       post 'deal', formats: [:json]
       post 'player_action', formats: [:json]
-      post 'webrtc', formats: [:json]
+      get 'toggle_hints'
+
       post 'morph', formats: [:json]
+      post 'webrtc', formats: [:json]
 
     end
   end
