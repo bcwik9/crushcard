@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
   # run these methods on page load
-  before_filter :current_user
+  before_action :current_user
 
   private
  
