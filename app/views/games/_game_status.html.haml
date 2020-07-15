@@ -1,7 +1,7 @@
 - if @winners.present?
   %h2
     Winners:
-    \#{@winners.join(', ')}
+    = @winners.join(', ')
 - else
   %h2
     Game: #{@game.name}
@@ -12,9 +12,7 @@
       = @round
   %div
     %h4
-      %strong> Trump
-      \:
+      %strong> Trump:
       %canvas#trump{height: "105", style: "border:1px solid #000000;background:white;", width: "70"}
   %h4
-    %strong> Waiting on
-    \: #{@waiting_on}
+    %strong Waiting on: #{@waiting_on}
