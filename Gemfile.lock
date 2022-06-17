@@ -39,6 +39,7 @@ GEM
       execjs
     coffee-script-source (1.8.0)
     commonjs (0.2.7)
+    concurrent-ruby (1.1.10)
     connection_pool (2.2.0)
     erubis (2.7.0)
     execjs (2.2.2)
@@ -47,7 +48,8 @@ GEM
       tilt
     hike (1.2.3)
     hitimes (1.2.2)
-    i18n (0.7.0)
+    i18n (0.9.5)
+      concurrent-ruby (~> 1.0)
     jbuilder (2.2.6)
       activesupport (>= 3.0.0, < 5)
       multi_json (~> 1.2)
